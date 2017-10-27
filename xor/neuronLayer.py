@@ -117,4 +117,4 @@ class NeuronLayer:
         n = np.size(self.activation_levels)
         # reshape pour np.diag
         deriv_diag = np.diag(np.reshape(deriv_vector, (n)))
-        return -2 * deriv_diag * (reference - self.output)
+        return -2 * np.dot(deriv_diag, (reference - self.output))
