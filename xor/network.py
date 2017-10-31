@@ -57,6 +57,7 @@ class Network:
             self._layers_list[i].compute(self._layers_list[i - 1].output)
         return self._layers_list[-1].output
 
+    @staticmethod
     ##
     # @brief      Calcul d'erreur quadratique
     #
@@ -65,7 +66,7 @@ class Network:
     #
     # @return     norme2 de la différence de vecteur
     #
-    def error(self, x, reference):
+    def error(x, reference):
         return np.linalg.norm(x - reference)
 
     def backprop(self, eta, inputs, reference):

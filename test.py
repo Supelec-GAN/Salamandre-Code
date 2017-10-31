@@ -13,11 +13,11 @@ training_images = np.array(training_images)
 training_labels = np.array(training_labels)
 
 
-activation_funs = np.array([Sigmoid(1), Sigmoid(1)])
+activation_funs = np.array([Sigmoid(0.1), Sigmoid(0.1), Sigmoid(0.1)])
 
-net = Network([784, 1000, 10], activation_funs)
+net = Network([784, 1000, 300, 10], activation_funs)
 
-eta = 0.05
+eta = 0.2
 
 training_size = np.size(training_labels)
 
