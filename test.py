@@ -40,6 +40,6 @@ def testing_fun(n):
 
 
 engine = Engine(net, eta, training_images / 256, training_fun, testing_images[0:1000] / 256,
-                testing_fun, 50, 100    )
+                testing_fun)
 
 engine.run()

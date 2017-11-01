@@ -10,12 +10,9 @@ class Engine:
     """
 
     def __init__(self, net, eta, learning_set, learning_fun, testing_set, testing_fun,
-                 learning_iterations=1, test_period=100):
+                 learning_iterations=1, test_period=100, randomize_learning_set=True):
         # Réseau utilisé
         self._net = net
-
-        # Paramètres pour l'apprentissage
-        self._eta = eta
 
         # Données d'apprentissage (objets + étiquettes/fonction d'étiquettage)
         self._learning_set = learning_set       # données normalisées
@@ -26,6 +23,11 @@ class Engine:
         self._testing_set = testing_set         # données normalisées
         self._testing_fun = testing_fun
         self._testing_set_size = np.size(testing_set, 0)
+
+        # Paramètres pour l'apprentissage
+        self._eta = eta
+        self._randomize_learning_set = randomize_learning_set
+        self._permutation = np.arange(self._learning_set_size)
 
         # Nombre d'apprentissage successifs
         self._learning_iterations = learning_iterations
@@ -39,9 +41,10 @@ class Engine:
         self._net.reset()
         learning_error = np.zeros(self._test_count)
         for data_nb in range(self._learning_set_size):
-            self._net.compute(self._learning_set[data_nb])
+            self._net.compute(self._learning_set[self._permutation[data_nb]])
             expected_output = self._learning_fun(data_nb)
-            self._net.backprop(self._eta, self._learning_set[data_nb], expected_output)
+            self._net.backprop(self._eta, self._learning_set[self._permutation[data_nb]],
+                               expected_output)
 
             # Enregistrement périodique de  l'erreur sur le set de test
             if data_nb % self._test_period == 0:
@@ -67,6 +70,8 @@ class Engine:
         """
         error_file = open("out.csv","a")
         for i in range(self._learning_iterations):
+            if self._randomize_learning_set:
+                self._permutation = np.random.permutation(self._learning_set_size)
             self._error_during_learning[i] = self.learn()
             w = csv.writer(error_file)
             w.writerow(self._error_during_learning[i])
