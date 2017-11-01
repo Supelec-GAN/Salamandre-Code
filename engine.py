@@ -55,6 +55,8 @@ class Engine:
     def get_current_error(self):
         """
         Calcule l'erreur courante du réseau sur le set de test
+
+        :return: The mean error of the network for the testing set
         """
         error_during_testing = np.zeros(self._testing_set_size)
         for test_nb in range(self._testing_set_size):
@@ -67,6 +69,8 @@ class Engine:
     def run(self):
         """
         Effectue les n apprentissages
+
+        :return: The error of the network during each learning cycle
         """
         error_file = open("out.csv","a")
         for i in range(self._learning_iterations):
