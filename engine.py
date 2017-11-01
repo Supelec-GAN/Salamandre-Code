@@ -1,4 +1,5 @@
 import numpy as np
+import csv
 from xor.network import Network
 from fonction import Sigmoid
 
@@ -64,6 +65,10 @@ class Engine:
         """
         Effectue les n apprentissages
         """
+        error_file = open("out.csv","a")
         for i in range(self._learning_iterations):
             self._error_during_learning[i] = self.learn()
+            w = csv.writer(error_file)
+            w.writerow(self._error_during_learning[i])
+        error_file.close()
         return self._error_during_learning
