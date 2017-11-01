@@ -5,8 +5,7 @@ from fonction import Sigmoid
 
 
 class Engine:
-    """
-    Classe gérant l'apprentissage d'un réseau, tout en fournissant des données au fur et à mesure
+    """Classe gérant l'apprentissage d'un réseau, tout en fournissant des données au fur et à mesure
     """
 
     def __init__(self, net, eta, learning_set, learning_fun, testing_set, testing_fun,
@@ -42,7 +41,7 @@ class Engine:
         learning_error = np.zeros(self._test_count)
         for data_nb in range(self._learning_set_size):
             self._net.compute(self._learning_set[self._permutation[data_nb]])
-            expected_output = self._learning_fun(data_nb)
+            expected_output = self._learning_fun(self._permutation[data_nb])
             self._net.backprop(self._eta, self._learning_set[self._permutation[data_nb]],
                                expected_output)
 
@@ -53,11 +52,11 @@ class Engine:
         return learning_error
 
     def get_current_error(self):
-        """
-        Calcule l'erreur courante du réseau sur le set de test
+        """Calcule l'erreur courante du réseau sur le set de test
 
         :return: The mean error of the network for the testing set
         """
+
         error_during_testing = np.zeros(self._testing_set_size)
         for test_nb in range(self._testing_set_size):
             output = self._net.compute(self._testing_set[test_nb])
@@ -67,12 +66,12 @@ class Engine:
         return mean_error
 
     def run(self):
-        """
-        Effectue les n apprentissages
+        """Effectue les n apprentissages
 
         :return: The error of the network during each learning cycle
         """
-        error_file = open("out.csv","a")
+
+        error_file = open("out.csv", "a")
         for i in range(self._learning_iterations):
             if self._randomize_learning_set:
                 self._permutation = np.random.permutation(self._learning_set_size)
