@@ -1,13 +1,10 @@
 import numpy as np
-import matplotlib.pyplot as plt
-from xor.network import Network
+from brain.network import Network
 from fonction import Sigmoid
 from mnist import MNIST
-from engine import Engine
-import csv
 
 
-mndata = MNIST('.')
+mndata = MNIST('.\data')
 training_images, training_labels = mndata.load_training()
 testing_images, testing_labels = mndata.load_testing()
 

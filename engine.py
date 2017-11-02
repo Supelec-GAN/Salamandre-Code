@@ -1,7 +1,5 @@
 import numpy as np
 import csv
-from xor.network import Network
-from fonction import Sigmoid
 
 
 class Engine:

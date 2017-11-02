@@ -18,5 +18,16 @@
 *.dll
 *.exe
 
+
 # Mnist database
 database/
+
+# Froux python file
+__pycache__
+
+# doxygen file
+.idea/vcs.xml
+
+# data outputfolders and file
+/xor_result
+*.csv
