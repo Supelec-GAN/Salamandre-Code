@@ -47,7 +47,7 @@ class NeuronLayer:
 
     def compute(self, inputs):
         self.activation_levels = np.dot(self._weights, inputs) - self._bias
-        self.output = self._activation_function.out()(self.activation_levels)
+        self.output = self._activation_function.out(self.activation_levels)
         return self.output
 
     ##
@@ -98,7 +98,7 @@ class NeuronLayer:
     #
     def derivate_error(self, out_influence, next_weights):
         activation = self.activation_levels
-        deriv_vector = self._activation_function.derivate()(activation)
+        deriv_vector = self._activation_function.derivate(activation)
         n = np.size(self.activation_levels)
         # reshape pour np.diag
         deriv_diag = np.diag(np.reshape(deriv_vector, (n)))
@@ -113,7 +113,7 @@ class NeuronLayer:
     #
     def init_derivate_error(self, reference):
         activation = self.activation_levels
-        deriv_vector = self._activation_function.derivate()(activation)
+        deriv_vector = self._activation_function.derivate(activation)
         n = np.size(self.activation_levels)
         # reshape pour np.diag
         deriv_diag = np.diag(np.reshape(deriv_vector, (n)))

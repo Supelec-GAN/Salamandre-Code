@@ -1,5 +1,5 @@
 import numpy as np
-from xor.neuronLayer import NeuronLayer
+from brain.neuronLayer import NeuronLayer
 
 
 class Network:

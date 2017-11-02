@@ -16,8 +16,8 @@ class Function:
     #
     # @return     une fonction de type lambda x:
     #
-    def out(self):
-        return lambda x: x
+    def out(self, x, *args):
+        return x
 
     ##
     # @brief      retourne la fonction dérivée
@@ -26,8 +26,8 @@ class Function:
     #
     # @return     la dérivée formelle ou avec le delta
     #
-    def derivate(self):
-        return lambda x: (self.out(x+self.delta)-self.out(x))/self.delta
+    def derivate(self, x, *args):
+        return (self.out(x+self.delta)-self.out(x))/self.delta
 
 
 class Sigmoid(Function):
@@ -38,11 +38,11 @@ class Sigmoid(Function):
     def __init__(self, mu=1):
         self.mu = mu
 
-    def out(self):
-        return lambda x: 1/(1+np.exp(-self.mu*x))
+    def out(self, x):
+        return 1/(1+np.exp(-self.mu*x))
 
-    def derivate(self):
-        return lambda x: self.mu*np.exp(self.mu*x)/(np.power(1+np.exp(self.mu*x), 2))
+    def derivate(self, x):
+        return self.mu*np.exp(self.mu*x)/(np.power(1+np.exp(self.mu*x), 2))
 
 
 class Tanh(Function):
@@ -54,11 +54,11 @@ class Tanh(Function):
         self.k = k
         self.alpha = alpha
 
-    def out(self):
-        return lambda x: self.k*np.tanh(self.alpha*x)
+    def out(self, x):
+        return self.k*np.tanh(self.alpha*x)
 
-    def derivate(self):
-        return lambda x: self.k*self.alpha/(np.power(np.cosh(self.alpha*x), 2))
+    def derivate(self, x):
+        return self.k*self.alpha/(np.power(np.cosh(self.alpha*x), 2))
 
 
 ##
@@ -77,5 +77,17 @@ class XorTest(Function):
         self.mini = mini
         self.maxi = maxi
 
-    def out(self):
-        return lambda x, y: self.maxi*((x > 0) ^ (y > 0)) - self.mini*(1-(x > 0) ^ (y > 0))
+    def out(self, x, y):
+        return self.maxi*((x > 0) ^ (y > 0)) - self.mini*(1-(x > 0) ^ (y > 0))
+
+
+class MnistTest(Function):
+
+    def __init__(self, set_labels):
+        self._set_labels = set_labels
+
+    def out(self, x):
+        r = np.zeros(10)
+        r[self._set_labels[x]] = 1
+        r = np.reshape(r, (10, 1))
+        return r

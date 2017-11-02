@@ -21,7 +21,6 @@ class DataInterface:
     # @return     No return, filename is name\YYYY-MM-DD-HHmmSS_data_name.csv
     def save(self, data, data_name, data_param=np.array([10, 1000, 100, 0.01]), param_description='parallel_learnings, test_period, iterations, eta'):
         data_param_str = self.save_param(data_param)
-        print(data_param_str)
         save_date = strftime('%Y-%m-%d-%H%M%S', gmtime())
 
         # create directory if it doesn't exist

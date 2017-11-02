@@ -1,33 +1,23 @@
-
 # This file is used to ignore files which are generated
 # ----------------------------------------------------------------------------
-
-*~
-*.autosave
-
-*.debug
-
 # Vim temporary files
+*.autosave
+*.debug
 .*.swp
-
+*~
 # Python byte code
 *.pyc
-
 # Binaries
-# --------
 *.dll
 *.exe
-
-
-# Mnist database
-database/
-
+# --------
 # Froux python file
 __pycache__
-
+# data output folders and file
+/xor_result
+/Mnist_debug
+*.csv
+# Mnist database
+database/
 # doxygen file
 .idea/vcs.xml
-
-# data outputfolders and file
-/xor_result
-*.csv
