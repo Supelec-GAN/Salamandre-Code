@@ -91,3 +91,15 @@ class MnistTest(Function):
         r[self._set_labels[x]] = 1
         r = np.reshape(r, (10, 1))
         return r
+
+
+class Norm2(Function):
+
+    def __init__(self):
+        pass
+
+    def out(self, reference, x):
+        return np.linalg.norm(x - reference)
+
+    def derivate(self, reference, x):
+        return -2 * (reference - x)

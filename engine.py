@@ -1,5 +1,4 @@
 import numpy as np
-import csv
 
 
 class Engine:
@@ -59,7 +58,7 @@ class Engine:
         for test_nb in range(self._testing_set_size):
             output = self._net.compute(self._testing_set[test_nb])
             expected_output = self._testing_fun.out(test_nb)
-            error_during_testing[test_nb] = self._net.error(output, expected_output)
+            error_during_testing[test_nb] = self._net.error.out(output, expected_output)
         mean_error = np.mean(error_during_testing)
         return mean_error
 
@@ -69,12 +68,8 @@ class Engine:
         :return: The error of the network during each learning cycle
         """
 
-        error_file = open("out.csv", "a")
         for i in range(self._learning_iterations):
             if self._randomize_learning_set:
                 self._permutation = np.random.permutation(self._learning_set_size)
             self._error_during_learning[i] = self.learn()
-            w = csv.writer(error_file)
-            w.writerow(self._error_during_learning[i])
-        error_file.close()
         return self._error_during_learning

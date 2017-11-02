@@ -13,17 +13,20 @@ class Network:
     #                                         en incluant le nombres d'entrées en position 0
     # @param      layers_activation_function  The layers activation function
     #
-    def __init__(self, layers_neuron_count, layers_activation_function):
+    def __init__(self, layers_neuron_count, layers_activation_function, error_function):
         self._layers_activation_function = layers_activation_function  # sauvegarde pour pouvoir reinitialiser
         self._layers_neuron_count = layers_neuron_count
         self._layers_count = np.size(layers_neuron_count) - 1
+        self.error = error_function
         self._layers_list = np.array(
                             self._layers_count * [NeuronLayer(
-                                                        layers_activation_function[0]
+                                                        layers_activation_function[0],
+                                                        error_function
                                                         )]
                             )
         for i in range(0, self._layers_count):
             self._layers_list[i] = NeuronLayer(layers_activation_function[i],
+                                               self.error,
                                                layers_neuron_count[i],
                                                layers_neuron_count[i + 1]
                                                )
@@ -32,16 +35,17 @@ class Network:
     def reset(self):
         self._layers_list = np.array(
                             self._layers_count * [NeuronLayer(
-                                                        self._layers_activation_function[0]
+                                                        self._layers_activation_function[0],
+                                                        self.error
                                                         )]
                             )
         for i in range(0, self._layers_count):
             self._layers_list[i] = NeuronLayer(self._layers_activation_function[i],
+                                               self.error,
                                                self._layers_neuron_count[i],
                                                self._layers_neuron_count[i + 1]
                                                )
         self.output = np.zeros(self._layers_neuron_count[-1])
-
     ##
     # @brief      On calcule la sortie du réseau
     #
@@ -50,6 +54,7 @@ class Network:
     #
     # @return     La sortie de la dernière couche est la sortie finale
     #
+
     def compute(self, inputs):
         inputs = np.reshape(inputs, (len(inputs), 1))
         self._layers_list[0].compute(inputs)
@@ -57,17 +62,17 @@ class Network:
             self._layers_list[i].compute(self._layers_list[i - 1].output)
         return self._layers_list[-1].output
 
-    @staticmethod
-    ##
-    # @brief      Calcul d'erreur quadratique
-    #
-    # @param      x  la sortie à comparer
-    # @param      reference  The reference
-    #
-    # @return     norme2 de la différence de vecteur
-    #
-    def error(x, reference):
-        return np.linalg.norm(x - reference)
+    # @staticmethod
+    # ##
+    # # @brief      Calcul d'erreur quadratique
+    # #
+    # # @param      x  la sortie à comparer
+    # # @param      reference  The reference
+    # #
+    # # @return     norme2 de la différence de vecteur
+    # #
+    # def error(x, reference):
+    #     return np.linalg.norm(x - reference)
 
     def backprop(self, eta, inputs, reference):
         inputs = np.reshape(inputs, (len(inputs), 1))

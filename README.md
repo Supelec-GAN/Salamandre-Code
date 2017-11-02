@@ -1,3 +1,3 @@
-# Salamandre-XOR
-Projet de réseau de neurones modélisant le MNIST en Python
+# Salamandre-Mnist
+Projet de réseau de neurones s'intéressant à la banque de données MNST en Python
 # Salamandre-Mnist

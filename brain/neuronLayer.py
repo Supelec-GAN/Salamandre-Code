@@ -1,18 +1,21 @@
 import numpy as np
+from fonction import Sigmoid, MnistTest, Norm2
 
 
 class NeuronLayer:
     """Classe permettant de créer une couche de neurones"""
 
-    def __init__(self, activation_function, input_size=1, output_size=1):
+    def __init__(self, activation_function, error_function, input_size=1, output_size=1):
         # Matrice de dimension q*p avec le nombre de sortie et p le nombre d'entrée
         self._input_size = input_size
         self._output_size = output_size
         self._weights = np.transpose(np.random.randn(input_size, output_size))
         self._bias = np.zeros((output_size, 1))            # Vecteur colonne
         self._activation_function = activation_function
+        # self.error = error_function
         self.activation_levels = np.zeros((output_size, 1))  # Vecteur colonne
         self.output = np.zeros((output_size, 1))             # Vecteur colonne
+        self.error = error_function
 
     @property
     def weights(self):
@@ -117,4 +120,4 @@ class NeuronLayer:
         n = np.size(self.activation_levels)
         # reshape pour np.diag
         deriv_diag = np.diag(np.reshape(deriv_vector, (n)))
-        return -2 * np.dot(deriv_diag, (reference - self.output))
+        return np.dot(deriv_diag, self.error.derivate(reference, self.output))

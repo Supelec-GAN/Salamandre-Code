@@ -1,6 +1,6 @@
 import numpy as np
 from brain.network import Network
-from fonction import Sigmoid, MnistTest
+from fonction import Sigmoid, MnistTest, Norm2
 from mnist import MNIST
 from engine import Engine
 from dataInterface import DataInterface
@@ -24,8 +24,9 @@ randomize_learning_set = True
 
 
 activation_funs = np.array([Sigmoid(0.1), Sigmoid(0.1), Sigmoid(0.1)])
+error_fun = Norm2()
 
-net = Network([784, 10, 10, 10], activation_funs)
+net = Network([784, 10, 10, 10], activation_funs, error_fun)
 
 eta = 0.2
 
