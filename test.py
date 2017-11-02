@@ -6,7 +6,7 @@ from engine import Engine
 from dataInterface import DataInterface
 
 
-mndata = MNIST('.\data')
+mndata = MNIST('./data')
 training_images, training_labels = mndata.load_training()
 testing_images, testing_labels = mndata.load_testing()
 
@@ -47,8 +47,8 @@ training_fun = MnistTest(training_labels)
 testing_fun = MnistTest(testing_labels)
 
 
-engine = Engine(net, eta, training_images[0:1000] / 256, training_fun, testing_images[0:10] / 256,
-                testing_fun, 3)
+engine = Engine(net, eta, training_images[0:1000] / 256, training_fun, testing_images[0:1000] / 256,
+                testing_fun, 1, 100)
 
 error_during_learning = engine.run()
 
