@@ -5,7 +5,7 @@ class Engine:
     """Classe gérant l'apprentissage d'un réseau, tout en fournissant des données au fur et à mesure
     """
 
-    def __init__(self, net, eta, learning_set, learning_fun, testing_set, testing_fun,
+    def __init__(self, net, eta, learning_set, learning_fun, testing_set, testing_fun, success_fun,
                  learning_iterations=1, test_period=100, learning_set_pass_nb=1,
                  randomize_learning_set=True):
         # Réseau utilisé
@@ -34,10 +34,11 @@ class Engine:
         self._test_period = test_period
         self._test_count = self._learning_set_size // self._test_period
         self._error_during_learning = np.zeros((self._learning_iterations, self._test_count))
+        self._success_fun = success_fun
 
     def learn(self):
         self._net.reset()
-        learning_error = np.zeros(self._test_count)
+        testing_success_rate = np.zeros(self._test_count)
         for pass_nb in range(self._learning_set_pass_nb):
             # Boucle pour une fois le set d'entrainement
             for data_nb in range(self._learning_set_size):
@@ -49,9 +50,9 @@ class Engine:
                 # Enregistrement périodique de  l'erreur sur le set de test
                 if (pass_nb*self._learning_set_size + data_nb) % self._test_period == 0:
                     test_number = (pass_nb*self._learning_set_size + data_nb) // self._test_period
-                    learning_error[test_number] = self.get_current_error()
+                    testing_success_rate[test_number] = self.get_current_success_rate()
 
-        return learning_error
+        return testing_success_rate
 
     def get_current_error(self):
         """Calcule l'erreur courante du réseau sur le set de test
@@ -66,6 +67,16 @@ class Engine:
             error_during_testing[test_nb] = self._net.error.out(output, expected_output)
         mean_error = np.mean(error_during_testing)
         return mean_error
+
+    def get_current_success_rate(self):
+        """Calcule le taux de succès courant du réseau sur le set de test"""
+        success_during_testing = np.zeros(self._testing_set_size)
+        for test_nb in range(self._testing_set_size):
+            output = self._net.compute(self._testing_set[test_nb])
+            expected_output = self._testing_fun.out(test_nb)
+            success_during_testing[test_nb] = self._success_fun(output, expected_output)
+        success_rate = np.mean(success_during_testing)
+        return success_rate
 
     def run(self):
         """Effectue les n apprentissages

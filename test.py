@@ -47,8 +47,15 @@ training_fun = MnistTest(training_labels)
 testing_fun = MnistTest(testing_labels)
 
 
-engine = Engine(net, eta, training_images[0:1000] / 256, training_fun, testing_images[0:1000] / 256,
-                testing_fun, 1, 1)
+def success_fun(o, eo):
+    omax = np.max(o)
+    if omax == np.dot(np.transpose(o), eo):
+        return 1
+    return 0
+
+
+engine = Engine(net, eta, training_images / 256, training_fun, testing_images[0:1000] /
+                256, testing_fun, success_fun, 1, 100)
 
 error_during_learning = engine.run()
 
