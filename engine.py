@@ -32,7 +32,7 @@ class Engine:
 
         # Données recueillies pendant les apprentissages et paramètres
         self._test_period = test_period
-        self._test_count = self._learning_set_size // self._test_period
+        self._test_count = (self._learning_set_size*self._learning_set_pass_nb) // self._test_period
         self._error_during_learning = np.zeros((self._learning_iterations, self._test_count))
         self._success_fun = success_fun
 
