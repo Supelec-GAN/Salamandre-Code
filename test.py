@@ -26,7 +26,7 @@ randomize_learning_set = True
 activation_funs = np.array([Sigmoid(0.1), Sigmoid(0.1), Sigmoid(0.1)])
 error_fun = Norm2()
 
-net = Network([784, 10, 10, 10], activation_funs, error_fun)
+net = Network([784, 1000, 300, 10], activation_funs, error_fun)
 
 eta = 0.2
 
@@ -48,12 +48,14 @@ testing_fun = MnistTest(testing_labels)
 
 
 engine = Engine(net, eta, training_images[0:1000] / 256, training_fun, testing_images[0:1000] / 256,
-                testing_fun, 1, 100)
+                testing_fun, 1, 1)
 
 error_during_learning = engine.run()
 
 data_interface = DataInterface('Mnist_debug')
 
 data_params = np.array([learning_iterations, test_period, training_size, testing_size, eta])
-param_description = '[learning_iterations, test_period, training_size, testing_size, eta] + Network([784, 10, 10, 10], [Sigmoid(0.1), Sigmoid(0.1), Sigmoid(0.1)]'
+param_description = '[learning_iterations, test_period, training_size, testing_size, ' \
+                    'eta] + Network([784, 1000, 300, 10], [Sigmoid(0.1), Sigmoid(0.1), ' \
+                    'Sigmoid(0.1)]'
 data_interface.save(error_during_learning, 'error_during_learning', data_params, param_description)

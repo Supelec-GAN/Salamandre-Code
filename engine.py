@@ -6,7 +6,8 @@ class Engine:
     """
 
     def __init__(self, net, eta, learning_set, learning_fun, testing_set, testing_fun,
-                 learning_iterations=1, test_period=100, randomize_learning_set=True):
+                 learning_iterations=1, test_period=100, learning_set_pass_nb=1,
+                 randomize_learning_set=True):
         # Réseau utilisé
         self._net = net
 
@@ -24,6 +25,7 @@ class Engine:
         self._eta = eta
         self._randomize_learning_set = randomize_learning_set
         self._permutation = np.arange(self._learning_set_size)
+        self._learning_set_pass_nb = learning_set_pass_nb
 
         # Nombre d'apprentissage successifs
         self._learning_iterations = learning_iterations
@@ -36,16 +38,19 @@ class Engine:
     def learn(self):
         self._net.reset()
         learning_error = np.zeros(self._test_count)
-        for data_nb in range(self._learning_set_size):
-            self._net.compute(self._learning_set[self._permutation[data_nb]])
-            expected_output = self._learning_fun.out(self._permutation[data_nb])
-            self._net.backprop(self._eta, self._learning_set[self._permutation[data_nb]],
-                               expected_output)
+        for pass_nb in range(self._learning_set_pass_nb):
+            # Boucle pour une fois le set d'entrainement
+            for data_nb in range(self._learning_set_size):
+                self._net.compute(self._learning_set[self._permutation[data_nb]])
+                expected_output = self._learning_fun.out(self._permutation[data_nb])
+                self._net.backprop(self._eta, self._learning_set[self._permutation[data_nb]],
+                                   expected_output)
 
-            # Enregistrement périodique de  l'erreur sur le set de test
-            if data_nb % self._test_period == 0:
-                test_number = data_nb // self._test_period
-                learning_error[test_number] = self.get_current_error()
+                # Enregistrement périodique de  l'erreur sur le set de test
+                if (pass_nb*self._learning_set_size + data_nb) % self._test_period == 0:
+                    test_number = (pass_nb*self._learning_set_size + data_nb) // self._test_period
+                    learning_error[test_number] = self.get_current_error()
+
         return learning_error
 
     def get_current_error(self):
