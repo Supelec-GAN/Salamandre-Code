@@ -101,9 +101,7 @@ class NeuronLayer:
     #
     def derivate_error(self, out_influence, next_weights):
         deriv_vector = self._activation_function.derivate(self.activation_levels)
-        deriv_matrix = np.zeros((self._output_size, self._output_size))
-        np.copyto(deriv_matrix, np.reshape(deriv_vector, (self._output_size)))
-        return deriv_matrix * np.dot(np.transpose(next_weights), out_influence)
+        return deriv_vector * np.dot(np.transpose(next_weights), out_influence)
 
     ##
     # @brief      Initiate the error derivation
@@ -114,6 +112,4 @@ class NeuronLayer:
     #
     def init_derivate_error(self, reference):
         deriv_vector = self._activation_function.derivate(self.activation_levels)
-        deriv_matrix = np.zeros((self._output_size, self._output_size))
-        np.copyto(deriv_matrix, np.reshape(deriv_vector, (self._output_size)))
-        return deriv_matrix * self.error.derivate(reference, self.output)
+        return deriv_vector * self.error.derivate(reference, self.output)

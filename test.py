@@ -4,6 +4,7 @@ from fonction import Sigmoid, MnistTest, Norm2
 from mnist import MNIST
 from engine import Engine
 from dataInterface import DataInterface
+from time import time
 
 
 mndata = MNIST('./data')
@@ -54,11 +55,12 @@ def success_fun(o, eo):
     return 0
 
 
-engine = Engine(net, eta, training_images / 256, training_fun, testing_images[0:1000] /
+engine = Engine(net, eta, training_images[0:1000] / 256, training_fun, testing_images[0:1000] /
                 256, testing_fun, success_fun, 1, 100)
-
+t0 = time()
 error_during_learning = engine.run()
-
+t1 = time()
+print(t1-t0)
 data_interface = DataInterface('Mnist_debug')
 
 data_params = np.array([learning_iterations, test_period, training_size, testing_size, eta])
