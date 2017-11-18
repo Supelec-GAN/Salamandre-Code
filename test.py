@@ -37,6 +37,8 @@ eta = param['eta']
 
 training_fun = param['training_fun'](training_labels)
 testing_fun = param['testing_fun'](testing_labels)
+ 
+# ceci est un commentaire de test de l'api Matrix
 
 
 engine = Engine(net,
