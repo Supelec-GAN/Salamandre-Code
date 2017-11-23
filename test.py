@@ -30,10 +30,7 @@ randomize_learning_set = param['learning_iterations']
 activation_funs = np.array(param['activation_funs'])
 error_fun = param['error_fun']
 
-<<<<<<< HEAD
 net = Network(param['network_layers'], activation_funs, error_fun)
-=======
->>>>>>> eb5dd87028e91ef1afc7dd88f431473906d2dcb1
 
 eta = param['eta']
 
@@ -44,7 +41,6 @@ testing_fun = param['testing_fun'](testing_labels)
 # ceci est un commentaire de test de l'api Matrix
 
 
-<<<<<<< HEAD
 engine = Engine(net,
                 eta,
                 training_images[0:training_size] / 256,
@@ -54,10 +50,6 @@ engine = Engine(net,
                 learning_iterations,
                 test_period,
                 randomize_learning_set)
-=======
-training_fun = MnistTest(training_labels)
-testing_fun = MnistTest(testing_labels)
-
 
 def success_fun(o, eo):
     omax = np.max(o)
@@ -66,15 +58,6 @@ def success_fun(o, eo):
     return 0
 
 
->>>>>>> eb5dd87028e91ef1afc7dd88f431473906d2dcb1
-
 error_during_learning = engine.run()
 
 data_interface.save(error_during_learning, 'error_during_learning', data_interface.save_conf())
-
-<<<<<<< HEAD
-# param_dict_str, data = data_interface.load('2017-11-04-190141_error_during_learning.csv')
-# param_dict = data_interface.load_conf(param_dict_str)
-=======
-
->>>>>>> eb5dd87028e91ef1afc7dd88f431473906d2dcb1
