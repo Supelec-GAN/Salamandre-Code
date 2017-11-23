@@ -21,3 +21,6 @@ __pycache__
 database/
 # doxygen file
 .idea/vcs.xml
+
+Config file
+*.ini
