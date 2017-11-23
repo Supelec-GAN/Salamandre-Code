@@ -100,12 +100,8 @@ class NeuronLayer:
     # @return     the error used in the recursive formula
     #
     def derivate_error(self, out_influence, next_weights):
-        activation = self.activation_levels
-        deriv_vector = self._activation_function.derivate(activation)
-        n = np.size(self.activation_levels)
-        # reshape pour np.diag
-        deriv_diag = np.diag(np.reshape(deriv_vector, (n)))
-        return np.dot(deriv_diag, np.dot(np.transpose(next_weights), out_influence))
+        deriv_vector = self._activation_function.derivate(self.activation_levels)
+        return deriv_vector * np.dot(np.transpose(next_weights), out_influence)
 
     ##
     # @brief      Initiate the error derivation
@@ -115,9 +111,5 @@ class NeuronLayer:
     # @return     {an derivative based by default on quadratic error}
     #
     def init_derivate_error(self, reference):
-        activation = self.activation_levels
-        deriv_vector = self._activation_function.derivate(activation)
-        n = np.size(self.activation_levels)
-        # reshape pour np.diag
-        deriv_diag = np.diag(np.reshape(deriv_vector, (n)))
-        return np.dot(deriv_diag, self.error.derivate(reference, self.output))
+        deriv_vector = self._activation_function.derivate(self.activation_levels)
+        return deriv_vector * self.error.derivate(reference, self.output)
