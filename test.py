@@ -37,9 +37,12 @@ eta = param['eta']
 
 training_fun = param['training_fun'](training_labels)
 testing_fun = param['testing_fun'](testing_labels)
- 
-# ceci est un commentaire de test de l'api Matrix
 
+def success_fun(o, eo):
+    omax = np.max(o)
+    if omax == np.dot(np.transpose(o), eo):
+        return 1
+    return 0
 
 engine = Engine(net,
                 eta,
@@ -47,15 +50,11 @@ engine = Engine(net,
                 training_fun,
                 testing_images[0:testing_size] / 256,
                 testing_fun,
+                success_fun,
                 learning_iterations,
                 test_period,
                 randomize_learning_set)
 
-def success_fun(o, eo):
-    omax = np.max(o)
-    if omax == np.dot(np.transpose(o), eo):
-        return 1
-    return 0
 
 
 error_during_learning = engine.run()
