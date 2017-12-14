@@ -20,11 +20,3 @@ class ErrorGraphs:
                   str(self.test_period) + " apprentissages")
         plt.suptitle("eta =" + str(self.eta) + "\n" + "Réseau en " + str(self.neuron_count[1:]))
         plt.show()
-
-    def error_graphs_learning(self, abs_error_learning, ord_error_learning):
-        plt.figure()
-        plt.plot(abs_error_learning, ord_error_learning, 'x')
-        plt.xlabel('Itérations')
-        plt.ylabel('Erreur moyenne sur ' + str(self.parallel_learnings) + " apprentissages")
-        plt.title("Evolution de l'erreur au fur et a mesure des apprentissages")
-        plt.show()

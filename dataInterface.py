@@ -27,7 +27,7 @@ class DataInterface:
         if not os.path.exists(self._name):
             os.mkdir(self._name)
 
-        return np.savetxt(self._name + '\\' + save_date + '_' + data_name + '.csv', data, delimiter=",", header=data_param)
+        return np.savetxt(self._name + '/' + save_date + '_' + data_name + '.csv', data, delimiter=",", header=data_param)
 
     ##
     # @brief      transform np.array into string to save param
