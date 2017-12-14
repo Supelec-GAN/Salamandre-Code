@@ -1,5 +1,6 @@
 """
-Aucun test, c'est une sorte de pseudo-code, une methode agile askip
+Aucun test, c'est une sorte de pseudo-code, une methode agile askip,
+on remplit au fur et à mesure pour que ça marche.
 """
 
 
@@ -13,7 +14,19 @@ class GanGame:
         self.discriminator = discriminator
         self.learning_ratio = learning_ratio
 
+    def playAndLearn(self):
+        for i in range(learning_ratio):
+            self.discriminatorLearning()
+        noise = self.generateNoise()
+        fake_image = self.generateImage(noise)
+
+        fooled = testTruth(fake_image)
+
+        generatorLearning(fooled)
+        return fooled
+
     def discriminatorLearning():
+        self.discriminator.learn()   
         pass
 
     def generatorLearning():
