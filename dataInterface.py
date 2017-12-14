@@ -51,8 +51,12 @@ class DataInterface:
         file = open(self._name + '/' + filename)
         first = file.readline()
         param_str = first.split('# ')[1].split('\n')[0]
+
         params = eval(param_str)
-        return params
+        param_dict = {}
+        for opt in params:
+            param_dict[opt] = eval(params[opt])
+        return param_dict
 
     def read_conf(self, filename='config.ini', param='Mnist'):
         cfg = ConfigParser()
