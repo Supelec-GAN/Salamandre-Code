@@ -103,3 +103,19 @@ class Norm2(Function):
 
     def derivate(self, reference, x):
         return -2 * (reference - x)
+
+##
+## @brief      Class for non saturant heuritic for GAN. 
+## Parameter x is useless, only for matching the neuronLayer class
+## (cf init_derivate_error function)
+##
+class NonSatHeuritic(Function):
+
+    def __init__(self):
+        pass
+
+    def out(self, reference, useless):
+        return -0.5*np.log(reference)
+
+    def derivate(self, reference, useless):
+        return -0.5/reference
