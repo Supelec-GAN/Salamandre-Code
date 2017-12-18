@@ -3,6 +3,7 @@ Aucun test, c'est une sorte de pseudo-code, une methode agile askip,
 on remplit au fur et à mesure pour que ça marche.
 """
 
+import numpy as np
 
 class GanGame:
     """
@@ -15,21 +16,22 @@ class GanGame:
         self.learning_ratio = learning_ratio
 
     def playAndLearn(self):
-        for i in range(learning_ratio):
+        for i in range(self.learning_ratio):
             self.discriminatorLearning()
         noise = self.generateNoise()
         fake_image = self.generateImage(noise)
 
-        fooled = testTruth(fake_image)
+        fooled = self.testTruth(fake_image)
 
-        generatorLearning(fooled)
+        self.generatorLearning(fooled)
         return fooled
 
-    def discriminatorLearning():
+    def discriminatorLearning(self):
         self.discriminator.learn()   
         pass
 
-    def generatorLearning():
+    def generatorLearning(self):
+        self.generator.learn()
         pass
 
     ##
@@ -39,13 +41,13 @@ class GanGame:
     #
     # @return     { description_of_the_return_value }
     ##
-    def generateImage(noise):
-        Image = generator.net.compute(noise)
+    def generateImage(self, noise):
+        Image = self.generator.net.compute(noise)
         return Image
 
-    def generateNoise():
+    def generateNoise(self):
         random = np.random()
         self.noiseFunction.out()
 
-    def testTruth(image):
-        return discriminator.net.compute(image)
+    def testTruth(self, image):
+        return self.discriminator.net.compute(image)
