@@ -3,6 +3,7 @@ Aucun test, c'est une sorte de pseudo-code, une methode agile askip,
 on remplit au fur et à mesure pour que ça marche.
 """
 
+import numpy as np
 
 class GanGame:
     """
@@ -23,22 +24,22 @@ class GanGame:
         self.learning_ratio = learning_ratio
 
     def playAndLearn(self):
-        for i in range(learning_ratio):
-            self.discriminatorLearningPositive()
+        for i in range(self.learning_ratio):
+            self.discriminatorLearning()
         noise = self.generateNoise()
         fake_image = self.generateImage(noise)
 
-        fooled = testTruth(fake_image)
+        fooled = self.testTruth(fake_image)
 
         generatorLearning(fooled, noise)
         discriminatorLearningNegative(fake_image)
         return fooled
 
-    def discriminatorLearningPositive():
+    def discriminatorLearningPositive(self):
         self.discriminator.learn()   
         pass
 
-    def discriminatorLearningNegative(fake_image, noise):
+    def discriminatorLearningNegative(self, fake_image, noise):
         self.discriminator.net.backprop(self.discriminator.eta, fake_image, noise)
     ##
     ## @brief      initiate backprop for generator
@@ -46,7 +47,7 @@ class GanGame:
     ## @param      fooled  result between 0 and 1 if G fooled D or not
     ##
     ## @comment    The cost function will be initialize with the network.
-    def generatorLearning(fooled, noise):
+    def generatorLearning(self, fooled, noise):
         self.generator.backprop(eta, noise, fooled)
 
     ##
@@ -56,13 +57,14 @@ class GanGame:
     #
     # @return     { description_of_the_return_value }
     ##
-    def generateImage(noise):
-        Image = generator.net.compute(noise)
+    def generateImage(self, noise):
+        Image = self.generator.net.compute(noise)
         return Image
 
-    def generateNoise():  # pas forcément adapté de l'avoir ici
+
+    def generateNoise(self):
         random = np.random()
         self.noiseFunction.out()
 
-    def testTruth(image):
-        return discriminator.net.compute(image)
+    def testTruth(self, image):
+        return self.discriminator.net.compute(image)
