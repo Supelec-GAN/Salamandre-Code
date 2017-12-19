@@ -63,8 +63,8 @@ class GanGame:
         return Image
 
     def generateNoise(self):
-        random = np.random()
-        self.noiseFunction.out()
+        n = generator.layers_neuron_count[0]
+        return np.random(n)
 
     ##
     # @brief      Give belief of discrimator about the image given
