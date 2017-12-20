@@ -110,4 +110,4 @@ image = np.reshape(image_test, [28, 28])
 print(image)
 plt.imshow(image, cmap='Greys',  interpolation='nearest')
 plt.savefig('blkwht.png')
-plt.show()
+
