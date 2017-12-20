@@ -27,13 +27,13 @@ class GanGame:
     ##
     def playAndLearn(self):
         for i in range(self.learning_ratio):
-            self.discriminatorLearning()
-        fake_image = self.generateImage()
+            self.discriminatorLearningPositive()
+        fake_image, noise = self.generateImage()
 
         fooled = self.testTruth(fake_image)
 
-        generatorLearning(fooled, noise)
-        discriminatorLearningNegative(fake_image)
+        self.generatorLearning(fooled, noise)
+        self.discriminatorLearningNegative(fake_image)
         return fooled
 
     ##
@@ -59,13 +59,13 @@ class GanGame:
         self.generator.backprop(self.eta_gen, noise, fooled)
 
     def generateImage(self):
-        noise  = generateNoise()
-        Image = self.generator.net.compute(noise)
-        return Image
+        noise = self.generateNoise()
+        image = self.generator.compute(noise)
+        return image, noise
 
     def generateNoise(self):
-        n = generator.layers_neuron_count[0]
-        return np.random(n)
+        n = self.generator.layers_neuron_count[0]
+        return np.random.random(n)
 
     ##
     # @brief      Give belief of discrimator about the image given

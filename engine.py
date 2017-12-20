@@ -9,7 +9,7 @@ class Engine:
                  learning_iterations=1, test_period=100, learning_set_pass_nb=1,
                  randomize_learning_set=True):
         # Réseau utilisé
-        self._net = net
+        self.net = net
 
         # Données d'apprentissage (objets + étiquettes/fonction d'étiquettage)
         self._learning_set = learning_set       # données normalisées
@@ -22,7 +22,7 @@ class Engine:
         self._testing_set_size = np.size(testing_set, 0)
 
         # Paramètres pour l'apprentissage
-        self._eta = eta
+        self.eta = eta
         self._randomize_learning_set = randomize_learning_set
         self._permutation = np.arange(self._learning_set_size)
         self._learning_set_pass_nb = learning_set_pass_nb
@@ -37,14 +37,14 @@ class Engine:
         self._success_fun = success_fun
 
     def learn(self):
-        self._net.reset()
+        self.net.reset()
         testing_success_rate = np.zeros(self._test_count)
         for pass_nb in range(self._learning_set_pass_nb):
             # Boucle pour une fois le set d'entrainement
             for data_nb in range(self._learning_set_size):
-                self._net.compute(self._learning_set[self._permutation[data_nb]])
+                self.net.compute(self._learning_set[self._permutation[data_nb]])
                 expected_output = self._learning_fun.out(self._permutation[data_nb])
-                self._net.backprop(self._eta, self._learning_set[self._permutation[data_nb]],
+                self.net.backprop(self.eta, self._learning_set[self._permutation[data_nb]],
                                    expected_output)
 
                 # Enregistrement périodique de  l'erreur sur le set de test
@@ -62,9 +62,9 @@ class Engine:
 
         error_during_testing = np.zeros(self._testing_set_size)
         for test_nb in range(self._testing_set_size):
-            output = self._net.compute(self._testing_set[test_nb])
+            output = self.net.compute(self._testing_set[test_nb])
             expected_output = self._testing_fun.out(test_nb)
-            error_during_testing[test_nb] = self._net.error.out(output, expected_output)
+            error_during_testing[test_nb] = self.net.error.out(output, expected_output)
         mean_error = np.mean(error_during_testing)
         return mean_error
 
@@ -72,7 +72,7 @@ class Engine:
         """Calcule le taux de succès courant du réseau sur le set de test"""
         success_during_testing = np.zeros(self._testing_set_size)
         for test_nb in range(self._testing_set_size):
-            output = self._net.compute(self._testing_set[test_nb])
+            output = self.net.compute(self._testing_set[test_nb])
             expected_output = self._testing_fun.out(test_nb)
             success_during_testing[test_nb] = self._success_fun(output, expected_output)
         success_rate = np.mean(success_during_testing)

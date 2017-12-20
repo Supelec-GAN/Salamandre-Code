@@ -13,7 +13,7 @@ Initialisation du Discriminateur, similaire au Mnist
 
 data_interface = DataInterface('GanMnist')
 
-param = data_interface.read_conf('GanMnist')
+param = data_interface.read_conf('config.ini', 'GanMnist')
 
 mndata = MNIST(param['file'])
 training_images, training_labels = mndata.load_training()
@@ -80,9 +80,15 @@ learning_ratio = param['learning_ratio']
 
 ganGame = GanGame(discriminator, generator, learning_ratio)
 
+play_number = param['play_number']
+
+
+
 discriminator_score = np.zeros(play_number)
 
 for i in range(play_number):
     discriminator_score[i] = ganGame.playAndLearn()
 
-final test = ganGame.generateImage()
+image_test, associate_noise = ganGame.generateImage()
+
+print(image_test)
