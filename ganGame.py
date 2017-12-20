@@ -27,8 +27,7 @@ class GanGame:
     def playAndLearn(self):
         for i in range(self.learning_ratio):
             self.discriminatorLearning()
-        noise = self.generateNoise()
-        fake_image = self.generateImage(noise)
+        fake_image = self.generateImage()
 
         fooled = self.testTruth(fake_image)
 
@@ -58,7 +57,8 @@ class GanGame:
     def generatorLearning(self, fooled, noise):
         self.generator.backprop(eta, noise, fooled)
 
-    def generateImage(self, noise):
+    def generateImage(self):
+        noise  = generateNoise()
         Image = self.generator.net.compute(noise)
         return Image
 
