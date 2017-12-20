@@ -93,6 +93,15 @@ class MnistTest(Function):
         return r
 
 
+class MnistGanTest(Function):
+
+    def __init__(self, set_labels):
+        self._set_labels = set_labels
+
+    def out(self, x):
+        return 1
+
+
 class Norm2(Function):
 
     def __init__(self):
@@ -104,10 +113,11 @@ class Norm2(Function):
     def derivate(self, reference, x):
         return -2 * (reference - x)
 
+
 ##
-## @brief      Class for non saturant heuritic for GAN. 
-## Parameter x is useless, only for matching the neuronLayer class
-## (cf init_derivate_error function)
+# @brief      Class for non saturant heuritic for GAN. 
+# Parameter x is useless, only for matching the neuronLayer class
+# (cf init_derivate_error function)
 ##
 class NonSatHeuritic(Function):
 
