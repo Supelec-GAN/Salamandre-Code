@@ -13,24 +13,27 @@ class Network:
     #                                         en incluant le nombres d'entrées en position 0
     # @param      layers_activation_function  The layers activation function
     #
-    def __init__(self, layers_neuron_count, layers_activation_function, error_function):
+    def __init__(self, layers_neuron_count, layers_activation_function, error_function,
+                 learning_batch_size=1):
         self._layers_activation_function = layers_activation_function  # sauvegarde pour pouvoir reinitialiser
         self.layers_neuron_count = layers_neuron_count
         self._layers_count = np.size(layers_neuron_count) - 1
         self.error = error_function
+        self._learning_batch_size = learning_batch_size
         self._layers_list = np.array(
                             self._layers_count * [NeuronLayer(
-                                                        layers_activation_function[0],
-                                                        error_function
+                                                        self._layers_activation_function[0],
+                                                        self.error
                                                         )]
                             )
         for i in range(0, self._layers_count):
-            self._layers_list[i] = NeuronLayer(layers_activation_function[i],
+            self._layers_list[i] = NeuronLayer(self._layers_activation_function[i],
                                                self.error,
-                                               layers_neuron_count[i],
-                                               layers_neuron_count[i + 1]
+                                               self.layers_neuron_count[i],
+                                               self.layers_neuron_count[i + 1],
+                                               self._learning_batch_size
                                                )
-        self.output = np.zeros(layers_neuron_count[-1])
+        self.output = np.zeros(self.layers_neuron_count[-1])
 
     def reset(self):
         self._layers_list = np.array(
@@ -43,7 +46,8 @@ class Network:
             self._layers_list[i] = NeuronLayer(self._layers_activation_function[i],
                                                self.error,
                                                self.layers_neuron_count[i],
-                                               self.layers_neuron_count[i + 1]
+                                               self.layers_neuron_count[i + 1],
+                                               self._learning_batch_size
                                                )
         self.output = np.zeros(self.layers_neuron_count[-1])
     ##
