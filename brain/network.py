@@ -106,3 +106,13 @@ class Network:
                                                 self._layers_list[1].weights
                                                 )
             self._layers_list[0].backprop(out_influence, eta, input_layer)
+
+    def save_state(self):
+        """Permet de sauvegarder l'état du réseau, ainsi que ses paramètres"""
+        params = [self.layers_neuron_count, self._layers_activation_function, self.error]
+        coefs = []
+        for i in range(self._layers_count):
+            layer_coefs = [self._layers_list[i].weights, self._layers_list[i].bias]
+            coefs.append(layer_coefs)
+        state = [params, coefs]
+        return state
