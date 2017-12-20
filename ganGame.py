@@ -44,8 +44,8 @@ class GanGame:
     ##
     # @brief      discriminator learning what is fake image
     ##
-    def discriminatorLearningNegative(self, fake_image, noise):
-        self.discriminator.net.backprop(self.discriminator.eta, fake_image, noise)
+    def discriminatorLearningNegative(self, fake_image):
+        self.discriminator.net.backprop(self.discriminator.eta, fake_image, 0)
 
     ##
     # @brief      initiate backprop for generator
