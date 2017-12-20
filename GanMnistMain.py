@@ -5,6 +5,7 @@ from mnist import MNIST
 from engine import Engine
 from dataInterface import DataInterface
 from ganGame import GanGame
+import matplotlib.pyplot as plt
 
 
 """
@@ -26,6 +27,20 @@ training_size = param['training_size']
 testing_images = np.array(testing_images)
 testing_labels = np.array(testing_labels)
 testing_size = param['testing_size']
+
+not_sixes = []
+for i in range(len(training_images)):
+    if training_labels[i] != 6:
+        not_sixes += [i]
+training_images = np.delete(training_images, not_sixes)
+training_labels = np.delete(training_labels, not_sixes)
+
+not_sixes = []
+for i in range(len(testing_images)):
+    if testing_labels[i] != 6:
+        not_sixes += [i]
+testing_images = np.delete(testing_images, not_sixes)
+testing_labels = np.delete(testing_labels, not_sixes)
 
 learning_iterations = param['learning_iterations']
 test_period = param['test_period']
@@ -92,3 +107,6 @@ for i in range(play_number):
 image_test, associate_noise = ganGame.generateImage()
 
 print(image_test)
+plt.imshow(image_test, cmap='Greys',  interpolation='nearest')
+plt.savefig('blkwht.png')
+plt.show()
