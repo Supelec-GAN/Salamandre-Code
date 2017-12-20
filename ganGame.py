@@ -14,10 +14,11 @@ class GanGame:
     # @param      generator       The generator (will be a only a network object)
     # @param      learning_ratio  The learning ratio between discrimator and generator
     ##
-    def __init__(self, discriminator, generator, learning_ratio=1):
+    def __init__(self, discriminator, generator, eta_gen, learning_ratio=1):
         self.generator = generator
         self.discriminator = discriminator
         self.learning_ratio = learning_ratio
+        self.eta_gen = eta_gen
 
     ##
     # @brief      Execute a movement of the game, learning of dicriminator, then the generator
@@ -55,7 +56,7 @@ class GanGame:
     # @comment    The cost function will be initialize with the network.
     ##
     def generatorLearning(self, fooled, noise):
-        self.generator.backprop(eta, noise, fooled)
+        self.generator.backprop(self.eta_gen, noise, fooled)
 
     def generateImage(self):
         noise  = generateNoise()
