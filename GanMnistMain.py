@@ -32,14 +32,14 @@ not_sixes = []
 for i in range(len(training_images)):
     if training_labels[i] != 6:
         not_sixes += [i]
-training_images = np.delete(training_images, not_sixes)
+training_images = np.delete(training_images, not_sixes, axis=0)
 training_labels = np.delete(training_labels, not_sixes)
 
 not_sixes = []
 for i in range(len(testing_images)):
     if testing_labels[i] != 6:
         not_sixes += [i]
-testing_images = np.delete(testing_images, not_sixes)
+testing_images = np.delete(testing_images, not_sixes, axis=0)
 testing_labels = np.delete(testing_labels, not_sixes)
 
 learning_iterations = param['learning_iterations']
@@ -106,7 +106,8 @@ for i in range(play_number):
 
 image_test, associate_noise = ganGame.generateImage()
 
-print(image_test)
-plt.imshow(image_test, cmap='Greys',  interpolation='nearest')
+image = np.reshape(image_test, [28, 28])
+print(image)
+plt.imshow(image, cmap='Greys',  interpolation='nearest')
 plt.savefig('blkwht.png')
-plt.show()
+
