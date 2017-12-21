@@ -109,7 +109,10 @@ class Network:
 
     def save_state(self):
         """Permet de sauvegarder l'état du réseau, ainsi que ses paramètres"""
-        params = [self.layers_neuron_count, self._layers_activation_function, self.error]
+        saved_activation_functions = []
+        for f in self._layers_activation_function:
+            saved_activation_functions.append(f.save_fun())
+        params = [self.layers_neuron_count, saved_activation_functions, self.error.save_fun()]
         coefs = []
         for i in range(self._layers_count):
             layer_coefs = [self._layers_list[i].weights, self._layers_list[i].bias]
