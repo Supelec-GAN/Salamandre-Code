@@ -9,105 +9,90 @@ import matplotlib.pyplot as plt
 
 
 """
-Initialisation du Discriminateur, similaire au Mnist
+    Initialisation des données de Mnist
 """
-
 data_interface = DataInterface('GanMnist')
 
 param = data_interface.read_conf('config.ini', 'GanMnist')
 
 mndata = MNIST(param['file'])
+
 training_images, training_labels = mndata.load_training()
-testing_images, testing_labels = mndata.load_testing()
+training_images = np.array(training_images)/256
 
-training_images = np.array(training_images)
-training_labels = np.array(training_labels)
-training_size = param['training_size']
-
-testing_images = np.array(testing_images)
-testing_labels = np.array(testing_labels)
-testing_size = param['testing_size']
-
+"""
+    On ne conserve dans le set que les 6
+"""
 not_sixes = []
 for i in range(len(training_images)):
     if training_labels[i] != 6:
         not_sixes += [i]
 training_images = np.delete(training_images, not_sixes, axis=0)
-training_labels = np.delete(training_labels, not_sixes)
-
-not_sixes = []
-for i in range(len(testing_images)):
-    if testing_labels[i] != 6:
-        not_sixes += [i]
-testing_images = np.delete(testing_images, not_sixes, axis=0)
-testing_labels = np.delete(testing_labels, not_sixes)
-
-learning_iterations = param['learning_iterations']
-test_period = param['test_period']
-randomize_learning_set = param['learning_iterations']
-
-
-activation_funs = np.array(param['activation_funs'])
-error_fun = param['error_fun']
-
-net = Network(param['network_layers'], activation_funs, error_fun)
-
-eta = param['eta']
-
-
-training_fun = param['training_fun'](training_labels)
-testing_fun = param['testing_fun'](testing_labels)
-
-
-##
-# Il Faudrait supprimer ça et mettre plutot une fonction abstraite
-##
-def success_fun(o, eo):
-    omax = np.max(o)
-    if omax == np.dot(np.transpose(o), eo):
-        return 1
-    return 0
-
-discriminator = Engine(net,
-    eta,
-    training_images[0:training_size] / 256,
-    training_fun,
-    testing_images[0:testing_size] / 256,
-    testing_fun,
-    success_fun,
-    learning_iterations,
-    test_period,
-    randomize_learning_set
-    )
 
 
 """
 Initialisation du discriminator
 """
-generator_layers_neuron_count  = param['generator_network_layers']
+disc_learning_ratio = param['disc_learning_ratio']
+disc_fake_learning_ratio = param['disc_fake_learning_ratio']
+
+
+disc_activation_funs = np.array(param['disc_activation_funs'])
+disc_error_fun = param['disc_error_fun']
+
+discriminator = Network(param['disc_network_layers'], disc_activation_funs, disc_error_fun)
+
+eta_disc = param['eta_disc']
+
+
+training_fun = param['training_fun']()
+
+
+"""
+Initialisation du generator
+"""
+generator_layers_neuron_count = param['generator_network_layers']
 generator_layers_activation_function = np.array(param['generator_activation_funs'])
 generator_error_function = param['generator_error_fun']
 
 generator = Network(generator_layers_neuron_count, generator_layers_activation_function, generator_error_function)
 
+eta_gen = param['eta_gen']
 
-learning_ratio = param['learning_ratio']
+gen_learning_ratio = param['gen_learning_ratio']
 
-ganGame = GanGame(discriminator, generator, learning_ratio)
+
+"""
+initialisation de la partie
+"""
+
+ganGame = GanGame(discriminator, training_images, training_fun, generator, eta_gen, eta_disc, disc_learning_ratio, gen_learning_ratio, disc_fake_learning_ratio)
 
 play_number = param['play_number']
 
 
-
-discriminator_score = np.zeros(play_number)
+discriminator_real_score = []
+discriminator_fake_score = []
 
 for i in range(play_number):
-    discriminator_score[i] = ganGame.playAndLearn()
+    a, b = ganGame.testDiscriminatorLearning(1)
+    discriminator_real_score.append(a)
+    discriminator_fake_score.append(b)
+    ganGame.playAndLearn()
+a, b = ganGame.testDiscriminatorLearning(1)
+discriminator_real_score.append(a)
+discriminator_fake_score.append(b)
+
+data_interface.save(discriminator_real_score, 'discriminator_real_score')
+data_interface.save(discriminator_fake_score, 'discriminator_fake_score')
+
+plt.plot(discriminator_real_score)
+plt.plot(discriminator_fake_score)
+plt.show()
 
 image_test, associate_noise = ganGame.generateImage()
 
 image = np.reshape(image_test, [28, 28])
-print(image)
+
 plt.imshow(image, cmap='Greys',  interpolation='nearest')
 plt.savefig('blkwht.png')
-

@@ -81,6 +81,9 @@ class XorTest(Function):
         return self.maxi*((x > 0) ^ (y > 0)) - self.mini*(1-(x > 0) ^ (y > 0))
 
 
+##
+# @brief      Class for mnist test.
+##
 class MnistTest(Function):
 
     def __init__(self, set_labels):
@@ -93,15 +96,21 @@ class MnistTest(Function):
         return r
 
 
+##
+# @brief      Class for mnist gan test.
+##
 class MnistGanTest(Function):
 
-    def __init__(self, set_labels):
-        self._set_labels = set_labels
+    def __init__(self):
+        pass
 
     def out(self, x):
         return 1
 
 
+##
+# @brief      Class for normalize 2.
+##
 class Norm2(Function):
 
     def __init__(self):
@@ -119,7 +128,7 @@ class Norm2(Function):
 # Parameter x is useless, only for matching the neuronLayer class
 # (cf init_derivate_error function)
 ##
-class NonSatHeuritic(Function):
+class NonSatHeuristic(Function):
 
     def __init__(self):
         pass
