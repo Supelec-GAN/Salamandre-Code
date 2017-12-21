@@ -45,8 +45,33 @@ class DataInterface:
         data = np.loadtxt(self._name + '/' + filename, delimiter=',')
         return params, data
 
+    def load_old(self, filename):
+        param1, param2 = self.load_param_old(filename)
+        data = np.loadtxt(self._name + '/' + filename, delimiter=',')
+        return param1, param2, data
+
     ##
     # @brief      Read the parameters line of csv file
+    def load_param_old(self, filename):
+        file = open(self._name + '/' + filename)
+
+        first = file.readline()
+        second = file.readline()
+        lines = file.readlines()
+        last = lines[len(lines) - 1]
+        param_first = first.split('# ')[1].split('\n')[0] + second.split('# ')[1].split('\n')[0]
+        param_last = last.split('# ')[1].split('\n')[0]
+
+        params1 = param_first.split(' ')
+        params2 = (param_last.split('+')[-1].split('Network(')[-1].split('], '))
+        params2[0] = eval(params2[0] + ']')
+        params2[1] = eval(params2[1])
+        
+        params1 = list(filter(None, params1))
+        for i in range(len(params1)):
+            params1[i] = eval(params1[i])
+        return params1, params2
+
     def load_param(self, filename):
         file = open(self._name + '/' + filename)
         first = file.readline()
@@ -57,6 +82,7 @@ class DataInterface:
         for opt in params:
             param_dict[opt] = eval(params[opt])
         return param_dict
+        
 
     def read_conf(self, filename='config.ini', param='Mnist'):
         cfg = ConfigParser()
