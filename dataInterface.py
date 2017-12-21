@@ -103,7 +103,6 @@ class DataInterface:
 
         for opt in options:
             param_dict_str[opt] = cfg[param][opt]
-
         return str(param_dict_str)
 
     def load_conf(self, param_dict):

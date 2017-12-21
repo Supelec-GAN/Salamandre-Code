@@ -6,7 +6,7 @@ from errorGraphs import ErrorGraphs
 
 data_interface = DataInterface('Mnist_debug')
 
-param1, param2, data = data_interface.load_old("2017-11-02-112351_error_during_learning.csv")
+param1, param2, data = data_interface.load_old('2017-11-23-143508_error_during_learning.csv')
 print("param1", param1)
 print("param2", param2)
 

@@ -26,12 +26,14 @@ class ErrorGraphs:
             std = np.std(errors_during_learning, 0)
             errorbar = std / np.sqrt(len(errors_during_learning))
         plt.figure()
+        print(errorbar)
+        print("data", data[-1])
         plt.errorbar(np.arange(0,
                                len(errorbar)*self.test_period,
                                self.test_period
                                ),
                      data,
-                     yerr=np.ones(len(errorbar)),
+                     yerr=errorbar,
                      capthick = 1,
                      ecolor = 'k',
                      )
@@ -59,7 +61,7 @@ class ErrorGraphs:
                                self.test_period
                                ),
                      data,
-                     yerr=np.ones(len(errorbar)),
+                     yerr=errorbar,
                      capthick = 1,
                      ecolor = 'k',
                      )
