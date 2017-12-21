@@ -22,5 +22,8 @@ database/
 # doxygen file
 .idea/vcs.xml
 
-Config file
+# Config file
 *.ini
+
+# Image
+*.png
