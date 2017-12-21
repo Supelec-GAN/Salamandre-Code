@@ -15,7 +15,7 @@ class Network:
     #
     def __init__(self, layers_neuron_count, layers_activation_function, error_function):
         self._layers_activation_function = layers_activation_function  # sauvegarde pour pouvoir reinitialiser
-        self._layers_neuron_count = layers_neuron_count
+        self.layers_neuron_count = layers_neuron_count
         self._layers_count = np.size(layers_neuron_count) - 1
         self.error = error_function
         self._layers_list = np.array(
@@ -42,10 +42,10 @@ class Network:
         for i in range(0, self._layers_count):
             self._layers_list[i] = NeuronLayer(self._layers_activation_function[i],
                                                self.error,
-                                               self._layers_neuron_count[i],
-                                               self._layers_neuron_count[i + 1]
+                                               self.layers_neuron_count[i],
+                                               self.layers_neuron_count[i + 1]
                                                )
-        self.output = np.zeros(self._layers_neuron_count[-1])
+        self.output = np.zeros(self.layers_neuron_count[-1])
     ##
     # @brief      On calcule la sortie du réseau
     #
@@ -106,3 +106,16 @@ class Network:
                                                 self._layers_list[1].weights
                                                 )
             self._layers_list[0].backprop(out_influence, eta, input_layer)
+
+    def save_state(self):
+        """Permet de sauvegarder l'état du réseau, ainsi que ses paramètres"""
+        saved_activation_functions = []
+        for f in self._layers_activation_function:
+            saved_activation_functions.append(f.save_fun())
+        params = [self.layers_neuron_count, saved_activation_functions, self.error.save_fun()]
+        coefs = []
+        for i in range(self._layers_count):
+            layer_coefs = [self._layers_list[i].weights, self._layers_list[i].bias]
+            coefs.append(layer_coefs)
+        state = [params, coefs]
+        return state

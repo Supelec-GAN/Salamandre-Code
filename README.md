@@ -1,5 +1,6 @@
 # Salamandre-Mnist
-Projet de réseau de neurones s'intéressant à la banque de données MNST en Python
+Projet de réseau de neurones s'intéressant à la banque de données MNST en Python.
+Le projet à vocation à devenir un socle pour l'application des théories de génération de données par GAN
 
 -- 
 Utilisation du Réseau de Neuron pour MNIST.

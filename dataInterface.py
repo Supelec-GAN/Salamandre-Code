@@ -2,7 +2,7 @@ from time import gmtime, strftime
 import numpy as np
 import os
 from configparser import ConfigParser
-from fonction import Tanh, Sigmoid, XorTest, MnistTest, Norm2
+from fonction import *
 
 
 # @brief      Class for data interface.

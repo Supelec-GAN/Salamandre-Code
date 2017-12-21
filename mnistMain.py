@@ -11,6 +11,8 @@ data_interface = DataInterface('Mnist_debug')
 
 param = data_interface.read_conf()
 
+print(param)
+
 mndata = MNIST(param['file'])
 training_images, training_labels = mndata.load_training()
 testing_images, testing_labels = mndata.load_testing()
