@@ -29,6 +29,9 @@ class Function:
     def derivate(self, x, *args):
         return (self.out(x+self.delta)-self.out(x))/self.delta
 
+    def save_fun(self):
+        return ['Function', []]
+
 
 class Sigmoid(Function):
     """
@@ -43,6 +46,9 @@ class Sigmoid(Function):
 
     def derivate(self, x):
         return self.mu*np.exp(self.mu*x)/(np.power(1+np.exp(self.mu*x), 2))
+
+    def save_fun(self):
+        return ['Sigmoid', [self.mu]]
 
 
 class Tanh(Function):
@@ -59,6 +65,9 @@ class Tanh(Function):
 
     def derivate(self, x):
         return self.k*self.alpha/(np.power(np.cosh(self.alpha*x), 2))
+
+    def save_fun(self):
+        return ['Tanh', [self.k, self.alpha]]
 
 
 ##
@@ -80,6 +89,9 @@ class XorTest(Function):
     def out(self, x, y):
         return self.maxi*((x > 0) ^ (y > 0)) - self.mini*(1-(x > 0) ^ (y > 0))
 
+    def save_fun(self):
+        return ['XorTest', [self.mini, self.maxi]]
+
 
 class MnistTest(Function):
 
@@ -92,6 +104,9 @@ class MnistTest(Function):
         r = np.reshape(r, (10, 1))
         return r
 
+    def save_fun(self):
+        return ['MnistTest', [self._set_labels]]
+
 
 class MnistGanTest(Function):
 
@@ -100,6 +115,9 @@ class MnistGanTest(Function):
 
     def out(self, x):
         return 1
+
+    def save_fun(self):
+        return ['MnistGanTest', [self._set_labels]]
 
 
 class Norm2(Function):
@@ -112,6 +130,9 @@ class Norm2(Function):
 
     def derivate(self, reference, x):
         return -2 * (reference - x)
+
+    def save_fun(self):
+        return ['Norm2', []]
 
 
 ##
@@ -129,3 +150,6 @@ class NonSatHeuritic(Function):
 
     def derivate(self, reference, useless):
         return -0.5/reference
+
+    def save_fun(self):
+        return ['NonSatHeuritic', []]
