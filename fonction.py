@@ -30,7 +30,7 @@ class Function:
         return (self.out(x+self.delta)-self.out(x))/self.delta
 
     def save_fun(self):
-        return ['Function', []]
+        return 'Function()'
 
 
 class Sigmoid(Function):
@@ -48,7 +48,7 @@ class Sigmoid(Function):
         return self.mu*np.exp(self.mu*x)/(np.power(1+np.exp(self.mu*x), 2))
 
     def save_fun(self):
-        return ['Sigmoid', [self.mu]]
+        return 'Sigmoid({})'.format(self.mu)
 
 
 class Tanh(Function):
@@ -67,7 +67,7 @@ class Tanh(Function):
         return self.k*self.alpha/(np.power(np.cosh(self.alpha*x), 2))
 
     def save_fun(self):
-        return ['Tanh', [self.k, self.alpha]]
+        return 'Tanh({},{})'.format(self.k, self.alpha)
 
 
 ##
@@ -90,7 +90,7 @@ class XorTest(Function):
         return self.maxi*((x > 0) ^ (y > 0)) - self.mini*(1-(x > 0) ^ (y > 0))
 
     def save_fun(self):
-        return ['XorTest', [self.mini, self.maxi]]
+        return 'XorTest({], {})'.format(self.mini, self.maxi)
 
 
 class MnistTest(Function):
@@ -105,7 +105,7 @@ class MnistTest(Function):
         return r
 
     def save_fun(self):
-        return ['MnistTest', [self._set_labels]]
+        return 'MnistTest({})'.format(self._set_labels)
 
 
 class MnistGanTest(Function):
@@ -117,7 +117,7 @@ class MnistGanTest(Function):
         return 1
 
     def save_fun(self):
-        return ['MnistGanTest', [self._set_labels]]
+        return 'MnistGanTest({})'.format(self._set_labels)
 
 
 class Norm2(Function):
@@ -132,7 +132,7 @@ class Norm2(Function):
         return -2 * (reference - x)
 
     def save_fun(self):
-        return ['Norm2', []]
+        return 'Norm2()'
 
 
 ##
@@ -152,4 +152,4 @@ class NonSatHeuritic(Function):
         return -0.5/reference
 
     def save_fun(self):
-        return ['NonSatHeuritic', []]
+        return 'NonSatHeuritic()'
