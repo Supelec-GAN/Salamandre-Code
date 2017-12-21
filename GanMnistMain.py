@@ -11,14 +11,14 @@ import matplotlib.pyplot as plt
 """
     Initialisation des données de Mnist
 """
-data_interface = DataInterface('GanMnist')
+data_interface = DataInterface('GanMnist')  # Non du sous-dossier d'enregistrement des fichiers
 
-param = data_interface.read_conf('config.ini', 'GanMnist')
+param = data_interface.read_conf('config.ini', 'GanMnist')  # Lecture du fichier de config, dans la session [GanMnist]
 
-mndata = MNIST(param['file'])
+mndata = MNIST(param['file'])  # Import des fichier de Mnist (le paramètre indique l'emplacement)
 
-training_images, training_labels = mndata.load_training()
-training_images = np.array(training_images)/256
+training_images, training_labels = mndata.load_training()  
+training_images = np.array(training_images)/256  # Normalisation de l'image (pixel entre 0 et 1)
 
 """
     On ne conserve dans le set que les 6
@@ -33,8 +33,8 @@ training_images = np.delete(training_images, not_sixes, axis=0)
 """
 Initialisation du discriminator
 """
-disc_learning_ratio = param['disc_learning_ratio']
-disc_fake_learning_ratio = param['disc_fake_learning_ratio']
+disc_learning_ratio = param['disc_learning_ratio']  # Pour chaque partie, nombre d'apprentissage du discriminant sur image réelle
+disc_fake_learning_ratio = param['disc_fake_learning_ratio']  # Pour chaque partie, nombre d'apprentissage du discriminant sur image fausse, !!!  sans apprentissage du génerateur !!!
 
 
 disc_activation_funs = np.array(param['disc_activation_funs'])
@@ -45,7 +45,7 @@ discriminator = Network(param['disc_network_layers'], disc_activation_funs, disc
 eta_disc = param['eta_disc']
 
 
-training_fun = param['training_fun']()
+training_fun = param['training_fun']()  # Function donnant la réponse à une vrai image attendu (1 par défaut)
 
 
 """
@@ -59,7 +59,7 @@ generator = Network(generator_layers_neuron_count, generator_layers_activation_f
 
 eta_gen = param['eta_gen']
 
-gen_learning_ratio = param['gen_learning_ratio']
+gen_learning_ratio = param['gen_learning_ratio']  # Pour chaque partie, nombre d'apprentissage du discriminant sur image réelle
 
 
 """
@@ -68,31 +68,35 @@ initialisation de la partie
 
 ganGame = GanGame(discriminator, training_images, training_fun, generator, eta_gen, eta_disc, disc_learning_ratio, gen_learning_ratio, disc_fake_learning_ratio)
 
-play_number = param['play_number']
+play_number = param['play_number']  #N Nombre de partie  (Une partie = i fois apprentissage discriminateur sur vrai image, j fois apprentissage génerateur+ discriminateur et potentiellement k fois discriminateur avec fausse image
 
 
+"""
+Préparation de la sauvegarde des scores du discriminateur pour des vrais images et des images de synthèses
+"""
 discriminator_real_score = []
 discriminator_fake_score = []
 
-for i in range(play_number):
-    a, b = ganGame.testDiscriminatorLearning(1)
-    discriminator_real_score.append(a)
-    discriminator_fake_score.append(b)
-    ganGame.playAndLearn()
-a, b = ganGame.testDiscriminatorLearning(1)
+a, b = ganGame.testDiscriminatorLearning(10)  # Valeur pour le réseau vierge
 discriminator_real_score.append(a)
 discriminator_fake_score.append(b)
 
-data_interface.save(discriminator_real_score, 'discriminator_real_score')
+for i in range(play_number):
+    ganGame.playAndLearn()
+    a, b = ganGame.testDiscriminatorLearning(10)  # effectue n test et renvoie la moyenne des scores
+    discriminator_real_score.append(a)
+    discriminator_fake_score.append(b)
+
+data_interface.save(discriminator_real_score, 'discriminator_real_score')  #Sauvegarde des courbes de score
 data_interface.save(discriminator_fake_score, 'discriminator_fake_score')
 
-plt.plot(discriminator_real_score)
+plt.plot(discriminator_real_score)  # afichage des courbes
 plt.plot(discriminator_fake_score)
 plt.show()
 
-image_test, associate_noise = ganGame.generateImage()
+image_test, associate_noise = ganGame.generateImage()  # Generation d'une image à la fin de l'apprentissage
 
 image = np.reshape(image_test, [28, 28])
 
 plt.imshow(image, cmap='Greys',  interpolation='nearest')
-plt.savefig('blkwht.png')
+plt.savefig('blkwht.png')  # sauvgarde de l'image
