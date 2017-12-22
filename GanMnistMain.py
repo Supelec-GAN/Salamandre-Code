@@ -83,6 +83,8 @@ discriminator_fake_score.append(b)
 
 for i in range(play_number):
     ganGame.playAndLearn()
+    if i%100 == 0:
+        print(i)
     a, b = ganGame.testDiscriminatorLearning(10)  # effectue n test et renvoie la moyenne des scores
     discriminator_real_score.append(a)
     discriminator_fake_score.append(b)
@@ -90,9 +92,6 @@ for i in range(play_number):
 data_interface.save(discriminator_real_score, 'discriminator_real_score')  #Sauvegarde des courbes de score
 data_interface.save(discriminator_fake_score, 'discriminator_fake_score')
 
-plt.plot(discriminator_real_score)  # afichage des courbes
-plt.plot(discriminator_fake_score)
-plt.show()
 
 image_test, associate_noise = ganGame.generateImage()  # Generation d'une image à la fin de l'apprentissage
 
@@ -100,3 +99,8 @@ image = np.reshape(image_test, [28, 28])
 
 plt.imshow(image, cmap='Greys',  interpolation='nearest')
 plt.savefig('blkwht.png')  # sauvgarde de l'image
+
+plt.clf()
+plt.plot(discriminator_real_score)  # afichage des courbes
+plt.plot(discriminator_fake_score)
+plt.show()

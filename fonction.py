@@ -162,3 +162,26 @@ class NonSatHeuristic(Function):
 
     def save_fun(self):
         return 'NonSatHeuritic()'
+
+class CostFunction(Function):
+
+    def __init__(self):
+        pass
+
+    def out(self, reference, output):
+        if (reference == 1):
+            return -0.5*np.log(output)
+        else:
+            return 0.5*np.log(1 - output)
+
+    ##
+    # Reference est 1 si on donne une vrai image, 0 si c'est une image virtuelle
+    ##
+    def derivate(self, reference, output):
+        if(reference == 1):
+            return -0.5/output
+        else:
+            return +0.5/output
+
+    def save_fun(self):
+        return 'CostFunction()'

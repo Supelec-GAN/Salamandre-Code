@@ -36,7 +36,7 @@ class GanGame:
             self.discriminatorLearningVirt(fake_image)
 
         for k in range(self.disc_fake_learning_ratio):
-            fake_image = self.generatorLearning()
+            fake_image = self.generateImage()
             self.discriminatorLearningVirt(fake_image)
 
         return 0
