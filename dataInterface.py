@@ -66,7 +66,7 @@ class DataInterface:
         params2 = (param_last.split('+')[-1].split('Network(')[-1].split('], '))
         params2[0] = eval(params2[0] + ']')
         params2[1] = eval(params2[1])
-        
+
         params1 = list(filter(None, params1))
         for i in range(len(params1)):
             params1[i] = eval(params1[i])
@@ -83,7 +83,6 @@ class DataInterface:
             param_dict[opt] = eval(params[opt])
         return param_dict
         
-
     def read_conf(self, filename='config.ini', param='Mnist'):
         cfg = ConfigParser()
         cfg.read(filename)
@@ -110,3 +109,17 @@ class DataInterface:
             param_dict[key] = eval(param_dict[key])
 
         return param_dict
+
+    def save_img_black(image, img_name, x_size=28, y_size=28):
+
+        save_date = strftime('%Y-%m-%d-%H%M%S', gmtime())
+        # create directory if it doesn't exist
+        if not os.path.exists(self._name):
+            os.mkdir(self._name)
+            if not os.path.exists(self._name + '/Images'):
+                os.mkdir(self._name + '/Images')
+
+        image = np.reshape(image_test, [x_size, y_size])
+        plt.imshow(image, cmap='Greys',  interpolation='nearest')
+        plt.savefig(self.name + '/Images/' + save_date + '_imagede_' + img_name + '.png')  # sauvgarde de l'image
+
