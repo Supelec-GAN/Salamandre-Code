@@ -181,7 +181,7 @@ class CostFunction(Function):
         if(reference == 1):
             return -0.5/output
         else:
-            return -0.5/output
+            return +0.5/(1-output)
 
     def save_fun(self):
         return 'CostFunction()'
