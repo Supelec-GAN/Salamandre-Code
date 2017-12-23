@@ -9,7 +9,7 @@ class NeuronLayer:
         # Matrice de dimension q*p avec le nombre de sortie et p le nombre d'entrée
         self._input_size = input_size
         self._output_size = output_size
-        self._weights = np.transpose(np.random.randn(input_size, output_size))
+        self.weights = np.transpose(np.random.randn(input_size, output_size))
         self._bias = np.zeros((output_size, 1))            # Vecteur colonne
         self._activation_function = activation_function
         # self.error = error_function
@@ -20,15 +20,15 @@ class NeuronLayer:
     @property
     def weights(self):
         """Get the current weights."""
-        return self._weights
+        return self.weights
 
     @weights.setter
-    def weights(self, new_weights):
-        self._weights = new_weights
+    def weights(self, newweights):
+        self.weights = newweights
 
     @weights.deleter
     def weights(self):
-        del self._weights
+        del self.weights
 
     @property
     def bias(self):
@@ -49,7 +49,7 @@ class NeuronLayer:
     # @param      inputs  Inputs
 
     def compute(self, inputs):
-        self.activation_levels = np.dot(self._weights, inputs) - self._bias
+        self.activation_levels = np.dot(self.weights, inputs) - self._bias
         self.output = self._activation_function.out(self.activation_levels)
         return self.output
 
@@ -65,13 +65,13 @@ class NeuronLayer:
     def backprop(self, out_influence, eta, input_layer):
         weight_influence = self.calculate_weight_influence(
             input_layer, out_influence)
-        self.update_weights(eta, weight_influence)
+        self.updateweights(eta, weight_influence)
 
         bias_influence = self.calculate_bias_influence(out_influence)
         self.update_bias(eta, bias_influence)
 
-    def update_weights(self, eta, weight_influence):
-        self._weights = self._weights - eta * weight_influence
+    def updateweights(self, eta, weight_influence):
+        self.weights = self.weights - eta * weight_influence
 
     def update_bias(self, eta, bias_influence):
         self._bias = self._bias + eta * bias_influence
@@ -99,9 +99,9 @@ class NeuronLayer:
     #
     # @return     the error used in the recursive formula
     #
-    def derivate_error(self, out_influence, next_weights):
+    def derivate_error(self, out_influence, nextweights):
         deriv_vector = self._activation_function.derivate(self.activation_levels)
-        return deriv_vector * np.dot(np.transpose(next_weights), out_influence)
+        return deriv_vector * np.dot(np.transpose(nextweights), out_influence)
 
     ##
     # @brief      Initiate the error derivation
