@@ -27,7 +27,7 @@ not_sixes = []
 for i in range(len(training_images)):
     if training_labels[i] != 6:
         not_sixes += [i]
-training_images = np.delete(training_images, not_sixes, axis=0)
+training_images = np.delete(training_images, not_sixes, axis=0) #A proprifier plus tard, c'est pas opti le delete
 
 
 """
@@ -97,10 +97,13 @@ image_test, associate_noise = ganGame.generateImage()  # Generation d'une image 
 
 image = np.reshape(image_test, [28, 28])
 
-plt.imshow(image, cmap='Greys',  interpolation='nearest')
-plt.savefig('blkwht.png')  # sauvgarde de l'image
+np.savetxt(image) #sauvegarde bourrine ça reste facile à reconvertir sur Excel
+
+plt.imshow(image, cmap='Greys',  interpolation='nearest') #NE MARCHE PAS SUR UNE VM, S'ARRETER ICI POUR LES TESTS VM
+plt.savefig('blkwht.png')  # sauvegarde de l'image
 
 plt.clf()
 plt.plot(discriminator_real_score)  # afichage des courbes
 plt.plot(discriminator_fake_score)
 plt.show()
+
