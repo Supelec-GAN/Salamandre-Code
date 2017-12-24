@@ -62,17 +62,15 @@ class Network:
             self.layers_list[i].compute(self.layers_list[i - 1].output)
         return self.layers_list[-1].output
 
-    # @staticmethod
-    # ##
-    # # @brief      Calcul d'erreur quadratique
-    # #
-    # # @param      x  la sortie à comparer
-    # # @param      reference  The reference
-    # #
-    # # @return     norme2 de la différence de vecteur
-    # #
-    # def error(x, reference):
-    #     return np.linalg.norm(x - reference)
+    
+    ##
+    # @brief      Calcul d'erreur quadratique
+    #
+    # @param      x  la sortie à comparer
+    # @param      reference  The reference
+    #
+    # @return     norme2 de la différence de vecteur
+    #
 
     def backprop(self, eta, inputs, reference):
         inputs = np.reshape(inputs, (len(inputs), 1))
@@ -106,6 +104,50 @@ class Network:
                                                 self.layers_list[1].weights
                                                 )
             self.layers_list[0].backprop(out_influence, eta, input_layer)
+        return out_influence
+
+    ##
+    ## @brief      { function_description }
+    ##
+    ## @param      self       The object
+    ## @param      eta        The eta
+    ## @param      inputs     The inputs
+    ## @param      reference  The reference
+    ##
+    ## @return     { description_of_the_return_value }
+    ##
+    def no_update_backprop(self, eta, inputs, reference):
+        inputs = np.reshape(inputs, (len(inputs), 1))
+        n = self._layers_count
+        # Si l'entrée et la sortie sont la même couche
+        if n == 1:
+            input_layer = inputs
+        else:
+            input_layer = self.layers_list[-2].output
+
+        # On commence par la couche de sortie, avec initialisation de l'influence de la sortie
+        out_influence = self.layers_list[n-1].no_update_init_derivate_error(reference)
+        next_weights = self.layers_list[n-1].no_update_backprop(out_influence, eta, input_layer)
+
+        # On remonte la propagation jusqu'à la 2ème couche (si elle existe)
+        for i in range(n-2, 0, -1):
+            input_layer = self.layers_list[i - 1].output
+
+            out_influence = self.layers_list[i].derivate_error(
+                                                out_influence,
+                                                next_weights
+                                                )
+            next_weights = self.layers_list[i].no_update_backprop(out_influence, eta, input_layer)
+
+        # On s'occupe de la couche d'entrée (si différente de couche de sortie)
+        if n > 1:
+            input_layer = inputs
+
+            out_influence = self.layers_list[0].derivate_error(
+                                                out_influence,
+                                                next_weights
+                                                )
+            self.layers_list[0].no_update_backprop(out_influence, eta, input_layer)
         return out_influence
 
     def save_state(self):

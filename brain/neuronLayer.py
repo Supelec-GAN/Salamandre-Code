@@ -1,11 +1,11 @@
 import numpy as np
-from fonction import Sigmoid, MnistTest, Norm2
+from fonction import Sigmoid, MnistTest, Norm2, NonSatHeuristic
 
 
 class NeuronLayer:
     """Classe permettant de créer une couche de neurones"""
 
-    def __init__(self, activation_function, error_function, input_size=1, output_size=1):
+    def __init__(self, activation_function, error_function, input_size=1, output_size=1, error_function_gen=NonSatHeuristic()):
         # Matrice de dimension q*p avec le nombre de sortie et p le nombre d'entrée
         self._input_size = input_size
         self._output_size = output_size
@@ -16,19 +16,20 @@ class NeuronLayer:
         self.activation_levels = np.zeros((output_size, 1))  # Vecteur colonne
         self.output = np.zeros((output_size, 1))             # Vecteur colonne
         self.error = error_function
+        self.error_gen = error_function_gen
 
-    @property
-    def weights(self):
-        """Get the current weights."""
-        return self.weights
+    # @property
+    # def weights(self):
+    #     """Get the current weights."""
+    #     return self.weights
 
-    @weights.setter
-    def weights(self, newweights):
-        self.weights = newweights
+    # @weights.setter
+    # def weights(self, newweights):
+    #     self.weights = newweights
 
-    @weights.deleter
-    def weights(self):
-        del self.weights
+    # @weights.deleter
+    # def weights(self):
+    #     del self.weights
 
     @property
     def bias(self):
@@ -70,6 +71,14 @@ class NeuronLayer:
         bias_influence = self.calculate_bias_influence(out_influence)
         self.update_bias(eta, bias_influence)
 
+    def no_update_backprop(self, out_influence, eta, input_layer):
+        weight_influence = self.calculate_weight_influence(
+            input_layer, out_influence)
+
+        bias_influence = self.calculate_bias_influence(out_influence)
+        new_weight = self.weights - eta * weight_influence
+        return new_weight
+
     def updateweights(self, eta, weight_influence):
         self.weights = self.weights - eta * weight_influence
 
@@ -99,9 +108,9 @@ class NeuronLayer:
     #
     # @return     the error used in the recursive formula
     #
-    def derivate_error(self, out_influence, nextweights):
+    def derivate_error(self, out_influence, next_weights):
         deriv_vector = self._activation_function.derivate(self.activation_levels)
-        return deriv_vector * np.dot(np.transpose(nextweights), out_influence)
+        return deriv_vector * np.dot(np.transpose(next_weights), out_influence)
 
     ##
     # @brief      Initiate the error derivation
@@ -113,3 +122,10 @@ class NeuronLayer:
     def init_derivate_error(self, reference):
         deriv_vector = self._activation_function.derivate(self.activation_levels)
         return deriv_vector * self.error.derivate(reference, self.output)
+
+    ##
+    # @brief      Initialisation avec la fonction de coût pour le générateur dans le cas du GAN
+    ##
+    def no_update_init_derivate_error(self, reference):
+        deriv_vector = self._activation_function.derivate(self.activation_levels)
+        return deriv_vector * self.error_gen.derivate(reference, self.output)

@@ -1,5 +1,6 @@
 from time import gmtime, strftime
 import numpy as np
+import matplotlib.pyplot as plt
 import os
 from configparser import ConfigParser
 from fonction import *
@@ -110,16 +111,16 @@ class DataInterface:
 
         return param_dict
 
-    def save_img_black(image, img_name, x_size=28, y_size=28):
+    def save_img_black(self, image, img_name, x_size=28, y_size=28):
 
         save_date = strftime('%Y-%m-%d-%H%M%S', gmtime())
         # create directory if it doesn't exist
         if not os.path.exists(self._name):
             os.mkdir(self._name)
-            if not os.path.exists(self._name + '/Images'):
-                os.mkdir(self._name + '/Images')
+        if not os.path.exists(self._name + '/Images'):
+            os.mkdir(self._name + '/Images')
 
-        image = np.reshape(image_test, [x_size, y_size])
+        image = np.reshape(image, [x_size, y_size])
         plt.imshow(image, cmap='Greys',  interpolation='nearest')
-        plt.savefig(self.name + '/Images/' + save_date + '_imagede_' + img_name + '.png')  # sauvgarde de l'image
+        plt.savefig(self._name + '/Images/' + save_date + '_imagede_' + img_name + '.png')  # sauvgarde de l'image
 
