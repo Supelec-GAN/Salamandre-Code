@@ -5,6 +5,7 @@ from mnist import MNIST
 from engine import Engine
 from dataInterface import DataInterface
 from ganGame import GanGame
+from ganPlot import GanPlot
 import matplotlib.pyplot as plt
 
 
@@ -19,15 +20,16 @@ mndata = MNIST(param['file'])  # Import des fichier de Mnist (le paramètre indi
 
 training_images, training_labels = mndata.load_training()  
 training_images = np.array(training_images)/256  # Normalisation de l'image (pixel entre 0 et 1)
+number_to_draw = param['number_to_draw']
 
 """
-    On ne conserve dans le set que les 6
+    On ne conserve dans le set que les 'number_to_draw' du config
 """
-not_sixes = []
+not_right_nb = []
 for i in range(len(training_images)):
-    if training_labels[i] != 6:
-        not_sixes += [i]
-training_images = np.delete(training_images, not_sixes, axis=0) #A proprifier plus tard, c'est pas opti le delete
+    if training_labels[i] != number_to_draw:
+        not_right_nb += [i]
+training_images = np.delete(training_images, not_right_nb, axis=0) #A proprifier plus tard, c'est pas opti le delete
 
 
 """
@@ -70,12 +72,14 @@ ganGame = GanGame(discriminator, training_images, training_fun, generator, eta_g
 
 play_number = param['play_number']  #N Nombre de partie  (Une partie = i fois apprentissage discriminateur sur vrai image, j fois apprentissage génerateur+ discriminateur et potentiellement k fois discriminateur avec fausse image
 
+gan_plot = GanPlot('SalamandreGan', number_to_draw, play_number)
 
 """
 Préparation de la sauvegarde des scores du discriminateur pour des vrais images et des images de synthèses
 """
 discriminator_real_score = []
 discriminator_fake_score = []
+test_period = param['test_period']
 
 a, b = ganGame.testDiscriminatorLearning(10)  # Valeur pour le réseau vierge
 discriminator_real_score.append(a)
@@ -83,11 +87,10 @@ discriminator_fake_score.append(b)
 
 for i in range(play_number):
     ganGame.playAndLearn()
-    if i%100 == 0:
-        print(i)
-    a, b = ganGame.testDiscriminatorLearning(10)  # effectue n test et renvoie la moyenne des scores
-    discriminator_real_score.append(a)
-    discriminator_fake_score.append(b)
+    if i % test_period == 0:
+        a, b = ganGame.testDiscriminatorLearning(10)  # effectue n test et renvoie la moyenne des scores
+        discriminator_real_score.append(a)
+        discriminator_fake_score.append(b)
 
 data_interface.save(discriminator_real_score, 'discriminator_real_score')  #Sauvegarde des courbes de score
 data_interface.save(discriminator_fake_score, 'discriminator_fake_score')
@@ -95,15 +98,11 @@ data_interface.save(discriminator_fake_score, 'discriminator_fake_score')
 
 image_test, associate_noise = ganGame.generateImage()  # Generation d'une image à la fin de l'apprentissage
 
-image = np.reshape(image_test, [28, 28])
+gan_plot.save(image_test)
 
-np.savetxt(image) #sauvegarde bourrine ça reste facile à reconvertir sur Excel
 
-plt.imshow(image, cmap='Greys',  interpolation='nearest') #NE MARCHE PAS SUR UNE VM, S'ARRETER ICI POUR LES TESTS VM
-plt.savefig('blkwht.png')  # sauvegarde de l'image
-
-plt.clf()
-plt.plot(discriminator_real_score)  # afichage des courbes
+gan_plot.plot(image_test) # afichage des courbes, commentez à partir de là pour lancement sur VM
+plt.plot(discriminator_real_score)
 plt.plot(discriminator_fake_score)
 plt.show()
 
