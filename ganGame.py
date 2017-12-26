@@ -64,6 +64,7 @@ class GanGame:
     def discriminatorLearningReal(self):
         real_item = self.learning_set[np.random.randint(self.set_size)]  # generate  a random item from the set
         expected_output = self.learning_fun.out(real_item)
+        self.discriminator.compute(real_item)
         self.discriminator.backprop(self.eta_disc, real_item, expected_output)
 
         return 0
@@ -72,6 +73,7 @@ class GanGame:
     # @brief      discriminator learning what is fake image
     ##
     def discriminatorLearningVirt(self, fake_image):
+        self.discriminator.compute(fake_image)
         self.discriminator.backprop(self.eta_disc, fake_image, 0)
 
         return 0
