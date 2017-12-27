@@ -155,6 +155,8 @@ class Network:
         saved_activation_functions = []
         for f in self._layers_activation_function:
             saved_activation_functions.append(f.save_fun())
+        saved_activation_functions = str(saved_activation_functions).replace("'", "")   # permet
+        # d'avoir "[Sigmoid(mu), ...]", à la place de "['Sigmoid(mu)', ...]"
         params = [self.layers_neuron_count, saved_activation_functions, self.error.save_fun()]
         coefs = []
         for i in range(self._layers_count):
