@@ -187,7 +187,7 @@ class CostFunction(Function):
         return 'CostFunction()'
         
 
-class generatorError(Function):
+class GeneratorError(Function):
 
     def __init__(self):
         pass
