@@ -199,3 +199,6 @@ class generatorError(Function):
         out_influence = reference[0]
         next_weights = reference[1]
         return np.dot(np.transpose(next_weights), out_influence)
+
+    def save_fun(self):
+        return 'generatorError()'
