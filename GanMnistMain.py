@@ -75,7 +75,7 @@ play_number = param['play_number']  #N Nombre de partie  (Une partie = i fois ap
 gan_plot = GanPlot('SalamandreGan', number_to_draw, play_number)
 
 """
-Préparation de la sauvegarde des scores du discriminateur pour des vrais images et des images de synthèses
+Préparation de la sauvegarde des scores du discriminateur pour des vraies images et des images de synthèse
 """
 discriminator_real_score = []
 discriminator_fake_score = []
@@ -97,7 +97,6 @@ image_evolution_number = play_number//10
 
 for i in range(play_number):
     ganGame.playAndLearn()
-    if i % test_period == 0:
     a, b, c, d = ganGame.testDiscriminatorLearning(10)  # effectue n test et renvoie la moyenne des scores
     discriminator_real_score.append(a)
     discriminator_fake_score.append(b)
@@ -105,7 +104,7 @@ for i in range(play_number):
     fake_std.append(d)
     if i % image_evolution_number == 0:
         image, associate_noise = ganGame.generateImage()  # Generation d'une image à la fin de l'apprentissage
-        data_interface.save_img_black(image, "6_au_rang_" + str(i))
+        gan_plot.save(image, str(number_to_draw) + "_au_rang_" + str(i))
 
 image_test, associate_noise = ganGame.generateImage()  # Generation d'une image à la fin de l'apprentissage
 
@@ -122,4 +121,4 @@ gan_plot.plot(image_test) # afichage des courbes, commentez à partir de là pou
 plt.plot(discriminator_real_score)
 plt.plot(discriminator_fake_score)
 plt.savefig("GanMnist_score_evolution")
-plt.
+
