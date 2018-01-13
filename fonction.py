@@ -172,7 +172,7 @@ class CostFunction(Function):
         if (reference == 1):
             return -0.5*np.log(output)
         else:
-            return 0.5*np.log(1 - output)
+            return -0.5*np.log(1 - output)
 
     ##
     # Reference est 1 si on donne une vrai image, 0 si c'est une image virtuelle
@@ -185,3 +185,20 @@ class CostFunction(Function):
 
     def save_fun(self):
         return 'CostFunction()'
+        
+
+class GeneratorError(Function):
+
+    def __init__(self):
+        pass
+
+    def out(self, reference, output):
+        return 0
+
+    def derivate(self, reference, output):
+        out_influence = reference[0]
+        next_weights = reference[1]
+        return np.dot(np.transpose(next_weights), out_influence)
+
+    def save_fun(self):
+        return 'generatorError()'

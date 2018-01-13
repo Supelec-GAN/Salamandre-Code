@@ -80,29 +80,46 @@ Préparation de la sauvegarde des scores du discriminateur pour des vrais images
 discriminator_real_score = []
 discriminator_fake_score = []
 test_period = param['test_period']
+real_std = []
+fake_std = []
 
-a, b = ganGame.testDiscriminatorLearning(10)  # Valeur pour le réseau vierge
+# for i in range(10):
+#     image, associate_noise = ganGame.generateImage()  #Generation d'une image à la fin de l'apprentissage
+#     data_interface.save_img_black(image, "6_1_au_rang_" + str(i))
+
+
+a, b, c, d = ganGame.testDiscriminatorLearning(10)  # Valeur pour le réseau vierge
 discriminator_real_score.append(a)
 discriminator_fake_score.append(b)
+real_std.append(c)
+fake_std.append(d)
+image_evolution_number = play_number//10
 
 for i in range(play_number):
     ganGame.playAndLearn()
     if i % test_period == 0:
-        a, b = ganGame.testDiscriminatorLearning(10)  # effectue n test et renvoie la moyenne des scores
-        discriminator_real_score.append(a)
-        discriminator_fake_score.append(b)
-
-data_interface.save(discriminator_real_score, 'discriminator_real_score')  #Sauvegarde des courbes de score
-data_interface.save(discriminator_fake_score, 'discriminator_fake_score')
-
+    a, b, c, d = ganGame.testDiscriminatorLearning(10)  # effectue n test et renvoie la moyenne des scores
+    discriminator_real_score.append(a)
+    discriminator_fake_score.append(b)
+    real_std.append(c)
+    fake_std.append(d)
+    if i % image_evolution_number == 0:
+        image, associate_noise = ganGame.generateImage()  # Generation d'une image à la fin de l'apprentissage
+        data_interface.save_img_black(image, "6_au_rang_" + str(i))
 
 image_test, associate_noise = ganGame.generateImage()  # Generation d'une image à la fin de l'apprentissage
 
+
 gan_plot.save(image_test)
 
+conf = data_interface.save_conf('config.ini', 'GanMnist')  # récupération de la configuration pour la sauvegarde dans les fichiers
+data_interface.save(discriminator_real_score, 'discriminator_real_score', conf)  # Sauvegarde des courbes de score
+data_interface.save(discriminator_fake_score, 'discriminator_fake_score', conf)
+data_interface.save(real_std, 'real_std', conf)  # Sauvegarde des courbes de score
+data_interface.save(fake_std, 'fake_std', conf)
 
 gan_plot.plot(image_test) # afichage des courbes, commentez à partir de là pour lancement sur VM
 plt.plot(discriminator_real_score)
 plt.plot(discriminator_fake_score)
-plt.show()
-
+plt.savefig("GanMnist_score_evolution")
+plt.

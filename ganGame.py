@@ -46,11 +46,15 @@ class GanGame:
         fake_trust = []
         for i in range(n):
             real_item = self.learning_set[np.random.randint(self.set_size)]
-            real_trust.append(self.testTruth(real_item))
+            real_score = self.testTruth(real_item)
+            
+            real_trust.append(real_score)
         for j in range(n):
             fake_image, noise = self.generateImage()
-            fake_trust.append(self.testTruth(fake_image))
-        return np.mean(real_trust), np.mean(fake_trust)
+            fake_score = self.testTruth(fake_image)
+            
+            fake_trust.append(fake_score)
+        return np.mean(real_trust), np.mean(fake_trust), np.std(real_trust), np.std(fake_trust)
 
 
 
@@ -59,8 +63,8 @@ class GanGame:
     ##
     def discriminatorLearningReal(self):
         real_item = self.learning_set[np.random.randint(self.set_size)]  # generate  a random item from the set
-        self.discriminator.compute(real_item)
         expected_output = self.learning_fun.out(real_item)
+        self.discriminator.compute(real_item)
         self.discriminator.backprop(self.eta_disc, real_item, expected_output)
 
         return 0
@@ -69,6 +73,7 @@ class GanGame:
     # @brief      discriminator learning what is fake image
     ##
     def discriminatorLearningVirt(self, fake_image):
+        self.discriminator.compute(fake_image)
         self.discriminator.backprop(self.eta_disc, fake_image, 0)
 
         return 0
@@ -83,8 +88,8 @@ class GanGame:
     def generatorLearning(self):
         fake_image, noise = self.generateImage()
         fooled = self.testTruth(fake_image)
-
-        self.generator.backprop(self.eta_gen, noise, fooled)
+        disc_error_influence = self.discriminator.no_update_backprop(self.eta_gen, fake_image, 1)
+        self.generator.backprop(self.eta_gen, noise, [disc_error_influence, self.discriminator.layers_list[0].weights])
 
         return fake_image
 
