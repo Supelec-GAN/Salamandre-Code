@@ -1,9 +1,10 @@
-import matplotlib.plyplot as plt
+import matplotlib.pyplot as plt
 import os
 from time import gmtime, strftime
 import numpy as np
 
-class GanPlot :
+
+class GanPlot:
 
     def __init__(self, name, number_to_draw, nb_plays):
         self._name = name
