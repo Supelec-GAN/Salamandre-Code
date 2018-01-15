@@ -123,7 +123,7 @@ class MnistGanTest(Function):
         return 1
 
     def save_fun(self):
-        return 'MnistGanTest({})'.format(self._set_labels)
+        return 'MnistGanTest()'
 
 
 ##
