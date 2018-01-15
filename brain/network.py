@@ -151,7 +151,14 @@ class Network:
         return out_influence
 
     def save_state(self):
-        """Permet de sauvegarder l'état du réseau, ainsi que ses paramètres"""
+        """
+        Permet de sauvegarder l'état du réseau, ainsi que ses paramètres
+
+        Renvoie un tuple (paramètres, poids/biais). Les paramètres sont dans le même ordre que
+        pour la création d'un Network. Les poids/biais sont une liste de tuple (poids,
+        biais) correspondant au couche successives.
+        """
+
         saved_activation_functions = []
         for f in self._layers_activation_function:
             saved_activation_functions.append(f.save_fun())
@@ -160,7 +167,7 @@ class Network:
         params = [self.layers_neuron_count, saved_activation_functions, self.error.save_fun()]
         coefs = []
         for i in range(self._layers_count):
-            layer_coefs = [self.layers_list[i].weights, self.layers_list[i].bias]
+            layer_coefs = (self.layers_list[i].weights, self.layers_list[i].bias)
             coefs.append(layer_coefs)
         state = [params, coefs]
         return state
