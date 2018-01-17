@@ -21,14 +21,14 @@ mndata = MNIST(param['file'])  # Import des fichier de Mnist (le paramètre indi
 
 training_images, training_labels = mndata.load_training()  
 training_images = np.array(training_images)/256  # Normalisation de l'image (pixel entre 0 et 1)
-number_to_draw = param['number_to_draw']
+numbers_to_draw = param['numbers_to_draw']
 
 """
-    On ne conserve dans le set que les 'number_to_draw' du config
+    On ne conserve dans le set que les 'numbers_to_draw' du config
 """
 not_right_nb = []
 for i in range(len(training_images)):
-    if training_labels[i] != number_to_draw:
+    if training_labels[i] in numbers_to_draw:
         not_right_nb += [i]
 
 training_images = np.delete(training_images, not_right_nb, axis=0) # A proprifier plus tard,
@@ -91,7 +91,7 @@ play_number = param['play_number']  # Nombre de partie  (Une partie = i fois app
 # discriminateur sur vrai image, j fois apprentissage génerateur+ discriminateur et
 # potentiellement k fois discriminateur avec fausse image
 
-gan_plot = GanPlot('SalamandreGan', number_to_draw, play_number)
+gan_plot = GanPlot('SalamandreGan', numbers_to_draw, play_number)
 
 """
 Préparation de la sauvegarde des scores du discriminateur pour des vrais images et des images de 
@@ -122,12 +122,12 @@ for i in range(play_number):
     if i % image_evolution_number == 0:
         image, associate_noise = ganGame.generateImage()  # Generation d'une image à la fin de
         # l'apprentissage
-        gan_plot.save(image, str(number_to_draw) + "_au_rang_" + str(i))
+        gan_plot.save(image, str(numbers_to_draw) + "_au_rang_" + str(i))
 
 image_test, associate_noise = ganGame.generateImage()  # génération d'une image à la fin de
 # l'apprentissage
 
-gan_plot.save(image_test, str(number_to_draw))
+gan_plot.save(image_test, str(numbers_to_draw))
 
 conf = data_interface.save_conf('config.ini', 'GanMnist')  # récupération de la configuration
 # pour la sauvegarde dans les fichiers
