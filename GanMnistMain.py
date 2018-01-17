@@ -30,7 +30,7 @@ number_to_draw = param['number_to_draw']
 """
 not_right_nb = []
 for i in range(len(training_images)):
-    if training_labels[i] != 6:
+    if training_labels[i] != number_to_draw:
         not_right_nb += [i]
 
 training_images = np.delete(training_images, not_right_nb, axis=0)  # A proprifier plus tard,
@@ -115,7 +115,7 @@ discriminator_real_score.append(a)
 discriminator_fake_score.append(b)
 real_std.append(c)
 fake_std.append(d)
-image_evolution_number = play_number//10
+image_evolution_number = play_number//100
 
 for i in range(play_number):
     ganGame.playAndLearn()

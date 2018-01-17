@@ -73,7 +73,6 @@ class GanGame:
     # @brief      discriminator learning what is fake image
     ##
     def discriminatorLearningVirt(self, fake_image):
-        self.discriminator.compute(fake_image)
         self.discriminator.backprop(self.eta_disc, fake_image, 0)
 
         return 0
@@ -88,7 +87,7 @@ class GanGame:
     def generatorLearning(self):
         fake_image, noise = self.generateImage()
         fooled = self.testTruth(fake_image)
-        disc_error_influence = self.discriminator.no_update_backprop(self.eta_gen, fake_image, 1)
+        disc_error_influence = self.discriminator.no_update_backprop(self.eta_gen, fake_image, fooled)
         self.generator.backprop(self.eta_gen, noise, [disc_error_influence, self.discriminator.layers_list[0].weights])
 
         return fake_image
