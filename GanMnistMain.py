@@ -102,22 +102,16 @@ discriminator_fake_score = []
 real_std = []
 fake_std = []
 
-# for i in range(10):
-#     image, associate_noise = ganGame.generateImage()  # Generation d'une image à la fin de
-# l'apprentissage
-# data_interface.save_img_black(image, "6_1_au_rang_" + str(i))
-
-
 a, b, c, d = ganGame.testDiscriminatorLearning(10)  # Valeur pour le réseau vierge
 discriminator_real_score.append(a)
 discriminator_fake_score.append(b)
 real_std.append(c)
 fake_std.append(d)
-image_evolution_number = play_number//10
+image_evolution_number = play_number//100
 
 for i in range(play_number):
     ganGame.playAndLearn()
-    if i % 100 == 0:
+    if i % 1000 == 0:
         print(i)
     a, b, c, d = ganGame.testDiscriminatorLearning(10)  # effectue n test et renvoie la moyenne
     # des scores

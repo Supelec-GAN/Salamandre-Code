@@ -23,7 +23,8 @@ class GanPlot:
         plt.title('Tentative du GAN de générer un ' + str(self.number_to_draw) + 'après '+ str(self.nb_plays)+'parties')
         save_date = strftime('%Y-%m-%d-%H%M%S', gmtime())
         plt.savefig(self._name + '/Images/' + save_date + '_imagede_' + img_name + '.png')  # sauvgarde de l'image
-
+        plt.close()
+        
     def plot(self, out_vector):
         image = np.reshape(out_vector, [28, 28])
         plt.imshow(image, cmap='Greys')
