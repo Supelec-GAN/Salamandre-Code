@@ -91,7 +91,7 @@ play_number = param['play_number']  # Nombre de partie  (Une partie = i fois app
 # discriminateur sur vrai image, j fois apprentissage génerateur+ discriminateur et
 # potentiellement k fois discriminateur avec fausse image
 
-gan_plot = GanPlot('SalamandreGan', numbers_to_draw, play_number)
+gan_plot = GanPlot('SalamandreGan', numbers_to_draw)
 
 """
 Préparation de la sauvegarde des scores du discriminateur pour des vrais images et des images de 
@@ -122,12 +122,12 @@ for i in range(play_number):
     if i % image_evolution_number == 0:
         image, associate_noise = ganGame.generateImage()  # Generation d'une image à la fin de
         # l'apprentissage
-        gan_plot.save(image, str(numbers_to_draw) + "_au_rang_" + str(i))
+        gan_plot.save(image, str(numbers_to_draw) + "_au_rang_" + str(i),str(i))
 
 image_test, associate_noise = ganGame.generateImage()  # génération d'une image à la fin de
 # l'apprentissage
 
-gan_plot.save(image_test, str(numbers_to_draw))
+gan_plot.save(image_test, str(numbers_to_draw), str(i))
 
 conf = data_interface.save_conf('config.ini', 'GanMnist')  # récupération de la configuration
 # pour la sauvegarde dans les fichiers
@@ -138,7 +138,7 @@ data_interface.save(real_std, 'real_std', conf)  # Sauvegarde des courbes de sco
 data_interface.save(fake_std, 'fake_std', conf)
 
 if os.name == 'nt':     # pour exécuter l'affichage uniquement sur nos ordis, et pas la vm
-    gan_plot.plot(image_test)   # afichage des courbes, commentez à partir de là pour lancement
+    gan_plot.plot(image_test, str(i))   # afichage des courbes, commentez à partir de là pour lancement
     # sur VM
     plt.plot(discriminator_real_score)
     plt.plot(discriminator_fake_score)
