@@ -1,3 +1,5 @@
+import matplotlib as mpl
+mpl.use('Agg')
 import numpy as np
 from brain.network import Network
 from fonction import Sigmoid, MnistTest, Norm2
@@ -31,7 +33,7 @@ for i in range(len(training_images)):
     if training_labels[i] != 6:
         not_right_nb += [i]
 
-training_images = np.delete(training_images, not_right_nb, axis=0) # A proprifier plus tard,
+training_images = np.delete(training_images, not_right_nb, axis=0)  # A proprifier plus tard,
 # c'est pas opti le delete
 
 
