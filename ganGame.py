@@ -57,7 +57,6 @@ class GanGame:
         return np.mean(real_trust), np.mean(fake_trust), np.std(real_trust), np.std(fake_trust)
 
 
-
     ##
     # @brief      discriminator learning what is real image
     ##
