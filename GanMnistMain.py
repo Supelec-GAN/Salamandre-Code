@@ -28,7 +28,7 @@ number_to_draw = param['number_to_draw']
 """
 not_right_nb = []
 for i in range(len(training_images)):
-    if training_labels[i] != 6:
+    if training_labels[i] != number_to_draw:
         not_right_nb += [i]
 
 training_images = np.delete(training_images, not_right_nb, axis=0) # A proprifier plus tard,
