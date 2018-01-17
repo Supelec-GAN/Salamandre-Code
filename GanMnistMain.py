@@ -107,27 +107,28 @@ discriminator_real_score.append(a)
 discriminator_fake_score.append(b)
 real_std.append(c)
 fake_std.append(d)
-image_evolution_number = play_number//100
+image_evolution_number = play_number//10
 
 for i in range(play_number):
     ganGame.playAndLearn()
     if i % 1000 == 0:
         print(i)
-    a, b, c, d = ganGame.testDiscriminatorLearning(10)  # effectue n test et renvoie la moyenne
-    # des scores
-    discriminator_real_score.append(a)
-    discriminator_fake_score.append(b)
-    real_std.append(c)
-    fake_std.append(d)
+        a, b, c, d = ganGame.testDiscriminatorLearning(10)  # effectue n test et renvoie la moyenne
+        # des scores
+        discriminator_real_score.append(a)
+        discriminator_fake_score.append(b)
+        real_std.append(c)
+        fake_std.append(d)
     if i % image_evolution_number == 0:
+        a, b, c, d = ganGame.testDiscriminatorLearning(1)
         image, associate_noise = ganGame.generateImage()  # Generation d'une image à la fin de
         # l'apprentissage
-        gan_plot.save(image, str(numbers_to_draw) + "_au_rang_" + str(i),str(i))
+        gan_plot.save(image, str(numbers_to_draw) + "_au_rang_" + str(i),str(i), b)
 
 image_test, associate_noise = ganGame.generateImage()  # génération d'une image à la fin de
 # l'apprentissage
 
-gan_plot.save(image_test, str(numbers_to_draw), str(i))
+gan_plot.save(image_test, str(numbers_to_draw), str(i), discriminator_fake_score[-1])
 
 conf = data_interface.save_conf('config.ini', 'GanMnist')  # récupération de la configuration
 # pour la sauvegarde dans les fichiers
@@ -138,7 +139,7 @@ data_interface.save(real_std, 'real_std', conf)  # Sauvegarde des courbes de sco
 data_interface.save(fake_std, 'fake_std', conf)
 
 if os.name == 'nt':     # pour exécuter l'affichage uniquement sur nos ordis, et pas la vm
-    gan_plot.plot(image_test, str(i))   # afichage des courbes, commentez à partir de là pour lancement
+    gan_plot.plot(image_test, str(i), discriminator_fake_score[-1])   # afichage des courbes, commentez à partir de là pour lancement
     # sur VM
     plt.plot(discriminator_real_score)
     plt.plot(discriminator_fake_score)
