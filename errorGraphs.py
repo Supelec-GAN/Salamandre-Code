@@ -1,30 +1,73 @@
 import matplotlib.pyplot as plt
+import numpy as np
+import os
+from time import gmtime, strftime
 
 
 class ErrorGraphs:
 
-    def __init__(self, parallel_learnings, error_bar, eta, neuron_count, test_period):
-        self.parallel_learnings = parallel_learnings
-        self.error_bar = error_bar
+    def __init__(self, name, learning_iterations, eta, net, test_period):
+        self._name = name
+        self.learning_iterations = learning_iterations
         self.eta = eta
-        self.neuron_count = neuron_count
+        self.net = net
         self.test_period = test_period
 
-    def error_graphs_test(self, abs_error_test, ord_error_test):
+    def save(self, errors_during_learning):
+        # create directory if it doesn't exist
+        if not os.path.exists(self._name):
+            os.mkdir(self._name)
+        # plots the mean error as a function of time
+        if (np.shape(errors_during_learning) == (len(errors_during_learning),)):
+            data = errors_during_learning
+            errorbar = np.zeros(len(errors_during_learning))
+        else:
+            data = np.mean(errors_during_learning, 0)
+            std = np.std(errors_during_learning, 0)
+            errorbar = std / np.sqrt(len(errors_during_learning))
         plt.figure()
-        plt.errorbar(abs_error_test, ord_error_test, self.error_bar, None, fmt='x', ecolor='k', capthick=2)
-        plt.ylabel("Erreur moyenne sur le batch de test pour les " +
-                   str(self.parallel_learnings) + " runs")
+        print(errorbar)
+        print("data", data[-1])
+        plt.errorbar(np.arange(0,
+                               len(errorbar)*self.test_period,
+                               self.test_period
+                               ),
+                     data,
+                     yerr=errorbar,
+                     capthick = 1,
+                     ecolor = 'k',
+                     )
+        plt.ylabel("Erreur moyenne sur le batch de test pour les " + str(self.learning_iterations) + " runs")
         plt.xlabel("Apprentissages")
-        plt.title("Evolution de l'erreur, test effectué tous les " +
-                  str(self.test_period) + " apprentissages")
-        plt.suptitle("eta =" + str(self.eta) + "\n" + "Réseau en " + str(self.neuron_count[1:]))
-        plt.show()
+        plt.title("Evolution de l'erreur, test effectué tous les " + str(self.test_period) + " apprentissages")
+        plt.suptitle("eta =" + str(self.eta) + ";" + "Réseau en " + str(self.net))
+        # saves the plot in directory
+        save_date = strftime('%Y-%m-%d-%H%M%S', gmtime())
+        namefile = str(save_date) + '.png'
+        plt.savefig(namefile,)
 
-    def error_graphs_learning(self, abs_error_learning, ord_error_learning):
+    def plot(self, errors_during_learning):
+        # plots the mean error as a function of time
+        if (np.shape(errors_during_learning) == (len(errors_during_learning),)):
+            data = errors_during_learning
+            errorbar = np.zeros(len(errors_during_learning))
+        else:
+            data = np.mean(errors_during_learning, 0)
+            std = np.std(errors_during_learning, 0)
+            errorbar = std / np.sqrt(len(errors_during_learning))
         plt.figure()
-        plt.plot(abs_error_learning, ord_error_learning, 'x')
-        plt.xlabel('Itérations')
-        plt.ylabel('Erreur moyenne sur ' + str(self.parallel_learnings) + " apprentissages")
-        plt.title("Evolution de l'erreur au fur et a mesure des apprentissages")
+        plt.errorbar(np.arange(0,
+                               len(errorbar)*self.test_period,
+                               self.test_period
+                               ),
+                     data,
+                     yerr=errorbar,
+                     capthick = 1,
+                     ecolor = 'k',
+                     )
+        plt.ylabel("Erreur moyenne sur le batch de test pour les " + str(self.learning_iterations) + " runs")
+        plt.xlabel("Apprentissages")
+        plt.title("Evolution de l'erreur, test effectué tous les " + str(self.test_period) + " apprentissages")
+        plt.suptitle("eta =" + str(self.eta) + "\n" + "Réseau en " + str(self.net))
+        # saves the plot in directory
         plt.show()

@@ -29,6 +29,9 @@ class Function:
     def derivate(self, x, *args):
         return (self.out(x+self.delta)-self.out(x))/self.delta
 
+    def save_fun(self):
+        return 'Function()'
+
 
 class Sigmoid(Function):
     """
@@ -43,6 +46,9 @@ class Sigmoid(Function):
 
     def derivate(self, x):
         return self.mu*np.exp(self.mu*x)/(np.power(1+np.exp(self.mu*x), 2))
+
+    def save_fun(self):
+        return 'Sigmoid({})'.format(self.mu)
 
 
 class Tanh(Function):
@@ -59,6 +65,9 @@ class Tanh(Function):
 
     def derivate(self, x):
         return self.k*self.alpha/(np.power(np.cosh(self.alpha*x), 2))
+
+    def save_fun(self):
+        return 'Tanh({},{})'.format(self.k, self.alpha)
 
 
 ##
@@ -80,7 +89,13 @@ class XorTest(Function):
     def out(self, x, y):
         return self.maxi*((x > 0) ^ (y > 0)) - self.mini*(1-(x > 0) ^ (y > 0))
 
+    def save_fun(self):
+        return 'XorTest({], {})'.format(self.mini, self.maxi)
 
+
+##
+# @brief      Class for mnist test.
+##
 class MnistTest(Function):
 
     def __init__(self, set_labels):
@@ -92,16 +107,28 @@ class MnistTest(Function):
         r = np.reshape(r, (10, 1))
         return r
 
+    def save_fun(self):
+        return 'MnistTest({})'.format(self._set_labels)
 
+
+##
+# @brief      Class for mnist gan test.
+##
 class MnistGanTest(Function):
 
-    def __init__(self, set_labels):
-        self._set_labels = set_labels
+    def __init__(self):
+        pass
 
     def out(self, x):
         return 1
 
+    def save_fun(self):
+        return 'MnistGanTest()'
 
+
+##
+# @brief      Class for normalize 2.
+##
 class Norm2(Function):
 
     def __init__(self):
@@ -113,13 +140,16 @@ class Norm2(Function):
     def derivate(self, reference, x):
         return -2 * (reference - x)
 
+    def save_fun(self):
+        return 'Norm2()'
+
 
 ##
 # @brief      Class for non saturant heuritic for GAN. 
 # Parameter x is useless, only for matching the neuronLayer class
 # (cf init_derivate_error function)
 ##
-class NonSatHeuritic(Function):
+class NonSatHeuristic(Function):
 
     def __init__(self):
         pass
@@ -129,3 +159,46 @@ class NonSatHeuritic(Function):
 
     def derivate(self, reference, useless):
         return -0.5/reference
+
+    def save_fun(self):
+        return 'NonSatHeuritic()'
+
+class CostFunction(Function):
+
+    def __init__(self):
+        pass
+
+    def out(self, reference, output):
+        if (reference == 1):
+            return -0.5*np.log(output)
+        else:
+            return -0.5*np.log(1 - output)
+
+    ##
+    # Reference est 1 si on donne une vrai image, 0 si c'est une image virtuelle
+    ##
+    def derivate(self, reference, output):
+        if(reference == 1):
+            return -0.5/output
+        else:
+            return +0.5/(1-output)
+
+    def save_fun(self):
+        return 'CostFunction()'
+        
+
+class GeneratorError(Function):
+
+    def __init__(self):
+        pass
+
+    def out(self, reference, output):
+        return 0
+
+    def derivate(self, reference, output):
+        out_influence = reference[0]
+        next_weights = reference[1]
+        return np.dot(np.transpose(next_weights), out_influence)
+
+    def save_fun(self):
+        return 'generatorError()'
