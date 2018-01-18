@@ -28,7 +28,7 @@ numbers_to_draw = param['numbers_to_draw']
 """
 not_right_nb = []
 for i in range(len(training_images)):
-    if training_labels[i] in numbers_to_draw:
+    if training_labels[i] == 0:
         not_right_nb += [i]
 
 training_images = np.delete(training_images, not_right_nb, axis=0)  # A proprifier plus tard,
@@ -61,11 +61,11 @@ Initialisation du generator
 """
 generator_layers_neuron_count = param['generator_network_layers']
 generator_layers_activation_function = np.array(param['generator_activation_funs'])
-generator_error_function = param['generator_error_fun']
+# generator_error_function = param['generator_error_fun']
 
 generator = GeneratorNetwork(generator_layers_neuron_count,
                     generator_layers_activation_function,
-                    generator_error_function)
+                    disc_error_fun)
 
 eta_gen = param['eta_gen']
 

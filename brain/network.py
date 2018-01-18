@@ -159,3 +159,29 @@ class GeneratorNetwork(Network):
             for i in range(0, self._layers_count):
                 self.layers_list[i].weights = weights_list[i][0]
                 self.layers_list[i].bias = weights_list[i][1]
+
+    def backprop(self, eta, inputs, disc_error_influence, first_weights_disc, update=True):
+        inputs = np.reshape(inputs, (len(inputs), 1))
+        n = self._layers_count
+
+        # On initialise avec des valeurs très particulière pour les couches d'entrée (class OutputLayer)
+        out_influence = disc_error_influence
+        next_weight = first_weights_disc
+
+        for i in range(n - 1, 0, -1):
+            input_layer = self.layers_list[i - 1].output
+            out_influence = self.layers_list[i].derivate_error(
+                out_influence,
+                next_weight
+            )
+            next_weight = self.layers_list[i].backprop(
+                out_influence, eta, input_layer, update)
+
+        # On s'occupe de la couche d'entrée (si différente de couche de sortie)
+        input_layer = inputs
+        out_influence = self.layers_list[0].derivate_error(
+            out_influence,
+            next_weight
+        )
+        self.layers_list[0].backprop(out_influence, eta, input_layer, update)
+        return out_influence

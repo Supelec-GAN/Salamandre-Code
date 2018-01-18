@@ -187,18 +187,18 @@ class CostFunction(Function):
         return 'CostFunction()'
         
 
-class GeneratorError(Function):
+# class GeneratorError(Function):
 
-    def __init__(self):
-        pass
+#     def __init__(self):
+#         pass
 
-    def out(self, reference, output):
-        return 0
+#     def out(self, reference, output):
+#         return 0
 
-    def derivate(self, reference, output):
-        out_influence = reference[0]
-        next_weights = reference[1]
-        return np.dot(np.transpose(next_weights), out_influence)
+#     def derivate(self, reference, output):
+#         out_influence = reference[0]
+#         next_weights = reference[1]
+#         return np.dot(np.transpose(next_weights), out_influence)
 
-    def save_fun(self):
-        return 'generatorError()'
+#     def save_fun(self):
+#         return 'generatorError()'
