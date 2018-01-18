@@ -31,7 +31,7 @@ for i in range(len(training_images)):
     if training_labels[i] in numbers_to_draw:
         not_right_nb += [i]
 
-training_images = np.delete(training_images, not_right_nb, axis=0) # A proprifier plus tard,
+training_images = np.delete(training_images, not_right_nb, axis=0)  # A proprifier plus tard,
 # c'est pas opti le delete
 
 
@@ -102,11 +102,13 @@ discriminator_fake_score = []
 real_std = []
 fake_std = []
 
+
 # a, b, c, d = ganGame.testDiscriminatorLearning(10)  # Valeur pour le réseau vierge
 # discriminator_real_score.append(a)
 # discriminator_fake_score.append(b)
 # real_std.append(c)
 # fake_std.append(d)
+
 image_evolution_number = play_number//100
 
 for i in range(play_number):
@@ -123,7 +125,9 @@ for i in range(play_number):
         a, b, c, d = ganGame.testDiscriminatorLearning(1)
         image, associate_noise = ganGame.generateImage()  # Generation d'une image à la fin de
         # l'apprentissage
+
         gan_plot.save(image, str(numbers_to_draw) + "_au_rang_" + str(i),str(i),a, b)
+
 
 for i in range(2):
     image_test, associate_noise = ganGame.generateImage()  # génération d'une image à la fin de

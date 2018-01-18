@@ -72,7 +72,6 @@ class GanGame:
     # @brief      discriminator learning what is fake image
     ##
     def discriminatorLearningVirt(self, fake_image):
-        # self.discriminator.compute(fake_image)
         self.discriminator.backprop(self.eta_disc, fake_image, 0)
 
         return 0
