@@ -12,24 +12,10 @@ class NeuronLayer:
         self.weights = np.transpose(np.random.randn(input_size, output_size))
         self._bias = np.zeros((output_size, 1))            # Vecteur colonne
         self._activation_function = activation_function
-        # self.error = error_function
         self.activation_levels = np.zeros((output_size, 1))  # Vecteur colonne
         self.output = np.zeros((output_size, 1))             # Vecteur colonne
         self.error = error_function
         self.error_gen = error_function_gen
-
-    # @property
-    # def weights(self):
-    #     """Get the current weights."""
-    #     return self.weights
-
-    # @weights.setter
-    # def weights(self, newweights):
-    #     self.weights = newweights
-
-    # @weights.deleter
-    # def weights(self):
-    #     del self.weights
 
     @property
     def bias(self):
@@ -63,21 +49,17 @@ class NeuronLayer:
     #
     # @return     retourne influence of the input on the error
     #
-    def backprop(self, out_influence, eta, input_layer):
+    #
+    def backprop(self, out_influence, eta, input_layer, update=True):
         weight_influence = self.calculate_weight_influence(
             input_layer, out_influence)
-        self.updateweights(eta, weight_influence)
-
         bias_influence = self.calculate_bias_influence(out_influence)
-        self.update_bias(eta, bias_influence)
-
-    def no_update_backprop(self, out_influence, eta, input_layer):
-        weight_influence = self.calculate_weight_influence(
-            input_layer, out_influence)
-
-        bias_influence = self.calculate_bias_influence(out_influence)
-        new_weight = self.weights - eta * weight_influence
-        return new_weight
+        if update:
+            self.updateweights(eta, weight_influence)
+            self.update_bias(eta, bias_influence)
+            return self.weights
+        else:
+            return self.weights - eta * weight_influence
 
     def updateweights(self, eta, weight_influence):
         self.weights = self.weights - eta * weight_influence
@@ -119,13 +101,22 @@ class NeuronLayer:
     #
     # @return     {an derivative based by default on quadratic error}
     #
-    def init_derivate_error(self, reference):
+    ##
+    # A dégager quand le OutputLayer fonctionne
+    #
+    def init_derivate_error(self, reference, update=True):
         deriv_vector = self._activation_function.derivate(self.activation_levels)
-        return deriv_vector * self.error.derivate(reference, self.output)
+        if update:
+            return deriv_vector * self.error.derivate(reference, self.output)
+        else:
+            return deriv_vector * self.error_gen.derivate(reference, self.output)
 
-    ##
-    # @brief      Initialisation avec la fonction de coût pour le générateur dans le cas du GAN
-    ##
-    def no_update_init_derivate_error(self, reference):
+
+class OutputLayer(NeuronLayer):
+
+    def derivate_error(self, reference, generator_backprop=False):
         deriv_vector = self._activation_function.derivate(self.activation_levels)
-        return deriv_vector * self.error_gen.derivate(reference, self.output)
+        if generator_backprop:
+            return deriv_vector * self.error_gen.derivate(reference, self.output)
+        else:
+            return deriv_vector * self.error.derivate(reference, self.output)
