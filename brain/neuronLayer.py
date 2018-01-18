@@ -13,9 +13,16 @@ class NeuronLayer:
         self._learning_batch_size = learning_batch_size
         self.weights = np.transpose(np.random.randn(input_size, output_size))
         self._bias = np.zeros((output_size, 1))                                # Vecteur colonne
+        # On peut laisser le biais comme un vecteur colonne, car en faire une matrice contenant
+        # learning_batch_size fois la même colonne. Lorsque l'on aura besoin du biais dans les
+        # calculs, il y aura mathématiquement parlant un problème de dimension (addition vecteur
+        # + matrice), cependant numpy gère ça en additionnant le vecteur de biais à chacune des
+        # colonnes de la matrice
         self._activation_function = activation_function
-        self.activation_levels = np.zeros((output_size, learning_batch_size))  # Vecteur colonne
-        self.output = np.zeros((output_size, learning_batch_size))             # Vecteur colonne
+        self.activation_levels = np.zeros((output_size, learning_batch_size))  # Chaque colonne
+        # correspond à une entrée du batch
+        self.output = np.zeros((output_size, learning_batch_size))             # Chaque colonne
+        # correspond à une entrée du batch
         self.error = error_function
         self.error_gen = error_function_gen
 
