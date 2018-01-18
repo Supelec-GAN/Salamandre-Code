@@ -94,24 +94,6 @@ class NeuronLayer:
         deriv_vector = self._activation_function.derivate(self.activation_levels)
         return deriv_vector * np.dot(np.transpose(next_weights), out_influence)
 
-    ##
-    # @brief      Initiate the error derivation
-    #
-    # @param      reference  the expected output for the last computation
-    #
-    # @return     {an derivative based by default on quadratic error}
-    #
-    ##
-    # A dégager quand le OutputLayer fonctionne
-    #
-    def init_derivate_error(self, reference, update=True):
-        deriv_vector = self._activation_function.derivate(self.activation_levels)
-        if update:
-            return deriv_vector * self.error.derivate(reference, self.output)
-        else:
-            return deriv_vector * self.error_gen.derivate(reference, self.output)
-
-
 class OutputLayer(NeuronLayer):
 
     def derivate_error(self, reference, generator_backprop=False):

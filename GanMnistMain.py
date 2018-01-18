@@ -1,5 +1,5 @@
 import numpy as np
-from brain.network import Network
+from brain.network import Network, GeneratorNetwork
 from fonction import Sigmoid, MnistTest, Norm2
 from mnist import MNIST
 from dataInterface import DataInterface
@@ -63,7 +63,7 @@ generator_layers_neuron_count = param['generator_network_layers']
 generator_layers_activation_function = np.array(param['generator_activation_funs'])
 generator_error_function = param['generator_error_fun']
 
-generator = Network(generator_layers_neuron_count,
+generator = GeneratorNetwork(generator_layers_neuron_count,
                     generator_layers_activation_function,
                     generator_error_function)
 
@@ -109,7 +109,7 @@ fake_std = []
 # real_std.append(c)
 # fake_std.append(d)
 
-image_evolution_number = play_number//100
+image_evolution_number = play_number//10
 
 for i in range(play_number):
     ganGame.playAndLearn()

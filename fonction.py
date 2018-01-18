@@ -154,11 +154,11 @@ class NonSatHeuristic(Function):
     def __init__(self):
         pass
 
-    def out(self, reference, useless):
-        return -0.5*np.log(reference)
+    def out(self, output, useless):
+        return -0.5*np.log(output)
 
-    def derivate(self, reference, useless):
-        return -0.5/reference
+    def derivate(self, output, useless):
+        return -0.5/output
 
     def save_fun(self):
         return 'NonSatHeuritic()'
