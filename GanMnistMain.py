@@ -1,5 +1,3 @@
-import matplotlib as mpl
-mpl.use('Agg')
 import numpy as np
 from brain.network import Network
 from fonction import Sigmoid, MnistTest, Norm2
@@ -125,7 +123,7 @@ for i in range(play_number):
         a, b, c, d = ganGame.testDiscriminatorLearning(1)
         image, associate_noise = ganGame.generateImage()  # Generation d'une image à la fin de
         # l'apprentissage
-        gan_plot.save(image, str(numbers_to_draw) + "_au_rang_" + str(i),str(i), b)
+        gan_plot.save(image, str(numbers_to_draw) + "_au_rang_" + str(i), str(i), b)
 
 image_test, associate_noise = ganGame.generateImage()  # génération d'une image à la fin de
 # l'apprentissage
@@ -141,8 +139,8 @@ data_interface.save(real_std, 'real_std', conf)  # Sauvegarde des courbes de sco
 data_interface.save(fake_std, 'fake_std', conf)
 
 if os.name == 'nt':     # pour exécuter l'affichage uniquement sur nos ordis, et pas la vm
-    gan_plot.plot(image_test, str(i), discriminator_fake_score[-1])   # afichage des courbes, commentez à partir de là pour lancement
-    # sur VM
+    gan_plot.plot(image_test, str(i), discriminator_fake_score[-1])   # afichage des courbes,
+    # commentez à partir de là pour lancement sur VM
     plt.plot(discriminator_real_score)
     plt.plot(discriminator_fake_score)
     plt.show()
