@@ -45,7 +45,7 @@ class Engine:
                 self.net.compute(self._learning_set[self._permutation[data_nb]])
                 expected_output = self._learning_fun.out(self._permutation[data_nb])
                 self.net.backprop(self.eta, self._learning_set[self._permutation[data_nb]],
-                                   expected_output)
+                                  expected_output)
 
                 # Enregistrement périodique de  l'erreur sur le set de test
                 if (pass_nb*self._learning_set_size + data_nb) % self._test_period == 0:
