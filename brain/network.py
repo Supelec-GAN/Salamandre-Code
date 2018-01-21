@@ -67,7 +67,14 @@ class Network:
     #
 
     def compute(self, inputs):
-        inputs = np.reshape(inputs, (len(inputs), 1))
+        dim = np.shape(inputs)
+        nb_dim = len(dim)
+        if nb_dim == 1:     # Pour conserver le fonctionnement avec un vecteur simple en entrée
+            inputs = np.reshape(inputs, (dim[0], 1))
+        elif nb_dim == 2:
+            inputs = np.reshape(inputs, (dim[1], dim[0]))
+        else:
+            raise Exception("Incorrect inputs dimensions")
         self.layers_list[0].compute(inputs)
         for i in range(1, self._layers_count):
             self.layers_list[i].compute(self.layers_list[i - 1].output)
