@@ -71,21 +71,16 @@ class NeuronLayer:
     #
     # @return     retourne influence of the input on the error
     #
-    def backprop(self, out_influence, eta, input_layer):
+    def backprop(self, out_influence, eta, input_layer, update=True):
         weight_influence = self.calculate_weight_influence(
             input_layer, out_influence)
-        self.update_weights(eta, weight_influence)
-
         bias_influence = self.calculate_bias_influence(out_influence)
-        self.update_bias(eta, bias_influence)
-
-    def no_update_backprop(self, out_influence, eta, input_layer):
-        weight_influence = self.calculate_weight_influence(
-            input_layer, out_influence)
-
-        bias_influence = self.calculate_bias_influence(out_influence)
-        new_weight = self._weights - eta * weight_influence
-        return new_weight
+        if update:
+            self.update_weights(eta, weight_influence)
+            self.update_bias(eta, bias_influence)
+            return self._weights
+        else:
+            return self._weights - eta * weight_influence
 
     def update_weights(self, eta, weight_influence):
         self._weights = self._weights - eta * weight_influence
@@ -120,20 +115,12 @@ class NeuronLayer:
         deriv_vector = self._activation_function.derivate(self.activation_levels)
         return deriv_vector * np.dot(np.transpose(next_weights), out_influence)
 
-    ##
-    # @brief      Initiate the error derivation
-    #
-    # @param      reference  the expected output for the last computation
-    #
-    # @return     {an derivative based by default on quadratic error}
-    #
-    def init_derivate_error(self, reference):
-        deriv_vector = self._activation_function.derivate(self.activation_levels)
-        return deriv_vector * self.error.derivate(reference, self.output)
 
-    ##
-    # @brief      Initialisation avec la fonction de coût pour le générateur dans le cas du GAN
-    ##
-    def no_update_init_derivate_error(self, reference):
+class OutputLayer(NeuronLayer):
+
+    def derivate_error(self, reference, generator_backprop=False):
         deriv_vector = self._activation_function.derivate(self.activation_levels)
-        return deriv_vector * self.error_gen.derivate(reference, self.output)
+        if generator_backprop:
+            return deriv_vector * self.error_gen.derivate(reference, self.output)
+        else:
+            return deriv_vector * self.error.derivate(reference, self.output)

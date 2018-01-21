@@ -154,11 +154,11 @@ class NonSatHeuristic(Function):
     def __init__(self):
         pass
 
-    def out(self, reference, useless):
-        return -0.5*np.log(reference)
+    def out(self, output, useless):
+        return -0.5*np.log(output)
 
-    def derivate(self, reference, useless):
-        return -0.5/reference
+    def derivate(self, output, useless):
+        return -0.5/output
 
     def save_fun(self):
         return 'NonSatHeuritic()'
@@ -187,18 +187,18 @@ class CostFunction(Function):
         return 'CostFunction()'
         
 
-class GeneratorError(Function):
+# class GeneratorError(Function):
 
-    def __init__(self):
-        pass
+#     def __init__(self):
+#         pass
 
-    def out(self, reference, output):
-        return 0
+#     def out(self, reference, output):
+#         return 0
 
-    def derivate(self, reference, output):
-        out_influence = reference[0]
-        next_weights = reference[1]
-        return np.dot(np.transpose(next_weights), out_influence)
+#     def derivate(self, reference, output):
+#         out_influence = reference[0]
+#         next_weights = reference[1]
+#         return np.dot(np.transpose(next_weights), out_influence)
 
-    def save_fun(self):
-        return 'generatorError()'
+#     def save_fun(self):
+#         return 'generatorError()'

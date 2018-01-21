@@ -38,8 +38,8 @@ class GanGame:
             self.discriminatorLearningVirt(fake_image)
 
         for k in range(self.disc_fake_learning_ratio):
-            fake_image = self.generateImage()
-            self.discriminatorLearningVirt(fake_image)
+            fake_image, noise = self.generateImage()
+            self.discriminatorLearningVirt(fake_image, True)
 
         return 0
 
@@ -62,18 +62,19 @@ class GanGame:
     # @brief      discriminator learning what is real image
     ##
     def discriminatorLearningReal(self):
-        real_item = self.learning_set[np.random.randint(self.set_size)]  # generate a random
-        # item from the set
-        expected_output = self.learning_fun.out(real_item)
+        real_item = self.learning_set[np.random.randint(self.set_size)]  # generate  a random item from the set
+        # expected_output = self.learning_fun.out(real_item)
         self.discriminator.compute(real_item)
-        self.discriminator.backprop(self.eta_disc, real_item, expected_output)
+        self.discriminator.backprop(self.eta_disc, real_item, 1) # expected output = 1 pour le moment
 
         return 0
 
     ##
     # @brief      discriminator learning what is fake image
     ##
-    def discriminatorLearningVirt(self, fake_image):
+    def discriminatorLearningVirt(self, fake_image, alone=False):
+        if alone:
+            self.discriminator.compute(fake_image)
         self.discriminator.backprop(self.eta_disc, fake_image, 0)
 
         return 0
@@ -88,10 +89,8 @@ class GanGame:
     def generatorLearning(self):
         fake_image, noise = self.generateImage()
         fooled = self.testTruth(fake_image)
-        disc_error_influence = self.discriminator.no_update_backprop(self.eta_gen, fake_image,
-                                                                     fooled)
-        self.generator.backprop(self.eta_gen, noise,
-                                [disc_error_influence, self.discriminator.layers_list[0].weights])
+        disc_error_influence = self.discriminator.backprop(self.eta_gen, fake_image, fooled, False, True)
+        self.generator.backprop(self.eta_gen, noise, disc_error_influence, self.discriminator.layers_list[0].weights)
 
         return fake_image
 
