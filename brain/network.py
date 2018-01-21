@@ -71,12 +71,14 @@ class Network:
     def compute(self, inputs):
         dim = np.shape(inputs)
         nb_dim = len(dim)
-        if nb_dim == 1:     # Pour conserver le fonctionnement avec un vecteur simple en entrée
+        if nb_dim == 1 and self._learning_batch_size == 1:  # Pour conserver le fonctionnement avec
+            # un vecteur simple en entrée
             inputs = np.reshape(inputs, (dim[0], 1))
-        elif nb_dim == 2:
+        elif nb_dim == 2 and self._learning_batch_size == dim[0]:
             inputs = np.reshape(inputs, (dim[1], dim[0]))
         else:
             raise Exception("Incorrect inputs dimensions")
+
         self.layers_list[0].compute(inputs)
         for i in range(1, self._layers_count):
             self.layers_list[i].compute(self.layers_list[i - 1].output)
@@ -89,9 +91,10 @@ class Network:
     def backprop(self, eta, inputs, reference, update=True, gen_backprop=False):
         dim = np.shape(inputs)
         nb_dim = len(dim)
-        if nb_dim == 1:  # Pour conserver le fonctionnement avec un vecteur simple en entrée
+        if nb_dim == 1 and self._learning_batch_size == 1:  # Pour conserver le fonctionnement avec
+            # un vecteur simple en entrée
             inputs = np.reshape(inputs, (dim[0], 1))
-        elif nb_dim == 2:
+        elif nb_dim == 2 and self._learning_batch_size == dim[0]:
             inputs = np.reshape(inputs, (dim[1], dim[0]))
         else:
             raise Exception("Incorrect inputs dimensions")
@@ -176,7 +179,16 @@ class GeneratorNetwork(Network):
                 self.layers_list[i].bias = weights_list[i][1]
 
     def backprop(self, eta, inputs, disc_error_influence, first_weights_disc, update=True):
-        inputs = np.reshape(inputs, (len(inputs), 1))
+        dim = np.shape(inputs)
+        nb_dim = len(dim)
+        if nb_dim == 1 and self._learning_batch_size == 1:  # Pour conserver le fonctionnement avec
+            # un vecteur simple en entrée
+            inputs = np.reshape(inputs, (dim[0], 1))
+        elif nb_dim == 2 and self._learning_batch_size == dim[0]:
+            inputs = np.reshape(inputs, (dim[1], dim[0]))
+        else:
+            raise Exception("Incorrect inputs dimensions")
+
         n = self._layers_count
 
         # On initialise avec des valeurs très particulière pour les couches d'entrée (class OutputLayer)
