@@ -97,12 +97,13 @@ class NeuronLayer:
     # @return     vecteur of same dimension than weights.
     #
     def calculate_weight_influence(self, input_layer, out_influence):
-        return np.dot(out_influence, np.transpose(input_layer))
+        return np.dot(out_influence, np.transpose(input_layer)) / self._learning_batch_size
 
     ##
     # @brief      Calculates the bias influence (which is out_influence)
     def calculate_bias_influence(self, out_influence):
-        return out_influence
+        mean_out_influence = np.mean(out_influence, axis=1, keepdims=True)
+        return mean_out_influence
 
     ##
     # @brief      Calculates the error derivation

@@ -71,8 +71,8 @@ class Network:
     def compute(self, inputs):
         dim = np.shape(inputs)
         nb_dim = len(dim)
-        if nb_dim == 1 and self._learning_batch_size == 1:  # Pour conserver le fonctionnement avec
-            # un vecteur simple en entrée
+        if nb_dim == 1: #and self._learning_batch_size == 1:  # Pour conserver le fonctionnement
+            # avec un vecteur simple en entrée
             inputs = np.reshape(inputs, (dim[0], 1))
         elif nb_dim == 2 and self._learning_batch_size == dim[0]:
             inputs = np.reshape(inputs, (dim[1], dim[0]))
@@ -101,7 +101,8 @@ class Network:
 
         n = self._layers_count
 
-        # On initialise avec des valeurs très particulière pour les couches d'entrée (class OutputLayer)
+        # On initialise avec des valeurs très particulière pour les couches d'entrée (class
+        # OutputLayer)
         out_influence = reference
         next_weight = gen_backprop
 
@@ -147,9 +148,11 @@ class Network:
 
 
 ##
-## @brief      Class for generator network.
-## @particularite :  il n'a pas de couche de sortie, car pour une backprop il est relié à un discriminateur
+# @brief      Class for generator network.
+# @particularite : il n'a pas de couche de sortie, car pour une backprop il est relié à un
+# discriminateur
 ##
+#
 class GeneratorNetwork(Network):
     def __init__(self, layers_neuron_count, layers_activation_function, error_function,
                  weights_list=()):
@@ -191,7 +194,8 @@ class GeneratorNetwork(Network):
 
         n = self._layers_count
 
-        # On initialise avec des valeurs très particulière pour les couches d'entrée (class OutputLayer)
+        # On initialise avec des valeurs très particulière pour les couches d'entrée (class
+        # OutputLayer)
         out_influence = disc_error_influence
         next_weight = first_weights_disc
 
