@@ -49,13 +49,19 @@ class GanPlot:
         n = len(layers_size)
         fig = plt.figure()
         L = 20
-        gs = GridSpec(1, L*(n-1))
+        gs = GridSpec(L, n-1)
         for i in range(1, n):
-            ax = plt.subplot(gs[0, L*(i-1):L*(i-1)+(L-1)])
+            max_w = np.max(coefs[i-1][0])
+            min_w = np.min(coefs[i-1][0])
+            ax = plt.subplot(gs[0:L-2, i-1])
             self.plot_weight(coefs[i-1][0], layers_size[i-1], layers_size[i])
-            ax.set_title('Matrice de poids : ' + str(layers_size[i-1]) + ',' + str(layers_size[i]))
-            plt.subplot(gs[0, L*(i-1)+L-1])
+            ax.set_title('Matrice de poids : ' + str(layers_size[i-1]) + ',' + str(layers_size[i]) + ' Max : ' + str(max_w) + " Min :" + str(min_w))
+
+            max_b = np.max(coefs[i-1][1])
+            min_b = np.min(coefs[i-1][1])
+            ax = plt.subplot(gs[L-1,i-1])
             self.plot_bias(coefs[i-1][1])
+            ax.set_title('Biais Max : ' + str(max_b) + "Min :" + str(min_b))
         plt.show()
 
 
@@ -64,5 +70,5 @@ class GanPlot:
         plt.imshow(weights, cmap='Greys', aspect='auto')
 
     def plot_bias(self, bias):
-        image = np.reshape(bias, ([len(bias), 1]))
+        image = np.reshape(bias, ([1, len(bias)]))
         plt.imshow(image, cmap='Greys', aspect='auto')
