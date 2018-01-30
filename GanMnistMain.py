@@ -28,7 +28,7 @@ numbers_to_draw = param['numbers_to_draw']
 """
 not_right_nb = []
 for i in range(len(training_images)):
-    if training_labels[i] == 0:
+    if training_labels[i] not in numbers_to_draw:
         not_right_nb += [i]
 training_images = np.delete(training_images, not_right_nb, axis=0)  # A proprifier plus tard,
 # c'est pas opti le delete
@@ -129,7 +129,9 @@ for i in range(play_number):
 
         gan_plot.save(image, str(numbers_to_draw) + "_au_rang_" + str(i),str(i),a, b)
 
+state = generator.save_state()
 
+print(state)
 for i in range(2):
     image_test, associate_noise = ganGame.generateImage()  # génération d'une image à la fin de
     # l'apprentissage
