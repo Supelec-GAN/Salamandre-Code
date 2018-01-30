@@ -39,3 +39,4 @@ class GanPlot:
         plt.colorbar()  # devrait donner une correspondance entre le niveau de gris et la valeur 'réele'
         plt.title('bruit pour ' + str(self.number_to_draw) + ' après '+ str(step_number)+' parties')
         plt.plot()
+        plt.close()
