@@ -110,7 +110,10 @@ fake_std = []
 # real_std.append(c)
 # fake_std.append(d)
 
-image_evolution_number = play_number//10
+image_evolution_number = play_number//1
+state = generator.save_state()
+
+gan_plot.plot_network_state(state)
 
 for i in range(play_number):
     ganGame.playAndLearn()
@@ -129,9 +132,6 @@ for i in range(play_number):
 
         gan_plot.save(image, str(numbers_to_draw) + "_au_rang_" + str(i),str(i),a, b)
 
-state = generator.save_state()
-
-print(state)
 for i in range(2):
     image_test, associate_noise = ganGame.generateImage()  # génération d'une image à la fin de
     # l'apprentissage
