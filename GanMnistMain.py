@@ -30,7 +30,6 @@ not_right_nb = []
 for i in range(len(training_images)):
     if training_labels[i] == 0:
         not_right_nb += [i]
-
 training_images = np.delete(training_images, not_right_nb, axis=0)  # A proprifier plus tard,
 # c'est pas opti le delete
 
@@ -71,6 +70,7 @@ eta_gen = param['eta_gen']
 
 gen_learning_ratio = param['gen_learning_ratio']  # Pour chaque partie, nombre d'apprentissage du
 #  discriminant sur image réelle
+gen_learning_ratio_alone = param['gen_learning_ratio_alone']
 
 
 """
@@ -85,7 +85,8 @@ ganGame = GanGame(discriminator,
                   eta_disc,
                   disc_learning_ratio,
                   gen_learning_ratio,
-                  disc_fake_learning_ratio)
+                  disc_fake_learning_ratio,
+                  gen_learning_ratio_alone)
 
 play_number = param['play_number']  # Nombre de partie  (Une partie = i fois apprentissage
 # discriminateur sur vrai image, j fois apprentissage génerateur+ discriminateur et
