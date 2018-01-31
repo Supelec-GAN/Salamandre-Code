@@ -187,6 +187,9 @@ class GeneratorNetwork(Network):
         return out_influence
 
 
+##
+## @brief      Class for noisy generator network. It has NoisyLayer instead of NetworkLayer
+##
 class NoisyGeneratorNetwork(GeneratorNetwork):
     def __init__(self, layers_neuron_count, layers_activation_function, error_function,
                  noise_layers_size, weights_list=()):
