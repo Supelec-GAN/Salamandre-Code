@@ -8,20 +8,25 @@ import matplotlib.pyplot as plt
 from ganPlot import GanPlot
 import os
 
+"""
+récuperation des paramètres du config.ini
+"""
 
-"""
-    Initialisation des données de Mnist
-"""
-data_interface = DataInterface('GanMnist')  # Non du sous-dossier d'enregistrement des fichiers
+data_interface = DataInterface()  # Non du sous-dossier d'enregistrement des fichiers
 
 param = data_interface.read_conf('config.ini', 'GanMnist')  # Lecture du fichier de config,
 # dans la session [GanMnist]
 
+
+"""
+    Initialisation des données de Mnist
+"""
 mndata = MNIST(param['file'])  # Import des fichier de Mnist (le paramètre indique l'emplacement)
 
 training_images, training_labels = mndata.load_training()  
 training_images = np.array(training_images)/256  # Normalisation de l'image (pixel entre 0 et 1)
 numbers_to_draw = param['numbers_to_draw']
+
 
 """
     On ne conserve dans le set que les 'numbers_to_draw' du config
@@ -33,6 +38,16 @@ for i in range(len(training_images)):
 training_images = np.delete(training_images, not_right_nb, axis=0)  # A proprifier plus tard,
 # c'est pas opti le delete
 
+"""
+Initialisation du dossier de sauvegarde
+"""
+save_folder = param['save_folder']
+
+data_interface = DataInterface(save_folder)
+"""
+Initialisation de l'interface d'affichage et de sauvegarde des données des résultat du GAN
+"""
+gan_plot = GanPlot(save_folder, numbers_to_draw)
 
 """
 Initialisation du discriminator
@@ -94,10 +109,9 @@ play_number = param['play_number']  # Nombre de partie  (Une partie = i fois app
 # discriminateur sur vrai image, j fois apprentissage génerateur+ discriminateur et
 # potentiellement k fois discriminateur avec fausse image
 
-gan_plot = GanPlot('SalamandreGan', numbers_to_draw)
 
 """
-Préparation de la sauvegarde des scores du discriminateur pour des vrais images et des images de 
+Préparation de la sauvegarde des scores du discriminateur pour des vrais images et des images de
 synthèses
 """
 discriminator_real_score = []
@@ -105,20 +119,26 @@ discriminator_fake_score = []
 real_std = []
 fake_std = []
 
-
+"""
+Initialisation des paramètres
+"""
+nb_images_during_learning = param['nb_images_during_learning']
+test_period = param['test_period']
+lissage_test = param['lissage_test']
+final_images = param['final_images']
 # a, b, c, d = ganGame.testDiscriminatorLearning(10)  # Valeur pour le réseau vierge
 # discriminator_real_score.append(a)
 # discriminator_fake_score.append(b)
 # real_std.append(c)
 # fake_std.append(d)
 
-image_evolution_number = play_number//10
+image_evolution_number = play_number//nb_images_during_learning
 
 for i in range(play_number):
     ganGame.playAndLearn()
-    if i % 1000 == 0:
+    if i % test_period == 0:
         print(i)
-        a, b, c, d = ganGame.testDiscriminatorLearning(1)  # effectue n test et renvoie la moyenne
+        a, b, c, d = ganGame.testDiscriminatorLearning(lissage_test)  # effectue n test et renvoie la moyenne
         # des scores
         discriminator_real_score.append(a)
         discriminator_fake_score.append(b)
@@ -132,7 +152,7 @@ for i in range(play_number):
         gan_plot.save(image, str(numbers_to_draw) + "_au_rang_" + str(i),str(i),a, b)
 
 
-for i in range(10):
+for i in range(final_images):
     image_test, associate_noise = ganGame.generateImage()  # génération d'une image à la fin de
     # l'apprentissage
 

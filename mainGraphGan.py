@@ -5,9 +5,9 @@ from errorGraphs import ErrorGraphs
 import matplotlib.pyplot as plt
 
 
-data_interface = DataInterface('GanMNIST')
-param_real, data_real = data_interface.load("2018-01-17-234131_discriminator_real_score.csv")
-param_fake, data_fake = data_interface.load("2018-01-17-234131_discriminator_fake_score.csv")
+data_interface = DataInterface('GanMnist')
+param_real, data_real = data_interface.load("2018-01-30-154644_discriminator_real_score.csv")
+param_fake, data_fake = data_interface.load("2018-01-30-154644_discriminator_fake_score.csv")
 # numbers_to_draw = param['numbers_to_draw']
 
 
