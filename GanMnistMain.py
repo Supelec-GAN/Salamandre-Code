@@ -137,9 +137,7 @@ for i in range(10):
     # l'apprentissage
 
     gan_plot.save(image_test, str(numbers_to_draw)+ str(i), str(i), discriminator_real_score[-1], discriminator_fake_score[-1])
-state = generator.save_state()
 
-gan_plot.plot_network_state(state)
 
 conf = data_interface.save_conf('config.ini', 'GanMnist')  # récupération de la configuration
 # pour la sauvegarde dans les fichiers
@@ -150,6 +148,8 @@ data_interface.save(real_std, 'real_std', conf)  # Sauvegarde des courbes de sco
 data_interface.save(fake_std, 'fake_std', conf)
 
 if os.name == 'nt':     # pour exécuter l'affichage uniquement sur nos ordis, et pas la vm
+    state = generator.save_state()
+    gan_plot.plot_network_state(state)
     gan_plot.plot(image_test, str(i), discriminator_real_score[-1], discriminator_fake_score[-1])   # afichage des courbes, commentez à partir de là pour lancement
     # sur VM
     plt.close()
