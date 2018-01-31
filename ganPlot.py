@@ -25,7 +25,7 @@ class GanPlot:
         plt.savefig(self._name + '/Images/' + save_date + '_imagede_' + img_name + '.png')  # sauvgarde de l'image
         plt.close()
         
-    def plot(self, out_vector, noise_vector, step_number, D_x, D_G_z):
+    def plot(self, out_vector, step_number, D_x, D_G_z):
         image = np.reshape(out_vector, [28, 28])
         plt.imshow(image, cmap='Greys')
         plt.colorbar()  # devrait donner une correspondance entre le niveau de gris et la valeur 'réele'

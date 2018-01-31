@@ -1,5 +1,5 @@
 import numpy as np
-from brain.network import Network, GeneratorNetwork
+from brain.network import Network, GeneratorNetwork, NoisyGeneratorNetwork
 from fonction import Sigmoid, MnistTest, Norm2
 from mnist import MNIST
 from dataInterface import DataInterface
@@ -59,12 +59,14 @@ training_fun = param['training_fun']()  # Function donnant la réponse à une vr
 Initialisation du generator
 """
 generator_layers_neuron_count = param['generator_network_layers']
+noise_layers_size = param['noise_layers_size']
 generator_layers_activation_function = np.array(param['generator_activation_funs'])
 # generator_error_function = param['generator_error_fun']
 
-generator = GeneratorNetwork(generator_layers_neuron_count,
+generator = NoisyGeneratorNetwork(generator_layers_neuron_count,
                     generator_layers_activation_function,
-                    disc_error_fun)
+                    disc_error_fun,
+                    noise_layers_size) 
 
 eta_gen = param['eta_gen']
 
@@ -116,7 +118,7 @@ for i in range(play_number):
     ganGame.playAndLearn()
     if i % 1000 == 0:
         print(i)
-        a, b, c, d = ganGame.testDiscriminatorLearning(10)  # effectue n test et renvoie la moyenne
+        a, b, c, d = ganGame.testDiscriminatorLearning(1)  # effectue n test et renvoie la moyenne
         # des scores
         discriminator_real_score.append(a)
         discriminator_fake_score.append(b)
@@ -132,7 +134,7 @@ for i in range(play_number):
 state = generator.save_state()
 
 print(state)
-for i in range(2):
+for i in range(10):
     image_test, associate_noise = ganGame.generateImage()  # génération d'une image à la fin de
     # l'apprentissage
 
