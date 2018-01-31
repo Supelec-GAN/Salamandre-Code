@@ -1,5 +1,5 @@
 import numpy as np
-from brain.neuronLayer import NeuronLayer, OutputLayer
+from brain.neuronLayer import NeuronLayer, OutputLayer, NoisyLayer
 
 
 class Network:
@@ -185,3 +185,38 @@ class GeneratorNetwork(Network):
         )
         self.layers_list[0].backprop(out_influence, eta, input_layer, update)
         return out_influence
+
+
+##
+## @brief      Class for noisy generator network. It has NoisyLayer instead of NetworkLayer
+##
+class NoisyGeneratorNetwork(GeneratorNetwork):
+    def __init__(self, layers_neuron_count, layers_activation_function, error_function,
+                 noise_layers_size, weights_list=()):
+        self._layers_activation_function = layers_activation_function  # sauvegarde pour pouvoir
+        # reinitialiser
+        self.layers_neuron_count = layers_neuron_count
+        self._layers_count = np.size(layers_neuron_count) - 1
+        self.error = error_function
+        self.noise_layers_size = noise_layers_size 
+        self.layers_list = np.array(
+            self._layers_count * [NoisyLayer(
+                layers_activation_function[0],
+                error_function,
+                noise_layers_size[0]
+            )]
+        )
+        for i in range(0, self._layers_count):
+            self.layers_list[i] = NoisyLayer(layers_activation_function[i],
+                                              self.error,
+                                              layers_neuron_count[i],
+                                              layers_neuron_count[i + 1],
+                                              noise_layers_size[i]
+                                              )
+
+        self.output = np.zeros(layers_neuron_count[-1])
+
+        if len(weights_list) != 0:  # si l'on a donné une liste de poids
+            for i in range(0, self._layers_count):
+                self.layers_list[i].weights = weights_list[i][0]
+                self.layers_list[i].bias = weights_list[i][1]

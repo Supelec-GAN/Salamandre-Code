@@ -1,5 +1,6 @@
 import numpy as np
 
+
 class GanGame:
     """
     Class of en GAN game, i.e two network learning together with the GAN theory
@@ -51,15 +52,14 @@ class GanGame:
         for i in range(n):
             real_item = self.learning_set[np.random.randint(self.set_size)]
             real_score = self.testTruth(real_item)
-            
             real_trust.append(real_score)
+
         for j in range(n):
             fake_image, noise = self.generateImage()
             fake_score = self.testTruth(fake_image)
-            
             fake_trust.append(fake_score)
-        return np.mean(real_trust), np.mean(fake_trust), np.std(real_trust), np.std(fake_trust)
 
+        return np.mean(real_trust), np.mean(fake_trust), np.std(real_trust), np.std(fake_trust)
 
     ##
     # @brief      discriminator learning what is real image
@@ -68,7 +68,7 @@ class GanGame:
         real_item = self.learning_set[np.random.randint(self.set_size)]  # generate  a random item from the set
         # expected_output = self.learning_fun.out(real_item)
         self.discriminator.compute(real_item)
-        self.discriminator.backprop(self.eta_disc, real_item, 1) # expected output = 1 pour le moment
+        self.discriminator.backprop(self.eta_disc, real_item, 1)  # expected output = 1 pour le moment
 
         return 0
 
