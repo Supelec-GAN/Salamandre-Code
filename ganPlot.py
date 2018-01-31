@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import os
 from time import gmtime, strftime
 import numpy as np
+from matplotlib.gridspec import GridSpec
 
 
 class GanPlot:
@@ -40,3 +41,34 @@ class GanPlot:
         plt.title('bruit pour ' + str(self.number_to_draw) + ' après '+ str(step_number)+' parties')
         plt.plot()
         plt.close()
+
+    def plot_network_state(self, state):
+        plt.close
+        params, coefs = state
+        layers_size = params[0]
+        n = len(layers_size)
+        fig = plt.figure()
+        L = 20
+        gs = GridSpec(L, n-1)
+        for i in range(1, n):
+            max_w = np.max(coefs[i-1][0])
+            min_w = np.min(coefs[i-1][0])
+            ax = plt.subplot(gs[0:L-2, i-1])
+            self.plot_weight(coefs[i-1][0], layers_size[i-1], layers_size[i])
+            ax.set_title('Matrice de poids : ' + str(layers_size[i-1]) + ',' + str(layers_size[i]) + ' Max : ' + str(max_w) + " Min :" + str(min_w))
+
+            max_b = np.max(coefs[i-1][1])
+            min_b = np.min(coefs[i-1][1])
+            ax = plt.subplot(gs[L-1,i-1])
+            self.plot_bias(coefs[i-1][1])
+            ax.set_title('Biais Max : ' + str(max_b) + "Min :" + str(min_b))
+        plt.show()
+
+
+    def plot_weight(self, weights, input_size, output_size):
+        weights = np.reshape(weights, [input_size, output_size])
+        plt.imshow(weights, cmap='Greys', aspect='auto')
+
+    def plot_bias(self, bias):
+        image = np.reshape(bias, ([1, len(bias)]))
+        plt.imshow(image, cmap='Greys', aspect='auto')

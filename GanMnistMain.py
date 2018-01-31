@@ -131,14 +131,15 @@ for i in range(play_number):
 
         gan_plot.save(image, str(numbers_to_draw) + "_au_rang_" + str(i),str(i),a, b)
 
-state = generator.save_state()
 
-print(state)
 for i in range(10):
     image_test, associate_noise = ganGame.generateImage()  # génération d'une image à la fin de
     # l'apprentissage
 
     gan_plot.save(image_test, str(numbers_to_draw)+ str(i), str(i), discriminator_real_score[-1], discriminator_fake_score[-1])
+state = generator.save_state()
+
+gan_plot.plot_network_state(state)
 
 conf = data_interface.save_conf('config.ini', 'GanMnist')  # récupération de la configuration
 # pour la sauvegarde dans les fichiers
