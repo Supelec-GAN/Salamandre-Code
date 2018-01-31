@@ -52,6 +52,16 @@ class NeuronLayer:
     def bias(self):
         del self._bias
 
+    @property
+    def learning_batch_size(self):
+        return self._learning_batch_size
+
+    @learning_batch_size.setter
+    def learning_batch_size(self, new_learning_batch_size):
+        self.activation_levels = np.zeros((self._output_size, new_learning_batch_size))
+        self.output = np.zeros((self._output_size, new_learning_batch_size))
+        self._learning_batch_size = new_learning_batch_size
+
     ##
     # @brief      Calcul des sorties de la couche
     #

@@ -26,7 +26,7 @@ class Engine:
         self._randomize_learning_set = randomize_learning_set
         self._permutation = np.arange(self._learning_set_size)
         self._learning_set_pass_nb = learning_set_pass_nb
-        self._learning_batch_size = 100  # net._learning_batch_size
+        self._learning_batch_size = net.learning_batch_size
 
         # Nombre d'apprentissage successifs
         self._learning_iterations = learning_iterations

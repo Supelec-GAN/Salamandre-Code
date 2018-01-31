@@ -124,6 +124,16 @@ class Network:
         self.layers_list[0].backprop(out_influence, eta, input_layer, update)
         return out_influence
 
+    @property
+    def learning_batch_size(self):
+        return self._learning_batch_size
+
+    @learning_batch_size.setter
+    def learning_batch_size(self, new_learning_batch_size):
+        for layer in self.layers_list:
+            layer.learning_batch_size = new_learning_batch_size
+        self._learning_batch_size = new_learning_batch_size
+
     def save_state(self):
         """
         Permet de sauvegarder l'état du réseau, ainsi que ses paramètres
