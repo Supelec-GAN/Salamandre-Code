@@ -51,6 +51,24 @@ class Sigmoid(Function):
         return 'Sigmoid({})'.format(self.mu)
 
 
+class SigmoidCentered(Function):
+    """
+    @brief      Classe définissant une sigmoïde formelle
+    """
+
+    def __init__(self, mu=1):
+        self.mu = mu
+
+    def out(self, x):
+        return 2/(1+np.exp(-self.mu*x))-1
+
+    def derivate(self, x):
+        return 2*self.mu*np.exp(self.mu*x)/(np.power(1+np.exp(self.mu*x), 2))
+
+    def save_fun(self):
+        return 'SigmoidCentered({})'.format(self.mu)
+
+
 class Tanh(Function):
     """
     @brief      Classe définissant une tangeante hyperbolique formelle
@@ -154,11 +172,11 @@ class NonSatHeuristic(Function):
     def __init__(self):
         pass
 
-    def out(self, reference, useless):
-        return -0.5*np.log(reference)
+    def out(self, output, useless):
+        return -0.5*np.log(output)
 
-    def derivate(self, reference, useless):
-        return -0.5/reference
+    def derivate(self, output, useless):
+        return -0.5/output
 
     def save_fun(self):
         return 'NonSatHeuritic()'
@@ -187,18 +205,18 @@ class CostFunction(Function):
         return 'CostFunction()'
         
 
-class GeneratorError(Function):
+# class GeneratorError(Function):
 
-    def __init__(self):
-        pass
+#     def __init__(self):
+#         pass
 
-    def out(self, reference, output):
-        return 0
+#     def out(self, reference, output):
+#         return 0
 
-    def derivate(self, reference, output):
-        out_influence = reference[0]
-        next_weights = reference[1]
-        return np.dot(np.transpose(next_weights), out_influence)
+#     def derivate(self, reference, output):
+#         out_influence = reference[0]
+#         next_weights = reference[1]
+#         return np.dot(np.transpose(next_weights), out_influence)
 
-    def save_fun(self):
-        return 'generatorError()'
+#     def save_fun(self):
+#         return 'generatorError()'

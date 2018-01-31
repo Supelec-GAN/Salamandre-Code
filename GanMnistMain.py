@@ -1,5 +1,5 @@
 import numpy as np
-from brain.network import Network
+from brain.network import Network, GeneratorNetwork
 from fonction import Sigmoid, MnistTest, Norm2
 from mnist import MNIST
 from dataInterface import DataInterface
@@ -28,9 +28,8 @@ numbers_to_draw = param['numbers_to_draw']
 """
 not_right_nb = []
 for i in range(len(training_images)):
-    if training_labels[i] in numbers_to_draw:
+    if training_labels[i] not in numbers_to_draw:
         not_right_nb += [i]
-
 training_images = np.delete(training_images, not_right_nb, axis=0)  # A proprifier plus tard,
 # c'est pas opti le delete
 
@@ -61,16 +60,17 @@ Initialisation du generator
 """
 generator_layers_neuron_count = param['generator_network_layers']
 generator_layers_activation_function = np.array(param['generator_activation_funs'])
-generator_error_function = param['generator_error_fun']
+# generator_error_function = param['generator_error_fun']
 
-generator = Network(generator_layers_neuron_count,
+generator = GeneratorNetwork(generator_layers_neuron_count,
                     generator_layers_activation_function,
-                    generator_error_function)
+                    disc_error_fun)
 
 eta_gen = param['eta_gen']
 
 gen_learning_ratio = param['gen_learning_ratio']  # Pour chaque partie, nombre d'apprentissage du
 #  discriminant sur image réelle
+gen_learning_ratio_alone = param['gen_learning_ratio_alone']
 
 
 """
@@ -85,7 +85,8 @@ ganGame = GanGame(discriminator,
                   eta_disc,
                   disc_learning_ratio,
                   gen_learning_ratio,
-                  disc_fake_learning_ratio)
+                  disc_fake_learning_ratio,
+                  gen_learning_ratio_alone)
 
 play_number = param['play_number']  # Nombre de partie  (Une partie = i fois apprentissage
 # discriminateur sur vrai image, j fois apprentissage génerateur+ discriminateur et
@@ -109,7 +110,7 @@ fake_std = []
 # real_std.append(c)
 # fake_std.append(d)
 
-image_evolution_number = play_number//100
+image_evolution_number = play_number//10
 
 for i in range(play_number):
     ganGame.playAndLearn()
@@ -128,7 +129,9 @@ for i in range(play_number):
 
         gan_plot.save(image, str(numbers_to_draw) + "_au_rang_" + str(i),str(i),a, b)
 
+state = generator.save_state()
 
+print(state)
 for i in range(2):
     image_test, associate_noise = ganGame.generateImage()  # génération d'une image à la fin de
     # l'apprentissage
