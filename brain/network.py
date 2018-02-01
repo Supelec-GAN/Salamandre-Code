@@ -34,8 +34,12 @@ class Network:
                                               self.layers_neuron_count[i + 1],
                                               self._learning_batch_size
                                               )
-        self.layers_list[self._layers_count - 1] = OutputLayer(layers_activation_function[self._layers_count - 1], self.error, layers_neuron_count[self._layers_count - 1], layers_neuron_count[self._layers_count]
-                                                               )
+        self.layers_list[self._layers_count - 1] = OutputLayer(
+            self._layers_activation_function[self._layers_count - 1],
+            self.error,
+            self.layers_neuron_count[self._layers_count - 1],
+            self.layers_neuron_count[self._layers_count]
+            )
         self.output = np.zeros(layers_neuron_count[-1])
 
         if len(weights_list) != 0:  # si l'on a donné une liste de poids
@@ -50,13 +54,19 @@ class Network:
                 self.error
             )]
         )
-        for i in range(0, self._layers_count):
+        for i in range(0, self._layers_count - 1):
             self.layers_list[i] = NeuronLayer(self._layers_activation_function[i],
                                               self.error,
                                               self.layers_neuron_count[i],
                                               self.layers_neuron_count[i + 1],
                                               self._learning_batch_size
                                               )
+        self.layers_list[self._layers_count - 1] = OutputLayer(
+            self._layers_activation_function[self._layers_count - 1],
+            self.error,
+            self.layers_neuron_count[self._layers_count - 1],
+            self.layers_neuron_count[self._layers_count]
+            )
         self.output = np.zeros(self.layers_neuron_count[-1])
 
     ##
