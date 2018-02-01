@@ -42,9 +42,9 @@ class Engine:
         testing_success_rate = np.zeros(self._test_count)
         for pass_nb in range(self._learning_set_pass_nb):
             # Boucle pour une fois le set d'entrainement
-            for data_nb in range(self._learning_set_size // self._learning_batch_size):
-                debut = data_nb * self._learning_batch_size
-                fin = (data_nb+1) * self._learning_batch_size
+            for batch_nb in range(self._learning_set_size // self._learning_batch_size):
+                debut = batch_nb * self._learning_batch_size
+                fin = (batch_nb+1) * self._learning_batch_size
                 intervalle = self._permutation[debut:fin]
                 self.net.compute(self._learning_set[intervalle])
                 expected_output = self._learning_fun.out(intervalle)
