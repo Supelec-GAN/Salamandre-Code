@@ -43,17 +43,17 @@ class Engine:
         for pass_nb in range(self._learning_set_pass_nb):
             # Boucle pour une fois le set d'entrainement
             for data_nb in range(self._learning_set_size // self._learning_batch_size):
-                self.net.compute(self._learning_set[
-                        self._permutation[data_nb:data_nb+self._learning_batch_size]])
-                expected_output = self._learning_fun.out(
-                        self._permutation[data_nb:data_nb+self._learning_batch_size])
+                debut = data_nb * self._learning_batch_size
+                fin = (data_nb+1) * self._learning_batch_size
+                intervalle = self._permutation[debut:fin]
+                self.net.compute(self._learning_set[intervalle])
+                expected_output = self._learning_fun.out(intervalle)
                 self.net.backprop(self.eta,
-                                  self._learning_set[
-                                      self._permutation[data_nb:data_nb+self._learning_batch_size]],
+                                  self._learning_set[intervalle],
                                   expected_output)
 
-                # Enregistrement périodique de  l'erreur sur le set de test
-                if (pass_nb*self._learning_set_size + data_nb) % self._test_period == 0:
+                # Enregistrement périodique de l'erreur sur le set de test
+                if True:  # (pass_nb*self._learning_set_size + data_nb) % self._test_period == 0:
                     test_number = (pass_nb*self._learning_set_size + data_nb) // self._test_period
                     testing_success_rate[test_number] = self.get_current_success_rate()
 
