@@ -42,6 +42,13 @@ class GanPlot:
         plt.plot()
         plt.close()
 
+    def plot_scores(self, D_x, D_G_z):
+        plt.plot(D_x, label='D(z)')
+        plt.plot(D_G_z, label='D(G(z))')
+        plt.ylabel('Score')
+        plt.xlabel('Parties')
+        plt.title('Evolution du score du Discriminant et du générateur')
+
     def plot_network_state(self, state):
         plt.close
         params, coefs = state

@@ -173,6 +173,5 @@ if os.name == 'nt':     # pour exécuter l'affichage uniquement sur nos ordis, e
     gan_plot.plot(image_test, str(i), discriminator_real_score[-1], discriminator_fake_score[-1])   # afichage des courbes, commentez à partir de là pour lancement
     # sur VM
     plt.close()
-    plt.plot(discriminator_real_score)
-    plt.plot(discriminator_fake_score)
+    gan_plot.plot_scores(discriminator_real_score, discriminator_fake_score)
     plt.show()
