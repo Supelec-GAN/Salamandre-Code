@@ -32,7 +32,7 @@ class GanPlot:
         plt.colorbar()  # devrait donner une correspondance entre le niveau de gris et la valeur 'réele'
         plt.title('Tentative du GAN de générer un ' + str(self.number_to_draw) + ' après '+ str(step_number)+' parties')
         plt.plot()
-        plt.close
+        plt.close()
 
     def plot_noise(self, out_vector, step_number, D_x, D_G_z):
         image = np.reshape(out_vector, [int(np.sqrt(len(out_vector))), int(np.sqrt(len(out_vector)))])
