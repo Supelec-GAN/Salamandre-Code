@@ -122,7 +122,7 @@ fake_std = []
 """
 Initialisation des paramètres
 """
-nb_sortie_image_during_learning = param['nb_sortie_image_during_learning']
+nb_images_during_learning = param['nb_images_during_learning']
 nb_images_par_sortie_during_learning = param['nb_images_par_sortie_during_learning']
 test_period = param['test_period']
 lissage_test = param['lissage_test']
@@ -133,7 +133,7 @@ final_images = param['final_images']
 # real_std.append(c)
 # fake_std.append(d)
 
-image_evolution_number = play_number//nb_sortie_image_during_learning
+image_evolution_number = play_number//nb_images_during_learning
 
 for i in range(play_number):
     ganGame.playAndLearn()
