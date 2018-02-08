@@ -74,13 +74,10 @@ class GanPlot:
 
     def plot_courbes(self, param, data_real, data_fake):
         plt.close()
-        fig = plt.figure()
-
-        gs = GridSpec(1, 6)
+        gs = GridSpec(1, 11)
         images = slice(0, param['play_number']//param['test_period'], (param['play_number']//param['nb_images_during_learning'])//param['test_period'])
 
-        print(images)
-        ax_D_x = fig.add_subplot(gs[0, 0:5])
+        ax_D_x = fig.add_subplot(gs[0, 0:10])
         ax_D_x.autoscale(axis='x')
         ax_D_x.plot(data_real, '.-', label='D(x)', markevery=images)
 
@@ -88,30 +85,80 @@ class GanPlot:
         ax_D_x.set_xlabel("Nombre de parties (X" + str(param['test_period']) + ")")
 
 
-
-        ax_D_x.legend(loc=1)
+        ax_D_x.legend(loc=0, bbox_to_anchor=(1.4, 0.2))
         ax_D_x.set_title("Réponse du Discriminateur à des images du set et à des images de synthèse")
 
-        info = fig.add_subplot(gs[0, 5])
+        info = fig.add_subplot(gs[0, 10])
 
         info.set_xticks([])
         info.set_yticks([])
+        info.axis('off')
         info.text(0.01, 0.95, 'Tentative pour ' + str(param['numbers_to_draw']), fontsize=16)
 
         info.text(0.01, 0.87, 'Formes des réseau', fontsize=12)
-        info.text(0.01, 0.85, 'Forme du générateur : ' + str(param['generator_network_layers']), fontsize= 8)
-        info.text(0.01, 0.83, 'Bruit du générateur : ' + str(param['noise_layers_size']), fontsize= 8)
-        info.text(0.01, 0.81, 'Forme du discriminateur : ' + str(param['disc_network_layers']), fontsize= 8)
+        info.text(0.01, 0.83, 'Forme du générateur : ' + str(param['generator_network_layers']), fontsize= 8)
+        info.text(0.01, 0.79, 'Bruit du générateur : ' + str(param['noise_layers_size']), fontsize= 8)
+        info.text(0.01, 0.75, 'Forme du discriminateur : ' + str(param['disc_network_layers']), fontsize= 8)
 
-        info.text(0.01, 0.73, "Ratios d'apprentissages", fontsize=12)
-        info.text(0.01, 0.71, 'Ratio D image du set : ' + str(param['disc_learning_ratio']), fontsize= 8)
-        info.text(0.01, 0.69, 'Ratio G et D même image de synthèse : ' + str(param['gen_learning_ratio']), fontsize= 8)
-        info.text(0.01, 0.67, 'Ratio D image de synthèse : ' + str(param['disc_fake_learning_ratio']), fontsize= 8)
-        info.text(0.01, 0.65, 'Ratio G image de synthèse : ' + str(param['gen_learning_ratio_alone']), fontsize= 8)
-        
-        info.text(0.01, 0.60, "Infos courbe", fontsize=12)
-        info.text(0.01, 0.58, 'Nombre de partie : ' + str(param['play_number']), fontsize=8)
-        info.text(0.01, 0.56, 'Test toutes les ' + str(param['test_period']) + ' parties', fontsize= 8)
-        info.text(0.01, 0.54, 'Moyenne sur ' + str(param['lissage_test']) + ' samples par test', fontsize= 8)
-        info.text(0.01, 0.52, "Echantillons d'images toutes les  " + str(param['play_number']//param['nb_images_during_learning']) + " parties", fontsize=8)
+        info.text(0.01, 0.65, "Ratios d'apprentissages", fontsize=12)
+        info.text(0.01, 0.61, 'Ratio D image du set : ' + str(param['disc_learning_ratio']), fontsize= 8)
+        info.text(0.01, 0.57, 'Ratio G et D même image de synthèse : ' + str(param['gen_learning_ratio']), fontsize= 8)
+        info.text(0.01, 0.53, 'Ratio D image de synthèse : ' + str(param['disc_fake_learning_ratio']), fontsize= 8)
+        info.text(0.01, 0.49, 'Ratio G image de synthèse : ' + str(param['gen_learning_ratio_alone']), fontsize= 8)
+             
+        info.text(0.01, 0.39, "Infos courbe", fontsize=12)
+        info.text(0.01, 0.35, 'Nombre de partie : ' + str(param['play_number']), fontsize=8)
+        info.text(0.01, 0.31, 'Test toutes les ' + str(param['test_period']) + ' parties', fontsize= 8)
+        info.text(0.01, 0.27, 'Moyenne sur ' + str(param['lissage_test']) + ' samples par test', fontsize= 8)
+        info.text(0.01, 0.23, "Echantillons d'images toutes les  " + str(param['play_number']//param['nb_images_during_learning']) + " parties", fontsize=8)
         plt.show()
+
+    def save_courbes(self, param, data_real, data_fake):
+        if not os.path.exists(self._name):
+            os.mkdir(self._name)
+        if not os.path.exists(self._name + '/Images'):
+            os.mkdir(self._name + '/Images')
+
+        plt.close()
+        fig = plt.figure()
+
+        gs = GridSpec(1, 11)
+        images = slice(0, param['play_number']//param['test_period'], (param['play_number']//param['nb_images_during_learning'])//param['test_period'])
+
+        ax_D_x = fig.add_subplot(gs[0, 0:10])
+        ax_D_x.autoscale(axis='x')
+        ax_D_x.plot(data_real, '.-', label='D(x)', markevery=images)
+
+        ax_D_x.plot(data_fake, '.-', label='D(G(z))', markevery=images)
+        ax_D_x.set_xlabel("Nombre de parties (X" + str(param['test_period']) + ")")
+
+
+        ax_D_x.legend(loc=0, bbox_to_anchor=(1.4, 0.2))
+        ax_D_x.set_title("Réponse du Discriminateur à des images du set et à des images de synthèse")
+
+        info = fig.add_subplot(gs[0, 10])
+
+        info.set_xticks([])
+        info.set_yticks([])
+        info.axis('off')
+        info.text(0.01, 0.95, 'Tentative pour ' + str(param['numbers_to_draw']), fontsize=16)
+
+        info.text(0.01, 0.87, 'Formes des réseau', fontsize=12)
+        info.text(0.01, 0.83, 'Forme du générateur : ' + str(param['generator_network_layers']), fontsize= 8)
+        info.text(0.01, 0.79, 'Bruit du générateur : ' + str(param['noise_layers_size']), fontsize= 8)
+        info.text(0.01, 0.75, 'Forme du discriminateur : ' + str(param['disc_network_layers']), fontsize= 8)
+
+        info.text(0.01, 0.65, "Ratios d'apprentissages", fontsize=12)
+        info.text(0.01, 0.61, 'Ratio D image du set : ' + str(param['disc_learning_ratio']), fontsize= 8)
+        info.text(0.01, 0.57, 'Ratio G et D même image de synthèse : ' + str(param['gen_learning_ratio']), fontsize= 8)
+        info.text(0.01, 0.53, 'Ratio D image de synthèse : ' + str(param['disc_fake_learning_ratio']), fontsize= 8)
+        info.text(0.01, 0.49, 'Ratio G image de synthèse : ' + str(param['gen_learning_ratio_alone']), fontsize= 8)
+             
+        info.text(0.01, 0.39, "Infos courbe", fontsize=12)
+        info.text(0.01, 0.35, 'Nombre de partie : ' + str(param['play_number']), fontsize=8)
+        info.text(0.01, 0.31, 'Test toutes les ' + str(param['test_period']) + ' parties', fontsize= 8)
+        info.text(0.01, 0.27, 'Moyenne sur ' + str(param['lissage_test']) + ' samples par test', fontsize= 8)
+        info.text(0.01, 0.23, "Echantillons d'images toutes les  " + str(param['play_number']//param['nb_images_during_learning']) + " parties", fontsize=8)
+        
+        save_date = strftime('%Y-%m-%d-%H%M%S', gmtime())
+        plt.savefig(self._name + '/Images/' + save_date + 'Courbes' + '.png', bbox_inches='tight', dpi=300)  # sauvgarde de l'image

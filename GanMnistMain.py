@@ -170,6 +170,8 @@ data_interface.save(discriminator_fake_score, 'discriminator_fake_score', conf)
 data_interface.save(real_std, 'real_std', conf)  # Sauvegarde des courbes de score
 data_interface.save(fake_std, 'fake_std', conf)
 
+gan_plot.save_courbes(param, discriminator_real_score, discriminator_fake_score)
+
 if os.name == 'nt':     # pour exécuter l'affichage uniquement sur nos ordis, et pas la vm
     state = generator.save_state()
     gan_plot.plot_network_state(state)
