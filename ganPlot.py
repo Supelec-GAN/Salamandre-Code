@@ -7,9 +7,9 @@ from matplotlib.gridspec import GridSpec
 
 class GanPlot:
 
-    def __init__(self, name, number_to_draw):
+    def __init__(self, name, numbers_to_draw):
         self._name = name
-        self.number_to_draw = number_to_draw
+        self.numbers_to_draw = numbers_to_draw
 
     def save(self, out_vector, img_name, step_number, D_x, D_G_z):  # out_vector est le vecteur colonne avant reshape
         # create directory if it doesn't exist
@@ -20,17 +20,17 @@ class GanPlot:
         image = np.reshape(out_vector, [28, 28])
         plt.imshow(image, cmap='Greys')
         plt.colorbar()  # devrait donner une correspondance entre le niveau de gris et la valeur 'réele'
-        plt.title('Tentative du GAN de générer un ' + str(self.number_to_draw) + ' après '+ str(step_number)+' parties')
+        plt.title('Tentative du GAN de générer un ' + str(self.numbers_to_draw) + ' après '+ str(step_number)+' parties')
         plt.suptitle('D(x) = ' + str(D_x)+ ', D(G(z)) = ' + str(D_G_z))
         save_date = strftime('%Y-%m-%d-%H%M%S', gmtime())
         plt.savefig(self._name + '/Images/' + save_date + '_imagede_' + img_name + '.png')  # sauvgarde de l'image
         plt.close()
-        
+
     def plot(self, out_vector, step_number, D_x, D_G_z):
         image = np.reshape(out_vector, [28, 28])
         plt.imshow(image, cmap='Greys')
         plt.colorbar()  # devrait donner une correspondance entre le niveau de gris et la valeur 'réele'
-        plt.title('Tentative du GAN de générer un ' + str(self.number_to_draw) + ' après '+ str(step_number)+' parties')
+        plt.title('Tentative du GAN de générer un ' + str(self.numbers_to_draw) + ' après '+ str(step_number)+' parties')
         plt.plot()
         plt.close
 
@@ -38,12 +38,12 @@ class GanPlot:
         image = np.reshape(out_vector, [int(np.sqrt(len(out_vector))), int(np.sqrt(len(out_vector)))])
         plt.imshow(image, cmap='Greys')
         plt.colorbar()  # devrait donner une correspondance entre le niveau de gris et la valeur 'réele'
-        plt.title('bruit pour ' + str(self.number_to_draw) + ' après '+ str(step_number)+' parties')
+        plt.title('bruit pour ' + str(self.numbers_to_draw) + ' après '+ str(step_number)+' parties')
         plt.plot()
         plt.close()
 
     def plot_network_state(self, state):
-        plt.close
+        plt.close()
         params, coefs = state
         layers_size = params[0]
         n = len(layers_size)
@@ -64,7 +64,6 @@ class GanPlot:
             ax.set_title('Biais Max : ' + str(max_b) + "Min :" + str(min_b))
         plt.show()
 
-
     def plot_weight(self, weights, input_size, output_size):
         weights = np.reshape(weights, [input_size, output_size])
         plt.imshow(weights, cmap='Greys', aspect='auto')
@@ -72,3 +71,47 @@ class GanPlot:
     def plot_bias(self, bias):
         image = np.reshape(bias, ([1, len(bias)]))
         plt.imshow(image, cmap='Greys', aspect='auto')
+
+    def plot_courbes(self, param, data_real, data_fake):
+        plt.close()
+        fig = plt.figure()
+
+        gs = GridSpec(1, 6)
+        images = slice(0, param['play_number']//param['test_period'], (param['play_number']//param['nb_images_during_learning'])//param['test_period'])
+
+        print(images)
+        ax_D_x = fig.add_subplot(gs[0, 0:5])
+        ax_D_x.autoscale(axis='x')
+        ax_D_x.plot(data_real, '.-', label='D(x)', markevery=images)
+
+        ax_D_x.plot(data_fake, '.-', label='D(G(z))', markevery=images)
+        ax_D_x.set_xlabel("Nombre de parties (X" + str(param['test_period']) + ")")
+
+
+
+        ax_D_x.legend(loc=1)
+        ax_D_x.set_title("Réponse du Discriminateur à des images du set et à des images de synthèse")
+
+        info = fig.add_subplot(gs[0, 5])
+
+        info.set_xticks([])
+        info.set_yticks([])
+        info.text(0.01, 0.95, 'Tentative pour ' + str(param['numbers_to_draw']), fontsize=16)
+
+        info.text(0.01, 0.87, 'Formes des réseau', fontsize=12)
+        info.text(0.01, 0.85, 'Forme du générateur : ' + str(param['generator_network_layers']), fontsize= 8)
+        info.text(0.01, 0.83, 'Bruit du générateur : ' + str(param['noise_layers_size']), fontsize= 8)
+        info.text(0.01, 0.81, 'Forme du discriminateur : ' + str(param['disc_network_layers']), fontsize= 8)
+
+        info.text(0.01, 0.73, "Ratios d'apprentissages", fontsize=12)
+        info.text(0.01, 0.71, 'Ratio D image du set : ' + str(param['disc_learning_ratio']), fontsize= 8)
+        info.text(0.01, 0.69, 'Ratio G et D même image de synthèse : ' + str(param['gen_learning_ratio']), fontsize= 8)
+        info.text(0.01, 0.67, 'Ratio D image de synthèse : ' + str(param['disc_fake_learning_ratio']), fontsize= 8)
+        info.text(0.01, 0.65, 'Ratio G image de synthèse : ' + str(param['gen_learning_ratio_alone']), fontsize= 8)
+        
+        info.text(0.01, 0.60, "Infos courbe", fontsize=12)
+        info.text(0.01, 0.58, 'Nombre de partie : ' + str(param['play_number']), fontsize=8)
+        info.text(0.01, 0.56, 'Test toutes les ' + str(param['test_period']) + ' parties', fontsize= 8)
+        info.text(0.01, 0.54, 'Moyenne sur ' + str(param['lissage_test']) + ' samples par test', fontsize= 8)
+        info.text(0.01, 0.52, "Echantillons d'images toutes les  " + str(param['play_number']//param['nb_images_during_learning']) + "parties", fontsize=8)
+        plt.show()
