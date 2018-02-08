@@ -177,4 +177,3 @@ if os.name == 'nt':     # pour exécuter l'affichage uniquement sur nos ordis, e
     gan_plot.plot_courbes(param, discriminator_real_score, discriminator_fake_score)
     plt.plot(discriminator_real_score)
     plt.plot(discriminator_fake_score)
-    plt.show()

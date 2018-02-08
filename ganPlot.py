@@ -113,5 +113,5 @@ class GanPlot:
         info.text(0.01, 0.58, 'Nombre de partie : ' + str(param['play_number']), fontsize=8)
         info.text(0.01, 0.56, 'Test toutes les ' + str(param['test_period']) + ' parties', fontsize= 8)
         info.text(0.01, 0.54, 'Moyenne sur ' + str(param['lissage_test']) + ' samples par test', fontsize= 8)
-        info.text(0.01, 0.52, "Echantillons d'images toutes les  " + str(param['play_number']//param['nb_images_during_learning']) + "parties", fontsize=8)
+        info.text(0.01, 0.52, "Echantillons d'images toutes les  " + str(param['play_number']//param['nb_images_during_learning']) + " parties", fontsize=8)
         plt.show()
