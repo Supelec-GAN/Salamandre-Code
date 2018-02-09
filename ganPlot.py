@@ -8,7 +8,7 @@ from matplotlib.gridspec import GridSpec
 class GanPlot:
 
     def __init__(self, name, numbers_to_draw):
-        self._name = "Data/" + name
+        self._name = "ReleveExp/" + name
         self.numbers_to_draw = numbers_to_draw
 
     def save(self, out_vector, img_name, step_number, D_x, D_G_z):  # out_vector est le vecteur colonne avant reshape

@@ -12,7 +12,7 @@ from fonction import *
 #
 class DataInterface:
     def __init__(self, name='Mnist'):
-        self._name = "Data/" + name
+        self._name = "ReleveExp/" + name
 
     ##
     # @brief      save numpy array data into the folder self._name
