@@ -51,6 +51,24 @@ class Sigmoid(Function):
         return 'Sigmoid({})'.format(self.mu)
 
 
+class SigmoidCentered(Function):
+    """
+    @brief      Classe définissant une sigmoïde formelle
+    """
+
+    def __init__(self, mu=1):
+        self.mu = mu
+
+    def out(self, x):
+        return 2/(1+np.exp(-self.mu*x))-1
+
+    def derivate(self, x):
+        return 2*self.mu*np.exp(self.mu*x)/(np.power(1+np.exp(self.mu*x), 2))
+
+    def save_fun(self):
+        return 'SigmoidCentered({})'.format(self.mu)
+
+
 class Tanh(Function):
     """
     @brief      Classe définissant une tangeante hyperbolique formelle

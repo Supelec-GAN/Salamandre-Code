@@ -12,7 +12,7 @@ from fonction import *
 #
 class DataInterface:
     def __init__(self, name='Mnist'):
-        self._name = name
+        self._name = "ReleveExp/" + name
 
     ##
     # @brief      save numpy array data into the folder self._name
@@ -124,3 +124,12 @@ class DataInterface:
         plt.imshow(image, cmap='Greys',  interpolation='nearest')
         plt.savefig(self._name + '/Images/' + save_date + '_imagede_' + img_name + '.png')  # sauvgarde de l'image
 
+    def extract_param(self, param_liste, i):
+        param = dict()
+        for key, value in param_liste.items():
+            n = len(value)
+            if i < n:
+                param[key] = value[i]
+            else:
+                param[key] = value[-1]
+        return param
