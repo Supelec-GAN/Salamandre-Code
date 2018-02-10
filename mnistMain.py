@@ -34,11 +34,11 @@ randomize_learning_set = param['learning_iterations']
 activation_funs = np.array(param['activation_funs'])
 error_fun = param['error_fun']
 
-net = Network(param['network_layers'], activation_funs, error_fun, 100)
-
 eta = param['eta']
 learning_set_pass_nb = param['learning_set_pass_nb']
 batch_size = param['batch_size']
+
+net = Network(param['network_layers'], activation_funs, error_fun, batch_size)
 
 error_graphs = ErrorGraphs('Mnist_debug_graphes', learning_iterations, eta, net, test_period)
 

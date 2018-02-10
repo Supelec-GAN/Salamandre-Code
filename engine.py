@@ -33,7 +33,7 @@ class Engine:
 
         # Données recueillies pendant les apprentissages et paramètres
         self._test_period = test_period
-        self._test_count = (self._learning_set_size*self._learning_set_pass_nb) // self._test_period
+        self._test_count = (self._learning_set_size*self._learning_set_pass_nb) // (self._test_period*self._learning_batch_size)
         self._error_during_learning = np.zeros((self._learning_iterations, self._test_count))
         self._success_fun = success_fun
 
@@ -53,7 +53,7 @@ class Engine:
                                   expected_output)
 
                 # Enregistrement périodique de l'erreur sur le set de test
-                if True:  # (pass_nb*self._learning_set_size + data_nb) % self._test_period == 0:
+                if (pass_nb*self._learning_set_size + batch_nb) % self._test_period == 0:
                     test_number = (pass_nb*self._learning_set_size + batch_nb) // self._test_period
                     testing_success_rate[test_number] = self.get_current_success_rate()
 
