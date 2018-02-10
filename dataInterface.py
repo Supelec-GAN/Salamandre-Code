@@ -26,7 +26,7 @@ class DataInterface:
 
         # create directory if it doesn't exist
         if not os.path.exists(self._name):
-            os.mkdir(self._name)
+            os.makedirs(self._name)
 
         return np.savetxt(self._name + '/' + save_date + '_' + data_name + '.csv', data, delimiter=",", header=data_param)
 
