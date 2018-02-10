@@ -14,20 +14,30 @@ récuperation des paramètres du config.ini
 
 data_interface = DataInterface()  
 
-param = data_interface.read_conf('multi_config.ini', 'GanMnist')  # Lecture du fichier de config,
+param_liste = data_interface.read_conf('multi_config.ini', 'GanMnist')  # Lecture du fichier de config,
 # dans la session [GanMnist]
-
 
 """
     Initialisation des données de Mnist
 """
-mndata = MNIST(param['file'])  # Import des fichier de Mnist (le paramètre indique l'emplacement)
+mndata = MNIST(param_liste['file'])  # Import des fichier de Mnist (le paramètre indique l'emplacement)
 
 training_images, training_labels = mndata.load_training()  
 training_images = np.array(training_images)/256  # Normalisation de l'image (pixel entre 0 et 1)
 
-for exp in range(param['number_of_experiment']):
-    numbers_to_draw = param['numbers_to_draw'][exp]
+
+#récupère toutes les listes possibles
+listParamPossible = [[]]
+for value in param_liste.values():
+    listParamPossible = [x+[y] for x in listParamPossible for y in value]
+ 
+#change toutes les listes en dictionnaire
+keys = param_liste.keys()
+params = [dict(zip(keys, liste)) for liste in listParamPossible]
+ 
+
+for param in params:
+    numbers_to_draw = param['numbers_to_draw']
 
     """
         On ne conserve dans le set que les 'numbers_to_draw' du config
@@ -42,7 +52,7 @@ for exp in range(param['number_of_experiment']):
     """
     Initialisation du dossier de sauvegarde
     """
-    save_folder = param['save_folder'][exp]
+    save_folder = param['save_folder']
 
     data_interface = DataInterface(save_folder)
     """
@@ -53,27 +63,27 @@ for exp in range(param['number_of_experiment']):
     """
     Initialisation du discriminator
     """
-    disc_learning_ratio = param['disc_learning_ratio'][exp]  # Pour chaque partie, nombre d'apprentissage
+    disc_learning_ratio = param['disc_learning_ratio']  # Pour chaque partie, nombre d'apprentissage
     # du discriminant sur image réelle
-    disc_fake_learning_ratio = param['disc_fake_learning_ratio'][exp]  # Pour chaque partie,
+    disc_fake_learning_ratio = param['disc_fake_learning_ratio']  # Pour chaque partie,
     # nombre d'apprentissage du discriminant sur image fausse, !!!  sans apprentissage du génerateur !!!
 
-    disc_activation_funs = np.array(param['disc_activation_funs'][exp])
-    disc_error_fun = param['disc_error_fun'][exp]
+    disc_activation_funs = np.array(param['disc_activation_funs'])
+    disc_error_fun = param['disc_error_fun']
 
-    discriminator = Network(param['disc_network_layers'][exp], disc_activation_funs, disc_error_fun)
+    discriminator = Network(param['disc_network_layers'], disc_activation_funs, disc_error_fun)
 
-    eta_disc = param['eta_disc'][exp]
+    eta_disc = param['eta_disc']
 
-    training_fun = param['training_fun'][exp]()  # Function donnant la réponse à une vrai image attendu (1
+    training_fun = param['training_fun']()  # Function donnant la réponse à une vrai image attendu (1
     # par défaut)
 
     """
     Initialisation du generator
     """
-    generator_layers_neuron_count = param['generator_network_layers'][exp]
-    noise_layers_size = param['noise_layers_size'][exp]
-    generator_layers_activation_function = np.array(param['generator_activation_funs'][exp])
+    generator_layers_neuron_count = param['generator_network_layers']
+    noise_layers_size = param['noise_layers_size']
+    generator_layers_activation_function = np.array(param['generator_activation_funs'])
     # generator_error_function = param['generator_error_fun']
 
     generator = NoisyGeneratorNetwork(generator_layers_neuron_count,
@@ -81,11 +91,11 @@ for exp in range(param['number_of_experiment']):
                         disc_error_fun,
                         noise_layers_size) 
 
-    eta_gen = param['eta_gen'][exp]
+    eta_gen = param['eta_gen']
 
-    gen_learning_ratio = param['gen_learning_ratio'][exp]  # Pour chaque partie, nombre d'apprentissage du
+    gen_learning_ratio = param['gen_learning_ratio']  # Pour chaque partie, nombre d'apprentissage du
     #  discriminant sur image réelle
-    gen_learning_ratio_alone = param['gen_learning_ratio_alone'][exp]
+    gen_learning_ratio_alone = param['gen_learning_ratio_alone']
 
     """
     initialisation de la partie
@@ -102,7 +112,7 @@ for exp in range(param['number_of_experiment']):
                       disc_fake_learning_ratio,
                       gen_learning_ratio_alone)
 
-    play_number = param['play_number'][exp]  # Nombre de partie  (Une partie = i fois apprentissage
+    play_number = param['play_number']  # Nombre de partie  (Une partie = i fois apprentissage
     # discriminateur sur vrai image, j fois apprentissage génerateur+ discriminateur et
     # potentiellement k fois discriminateur avec fausse image
 
@@ -118,11 +128,11 @@ for exp in range(param['number_of_experiment']):
     """
     Initialisation des paramètres
     """
-    nb_images_during_learning = param['nb_images_during_learning'][exp]
-    nb_images_par_sortie_during_learning = param['nb_images_par_sortie_during_learning'][exp]
-    test_period = param['test_period'][exp]
-    lissage_test = param['lissage_test'][exp]
-    final_images = param['final_images'][exp]
+    nb_images_during_learning = param['nb_images_during_learning']
+    nb_images_par_sortie_during_learning = param['nb_images_par_sortie_during_learning']
+    test_period = param['test_period']
+    lissage_test = param['lissage_test']
+    final_images = param['final_images']
     # a, b, c, d = ganGame.testDiscriminatorLearning(10)  # Valeur pour le réseau vierge
     # discriminator_real_score.append(a)
     # discriminator_fake_score.append(b)
