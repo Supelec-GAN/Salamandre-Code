@@ -146,7 +146,7 @@ for exp in range(number_exp):
             real_std.append(c)
             fake_std.append(d)
         if i % image_evolution_number == 0:
-            a, b, c, d = ganGame.testDiscriminatorLearning(1)
+            a, b, c, d = ganGame.testDiscriminatorLearning(lissage_test)
             images_evolution = [[]]*nb_images_par_sortie_during_learning
             for j in range(nb_images_par_sortie_during_learning):
                 image, associate_noise = ganGame.generateImage()  # Generation d'une image à la fin de
