@@ -20,23 +20,18 @@ param_liste = data_interface.read_conf('multi_config.ini', 'GanMnist')  # Lectur
 """
     Initialisation des données de Mnist
 """
-mndata = MNIST(param_liste['file'])  # Import des fichier de Mnist (le paramètre indique l'emplacement)
+mndata = MNIST(param_liste['file'][0])  # Import des fichier de Mnist (le paramètre indique l'emplacement)
 
 training_images, training_labels = mndata.load_training()  
 training_images = np.array(training_images)/256  # Normalisation de l'image (pixel entre 0 et 1)
 
+number_exp = param_liste['number_exp'][0]
 
-#récupère toutes les listes possibles
-listParamPossible = [[]]
-for value in param_liste.values():
-    listParamPossible = [x+[y] for x in listParamPossible for y in value]
- 
-#change toutes les listes en dictionnaire
-keys = param_liste.keys()
-params = [dict(zip(keys, liste)) for liste in listParamPossible]
- 
+for exp in range(number_exp):
 
-for param in params:
+    print("Lancement de l'experience n°", exp)
+
+    param = data_interface.extract_param(param_liste, exp)
     numbers_to_draw = param['numbers_to_draw']
 
     """
@@ -46,7 +41,7 @@ for param in params:
     for i in range(len(training_images)):
         if training_labels[i] not in numbers_to_draw:
             not_right_nb += [i]
-    training_images = np.delete(training_images, not_right_nb, axis=0)  # A proprifier plus tard,
+    training_images_exp = np.delete(training_images, not_right_nb, axis=0)  # A proprifier plus tard,
     # c'est pas opti le delete
 
     """
@@ -100,9 +95,8 @@ for param in params:
     """
     initialisation de la partie
     """
-
     ganGame = GanGame(discriminator,
-                      training_images,
+                      training_images_exp,
                       training_fun,
                       generator,
                       eta_gen,
@@ -153,18 +147,21 @@ for param in params:
             fake_std.append(d)
         if i % image_evolution_number == 0:
             a, b, c, d = ganGame.testDiscriminatorLearning(1)
-
+            images_evolution = [[]]*nb_images_par_sortie_during_learning
             for j in range(nb_images_par_sortie_during_learning):
                 image, associate_noise = ganGame.generateImage()  # Generation d'une image à la fin de
                 # l'apprentissage
+                images_evolution[j] = image
+            if nb_images_par_sortie_during_learning > 0:
+                gan_plot.save_multiple_output(images_evolution, str(numbers_to_draw) + "_au_rang_" + str(i), str(i), a, b)
 
-                gan_plot.save(image, str(numbers_to_draw) + "_" + str(j) +  "_au_rang_" + str(i), str(i), a, b)
-
+    images_finales = [[]]*final_images
     for i in range(final_images):
         image_test, associate_noise = ganGame.generateImage()  # génération d'une image à la fin de
         # l'apprentissage
-
-        gan_plot.save(image_test, str(numbers_to_draw)+ str(i), str(i), discriminator_real_score[-1], discriminator_fake_score[-1])
+        images_finales[i] = image_test
+    if final_images > 0:
+        gan_plot.save_multiple_output(images_finales, str(numbers_to_draw) + str(play_number), str(play_number), discriminator_real_score[-1], discriminator_fake_score[-1])
 
     conf = data_interface.save_conf('config.ini', 'GanMnist')  # récupération de la configuration
     # pour la sauvegarde dans les fichiers
@@ -176,10 +173,10 @@ for param in params:
 
     gan_plot.save_courbes(param, discriminator_real_score, discriminator_fake_score)
 
-    if os.name == 'nt':     # pour exécuter l'affichage uniquement sur nos ordis, et pas la vm
-        state = generator.save_state()
-        gan_plot.plot_network_state(state)
+    state = generator.save_state()
+    gan_plot.save_plot_network_state(state)
+    # if os.name == 'nt':     # pour exécuter l'affichage uniquement sur nos ordis, et pas la vm
+    #     state = generator.save_state()
+    #     gan_plot.plot_network_state(state)
 
-        gan_plot.plot_courbes(param, discriminator_real_score, discriminator_fake_score)
-        plt.plot(discriminator_real_score)
-        plt.plot(discriminator_fake_score)
+    #     gan_plot.plot_courbes(param, discriminator_real_score, discriminator_fake_score)

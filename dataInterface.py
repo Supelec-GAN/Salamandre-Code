@@ -124,3 +124,12 @@ class DataInterface:
         plt.imshow(image, cmap='Greys',  interpolation='nearest')
         plt.savefig(self._name + '/Images/' + save_date + '_imagede_' + img_name + '.png')  # sauvgarde de l'image
 
+    def extract_param(self, param_liste, i):
+        param = dict()
+        for key, value in param_liste.items():
+            n = len(value)
+            if i < n:
+                param[key] = value[i]
+            else:
+                param[key] = value[-1]
+        return param
