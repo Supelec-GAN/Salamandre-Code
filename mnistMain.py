@@ -1,3 +1,6 @@
+import matplotlib as mpl
+mpl.use('Agg')
+
 import numpy as np
 from brain.network import Network
 from fonction import Sigmoid, MnistTest, Norm2
@@ -10,8 +13,6 @@ from errorGraphs import ErrorGraphs
 data_interface = DataInterface('Mnist_debug')
 
 param = data_interface.read_conf()
-
-print(param)
 
 mndata = MNIST(param['file'])
 training_images, training_labels = mndata.load_training()
@@ -36,7 +37,10 @@ error_fun = param['error_fun']
 net = Network(param['network_layers'], activation_funs, error_fun, 100)
 
 eta = param['eta']
-error_graphs = ErrorGraphs('Mnist_debug_graphes',learning_iterations, eta, net, test_period)
+learning_set_pass_nb = param['learning_set_pass_nb']
+batch_size = param['batch_size']
+
+error_graphs = ErrorGraphs('Mnist_debug_graphes', learning_iterations, eta, net, test_period)
 
 
 training_fun = param['training_fun'](training_labels)
@@ -59,7 +63,8 @@ engine = Engine(net,
                 success_fun,
                 learning_iterations,
                 test_period,
-                randomize_learning_set)
+                randomize_learning_set,
+                learning_set_pass_nb)
 
 error_during_learning = engine.run()
 
