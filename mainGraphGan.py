@@ -3,27 +3,18 @@ from brain.network import Network
 from dataInterface import DataInterface
 from errorGraphs import ErrorGraphs
 import matplotlib.pyplot as plt
+from ganPlot import GanPlot
 
 
-data_interface = DataInterface('GanMnist')
-param_real, data_real = data_interface.load("2018-01-30-154644_discriminator_real_score.csv")
-param_fake, data_fake = data_interface.load("2018-01-30-154644_discriminator_fake_score.csv")
-# numbers_to_draw = param['numbers_to_draw']
+data_interface = DataInterface('C://Users//Froux//Documents//Projet_Long//Data//GanMnist//Courbes')
+param_real, data_real = data_interface.load("2018-01-31-204909_discriminator_real_score.csv")
+param_fake, data_fake = data_interface.load("2018-01-31-204909_discriminator_fake_score.csv")
 
+numbers_to_draw = param_fake['numbers_to_draw']
 
-# play_number = param['play_number']
+save_folder = param_fake['save_folder']
 
+gan_plot = GanPlot(save_folder, numbers_to_draw)
 
-# disc_activation_funs = np.array(param['disc_activation_funs'])
+gan_plot.save_courbes(param_fake, data_real, data_fake)
 
-# disc_error_fun = param['disc_error_fun']
-
-# # net = Network(param['network_layers'], activation_funs, error_fun)
-
-# eta = param['eta_disc']
-# error_graphs = ErrorGraphs('Mnist_debug_graphes',learning_iterations, eta, param['network_layers'], test_period)
-
-plt.plot(data_real)
-plt.plot(data_fake)
-plt.show()
-# error_graphs.save(data)
