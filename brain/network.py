@@ -38,7 +38,8 @@ class Network:
             self._layers_activation_function[self._layers_count - 1],
             self.error,
             self.layers_neuron_count[self._layers_count - 1],
-            self.layers_neuron_count[self._layers_count]
+            self.layers_neuron_count[self._layers_count],
+            self._learning_batch_size
             )
         self.output = np.zeros(layers_neuron_count[-1])
 
@@ -65,7 +66,8 @@ class Network:
             self._layers_activation_function[self._layers_count - 1],
             self.error,
             self.layers_neuron_count[self._layers_count - 1],
-            self.layers_neuron_count[self._layers_count]
+            self.layers_neuron_count[self._layers_count],
+            self._learning_batch_size
             )
         self.output = np.zeros(self.layers_neuron_count[-1])
 
