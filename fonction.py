@@ -120,7 +120,7 @@ class MnistTest(Function):
         self._set_labels = set_labels
 
     def out(self, x):
-        if type(x) == int:
+        if type(x) in [int, np.int32, np.int64]:
             r = np.zeros(10)
             r[self._set_labels[x]] = 1
             r = np.reshape(r, (10, 1))
