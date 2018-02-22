@@ -61,10 +61,10 @@ disc_fake_learning_ratio = param['disc_fake_learning_ratio']  # Pour chaque part
 disc_activation_funs = np.array(param['disc_activation_funs'])
 disc_error_fun = param['disc_error_fun']
 
-discriminator = Network(param['disc_network_layers'], disc_activation_funs, disc_error_fun)
-
 eta_disc = param['eta_disc']
+batch_size_disc = param['batch_size_disc']
 
+discriminator = Network(param['disc_network_layers'], disc_activation_funs, disc_error_fun)
 
 training_fun = param['training_fun']()  # Function donnant la réponse à une vrai image attendu (1
 # par défaut)
@@ -78,12 +78,13 @@ noise_layers_size = param['noise_layers_size']
 generator_layers_activation_function = np.array(param['generator_activation_funs'])
 # generator_error_function = param['generator_error_fun']
 
-generator = NoisyGeneratorNetwork(generator_layers_neuron_count,
-                    generator_layers_activation_function,
-                    disc_error_fun,
-                    noise_layers_size) 
-
 eta_gen = param['eta_gen']
+batch_size_gen = param['batch_size_gen']
+
+generator = NoisyGeneratorNetwork(generator_layers_neuron_count,
+                                  generator_layers_activation_function,
+                                  disc_error_fun,
+                                  noise_layers_size)
 
 gen_learning_ratio = param['gen_learning_ratio']  # Pour chaque partie, nombre d'apprentissage du
 #  discriminant sur image réelle

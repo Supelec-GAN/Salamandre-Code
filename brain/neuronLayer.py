@@ -145,26 +145,21 @@ class OutputLayer(NeuronLayer):
 # @brief      Class for layer with noisy input added to inputs.
 ##
 class NoisyLayer(NeuronLayer):
-    def __init__(self, activation_function, error_function, input_size=1, output_size=1, noise_size=0, error_function_gen=NonSatHeuristic()):
+    def __init__(self, activation_function, error_function, input_size=1, output_size=1,
+                 learning_batch_size=1, noise_size=0, error_function_gen=NonSatHeuristic()):
+        super(NoisyLayer, self).__init__(activation_function, error_function, input_size,
+                                         output_size, learning_batch_size, error_function_gen)
         # Matrice de dimension q*p avec le nombre de sortie et p le nombre d'entrée
-        self._input_size = input_size
-        self._output_size = output_size
         self._noise_size = noise_size
         self.weights = np.transpose(np.random.randn(input_size+noise_size, output_size))
-        self._bias = np.zeros((output_size, 1))            # Vecteur colonne
-        self._activation_function = activation_function
-        self.activation_levels = np.zeros((output_size, 1))  # Vecteur colonne
-        self.output = np.zeros((output_size, 1))             # Vecteur colonne
-        self.error = error_function
-        self.error_gen = error_function_gen
-        self.noise_input = np.zeros((noise_size, 1))
+        self.noise_input = np.zeros((noise_size, learning_batch_size))
 
     ##
     # Compute très légèrement différent, on concatene un vecteur de bruits à l'input si nécéssaire
     ##
     def compute(self, inputs):
         if self._noise_size != 0:  # nécessaire car np.zeros( (0,1)) est un objet chelou
-            self.noise_input = np.random.randn(self._noise_size, 1)
+            self.noise_input = np.random.randn(self._noise_size, self._learning_batch_size)
             inputs = np.concatenate([inputs, self.noise_input])
         self.activation_levels = np.dot(self.weights, inputs) - self._bias
         self.output = self._activation_function.out(self.activation_levels)
@@ -181,8 +176,19 @@ class NoisyLayer(NeuronLayer):
             input_layer, out_influence)
         bias_influence = self.calculate_bias_influence(out_influence)
         if update:
-            self.updateweights(eta, weight_influence)
+            self.update_weights(eta, weight_influence)
             self.update_bias(eta, bias_influence)
             return self.weights[:, 0:self._input_size]  # On extrait les poids concernant les vrais inputs (le bruit n'a pas besoin d'influer sur les couches d'avant)
         else:
             return (self.weights - eta * weight_influence)[:, 0:self._input_size]
+
+    @property
+    def learning_batch_size(self):
+        return self._learning_batch_size
+
+    @learning_batch_size.setter
+    def learning_batch_size(self, new_learning_batch_size):
+        self.activation_levels = np.zeros((self._output_size, new_learning_batch_size))
+        self.output = np.zeros((self._output_size, new_learning_batch_size))
+        self.noise_input = np.zeros((self._noise_size, new_learning_batch_size))
+        self._learning_batch_size = new_learning_batch_size
