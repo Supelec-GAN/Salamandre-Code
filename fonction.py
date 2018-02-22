@@ -32,6 +32,10 @@ class Function:
     def save_fun(self):
         return 'Function()'
 
+    def vectorize(self):
+        self.out = np.vectorize(self.out)
+        self.derivate = np.vectorize(self.derivate)
+
 
 class Sigmoid(Function):
     """
