@@ -1,6 +1,3 @@
-import matplotlib as mpl
-mpl.use('Agg')
-
 import numpy as np
 from brain.network import Network
 from fonction import Sigmoid, MnistTest, Norm2
