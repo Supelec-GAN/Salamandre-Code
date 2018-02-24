@@ -65,7 +65,8 @@ class NeuronLayer:
         self.weights = self.weights - eta * weight_influence
 
     def update_bias(self, eta, bias_influence):
-        self._bias = self._bias + eta * bias_influence
+        self._bias = self._bias 
+        # + eta * bias_influence
 
     ##
     # @brief      Calculates the weight influence.

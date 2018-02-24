@@ -33,6 +33,29 @@ class Function:
         return 'Function()'
 
 
+class RelU(Function):
+    """
+    @brief Fonction Rectified linear units formelle
+    """
+
+    def __init__(self, alpha=0):
+        self.alpha = alpha
+
+    def out(self, x):
+        if x <= 0:
+            return alpha*x
+        else:
+            return x
+
+    def derivate(self, x):
+        if x <= 0:
+            return 0
+        else:
+            return 1
+            
+
+
+
 class Sigmoid(Function):
     """
     @brief      Classe définissant une sigmoïde formelle
