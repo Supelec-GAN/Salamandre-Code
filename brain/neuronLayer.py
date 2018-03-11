@@ -17,6 +17,8 @@ class NeuronLayer:
         self.error = error_function
         self.error_gen = error_function_gen
 
+        self.update_value = 0
+
     @property
     def bias(self):
         """Get the current bias."""
@@ -62,10 +64,12 @@ class NeuronLayer:
             return self.weights - eta * weight_influence
 
     def updateweights(self, eta, weight_influence, momentum):
-        self.weights = momentum*self.weights - eta * weight_influence
+        self.update_value = momentum*self.update_value - eta * weight_influence
+        self.weights = self.weights + self.update_value
 
     def update_bias(self, eta, bias_influence, momentum):
-        self._bias = momentum*self._bias + eta * bias_influence
+        self.update_value = momentum * self.update_value + eta * bias_influence
+        self._bias = self._bias + self.update_value
 
     ##
     # @brief      Calculates the weight influence.
