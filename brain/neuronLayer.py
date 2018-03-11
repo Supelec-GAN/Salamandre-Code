@@ -52,7 +52,7 @@ class NeuronLayer:
     # @return     retourne influence of the input on the error
     #
     #
-    def backprop(self, out_influence, eta, input_layer, momentum=1, update=True):
+    def backprop(self, out_influence, eta, input_layer, momentum=0, update=True):
         weight_influence = self.calculate_weight_influence(
             input_layer, out_influence)
         bias_influence = self.calculate_bias_influence(out_influence)
@@ -146,7 +146,7 @@ class NoisyLayer(NeuronLayer):
     # backptop très légèrement différent, on retropropage en considérant le vecteur bruit,
     # mais sans renvoyer son influence à la couche précédente
     ##
-    def backprop(self, out_influence, eta, input_layer, momentum=1, update=True):
+    def backprop(self, out_influence, eta, input_layer, momentum=0, update=True):
         if self._noise_size != 1:
             input_layer = np.concatenate([input_layer, self.noise_input])
         weight_influence = self.calculate_weight_influence(

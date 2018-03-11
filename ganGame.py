@@ -11,7 +11,7 @@ class GanGame:
     # @param      generator       The generator (will be a Network object)
     # @param      learning_ratio  The learning ratio between discrimator and generator
     ##
-    def __init__(self, discriminator, learning_set, learning_fun, generator, eta_gen, eta_disc, momentum_gen=1, momentum_disc=1,disc_learning_ratio=1, gen_learning_ratio=1, disc_fake_learning_ratio=0, gen_learning_ratio_alone=0):
+    def __init__(self, discriminator, learning_set, learning_fun, generator, eta_gen, eta_disc, momentum_gen=0, momentum_disc=0,disc_learning_ratio=1, gen_learning_ratio=1, disc_fake_learning_ratio=0, gen_learning_ratio_alone=0):
         self.generator = generator
         self.discriminator = discriminator
         self.learning_set = learning_set

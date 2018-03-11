@@ -76,7 +76,7 @@ class Network:
         On considère ici toujours des réseaux avec plusieurs couches !
     """
 
-    def backprop(self, eta, inputs, reference, momentum=1, update=True, gen_backprop=False):
+    def backprop(self, eta, inputs, reference, momentum=0, update=True, gen_backprop=False):
         inputs = np.reshape(inputs, (len(inputs), 1))
         n = self._layers_count
 
@@ -160,7 +160,7 @@ class GeneratorNetwork(Network):
                 self.layers_list[i].weights = weights_list[i][0]
                 self.layers_list[i].bias = weights_list[i][1]
 
-    def backprop(self, eta, inputs, disc_error_influence, first_weights_disc, momentum=1, update=True):
+    def backprop(self, eta, inputs, disc_error_influence, first_weights_disc, momentum=0, update=True):
         inputs = np.reshape(inputs, (len(inputs), 1))
         n = self._layers_count
 

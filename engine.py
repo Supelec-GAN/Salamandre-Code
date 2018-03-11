@@ -5,7 +5,7 @@ class Engine:
     """Classe gérant l'apprentissage d'un réseau, tout en fournissant des données au fur et à mesure
     """
 
-    def __init__(self, net, eta, learning_set, learning_fun, testing_set, testing_fun, success_fun, momentum=1,
+    def __init__(self, net, eta, learning_set, learning_fun, testing_set, testing_fun, success_fun, momentum=0,
                  learning_iterations=1, test_period=100, learning_set_pass_nb=1,
                  randomize_learning_set=True):
         # Réseau utilisé
