@@ -17,7 +17,8 @@ class NeuronLayer:
         self.error = error_function
         self.error_gen = error_function_gen
 
-        self.update_value = 0
+        self.update_weights_value = np.zeros((output_size, input_size))
+        self.update_bias_value = np.zeros((output_size, 1))
 
     @property
     def bias(self):
@@ -64,12 +65,12 @@ class NeuronLayer:
             return self.weights - eta * weight_influence
 
     def updateweights(self, eta, weight_influence, momentum):
-        self.update_value = momentum*self.update_value - eta * weight_influence
-        self.weights = self.weights + self.update_value
+        self.update_weights_value = momentum*self.update_weights_value - eta * weight_influence
+        self.weights = self.weights + self.update_weights_value
 
     def update_bias(self, eta, bias_influence, momentum):
-        self.update_value = momentum * self.update_value + eta * bias_influence
-        self._bias = self._bias + self.update_value
+        self.update_bias_value = momentum * self.update_bias_value + eta * bias_influence
+        self._bias = self._bias + self.update_bias_value
 
     ##
     # @brief      Calculates the weight influence.
@@ -131,6 +132,8 @@ class NoisyLayer(NeuronLayer):
         self.error_gen = error_function_gen
         self.noise_input = np.zeros((noise_size, 1))
 
+        self.update_weights_value = np.zeros((output_size, input_size+noise_size))
+        self.update_bias_value = np.zeros((output_size, 1))
     ##
     # Compute très légèrement différent, on concatene un vecteur de bruits à l'input si nécéssaire
     ##
