@@ -50,22 +50,22 @@ class NeuronLayer:
     # @return     retourne influence of the input on the error
     #
     #
-    def backprop(self, out_influence, eta, input_layer, update=True):
+    def backprop(self, out_influence, eta, input_layer, momentum=1, update=True):
         weight_influence = self.calculate_weight_influence(
             input_layer, out_influence)
         bias_influence = self.calculate_bias_influence(out_influence)
         if update:
-            self.updateweights(eta, weight_influence)
-            self.update_bias(eta, bias_influence)
+            self.updateweights(eta, weight_influence, momentum)
+            self.update_bias(eta, bias_influence, momentum)
             return self.weights
         else:
             return self.weights - eta * weight_influence
 
-    def updateweights(self, eta, weight_influence):
-        self.weights = self.weights - eta * weight_influence
+    def updateweights(self, eta, weight_influence, momentum):
+        self.weights = momentum*self.weights - eta * weight_influence
 
-    def update_bias(self, eta, bias_influence):
-        self._bias = self._bias + eta * bias_influence
+    def update_bias(self, eta, bias_influence, momentum):
+        self._bias = momentum*self._bias + eta * bias_influence
 
     ##
     # @brief      Calculates the weight influence.
@@ -142,15 +142,15 @@ class NoisyLayer(NeuronLayer):
     # backptop très légèrement différent, on retropropage en considérant le vecteur bruit,
     # mais sans renvoyer son influence à la couche précédente
     ##
-    def backprop(self, out_influence, eta, input_layer, update=True):
+    def backprop(self, out_influence, eta, input_layer, momentum=1, update=True):
         if self._noise_size != 1:
             input_layer = np.concatenate([input_layer, self.noise_input])
         weight_influence = self.calculate_weight_influence(
             input_layer, out_influence)
         bias_influence = self.calculate_bias_influence(out_influence)
         if update:
-            self.updateweights(eta, weight_influence)
-            self.update_bias(eta, bias_influence)
+            self.updateweights(eta, weight_influence, momentum)
+            self.update_bias(eta, bias_influence, momentum)
             return self.weights[:, 0:self._input_size]  # On extrait les poids concernant les vrais inputs (le bruit n'a pas besoin d'influer sur les couches d'avant)
         else:
             return (self.weights - eta * weight_influence)[:, 0:self._input_size]

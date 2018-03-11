@@ -36,6 +36,7 @@ error_fun = param['error_fun']
 net = Network(param['network_layers'], activation_funs, error_fun)
 
 eta = param['eta']
+momentum = param['momentum']
 error_graphs = ErrorGraphs('Mnist_debug_graphes',learning_iterations, eta, net, test_period)
 
 
@@ -57,6 +58,7 @@ engine = Engine(net,
                 testing_images[0:testing_size] / 256,
                 testing_fun,
                 success_fun,
+                momentum,
                 learning_iterations,
                 test_period,
                 randomize_learning_set)
