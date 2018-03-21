@@ -89,4 +89,6 @@ class Engine:
             if self._randomize_learning_set:
                 self._permutation = np.random.permutation(self._learning_set_size)
             self._error_during_learning[i] = self.learn()
+            if i % self._test_period == 0:
+                print(i)
         return self._error_during_learning
