@@ -13,7 +13,7 @@ class GanGame:
     ##
     def __init__(self, discriminator, learning_set, learning_fun, generator, eta_gen, eta_disc,
                  disc_learning_ratio=1, gen_learning_ratio=1, disc_fake_learning_ratio=0,
-                 gen_learning_ratio_alone=0, batch_size=0):
+                 gen_learning_ratio_alone=0, batch_size=1):
         self.generator = generator
         self.discriminator = discriminator
         self.learning_set = learning_set
@@ -73,7 +73,7 @@ class GanGame:
         real_items = np.transpose([self.learning_set[np.random.randint(self.set_size)] for i in range(self.batch_size)])  # generate  a random item from the set
         # expected_output = self.learning_fun.out(real_item)
         self.discriminator.compute(real_items)
-        self.discriminator.backprop(self.eta_disc, real_items, [1]*self.batch_size)  # expected output = 1 pour le moment
+        self.discriminator.backprop(self.eta_disc, real_items, np.ones((self.batch_size, 1))) # expected output = 1 pour le moment
 
         return 0
 
@@ -83,7 +83,7 @@ class GanGame:
     def discriminatorLearningVirt(self, fake_images, alone=False):
         if alone:
             self.discriminator.compute(fake_images)
-        self.discriminator.backprop(self.eta_disc, fake_images, [0]*self.batch_size)
+        self.discriminator.backprop(self.eta_disc, fake_images, np.zeros((self.batch_size, 1)))
 
         return 0
 
@@ -113,7 +113,7 @@ class GanGame:
 
     def generateNoise(self):
         n = self.generator.layers_neuron_count[0]
-        noises = [2*np.random.random(n)-1 for i in range(self.batch_size)]
+        noises = 2*np.random.random((n, self.batch_size))-1
         return noises
 
     ##
