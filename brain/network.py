@@ -249,31 +249,36 @@ class GeneratorNetwork(Network):
 
 
 ##
-## @brief      Class for noisy generator network. It has NoisyLayer instead of NetworkLayer
+# @brief      Class for noisy generator network. It has NoisyLayer instead of NetworkLayer
 ##
 class NoisyGeneratorNetwork(GeneratorNetwork):
     def __init__(self, layers_neuron_count, layers_activation_function, error_function,
-                 noise_layers_size, weights_list=()):
+                 noise_layers_size, learning_batch_size=1, weights_list=()):
         self._layers_activation_function = layers_activation_function  # sauvegarde pour pouvoir
         # reinitialiser
         self.layers_neuron_count = layers_neuron_count
         self._layers_count = np.size(layers_neuron_count) - 1
         self.error = error_function
+        self._learning_batch_size = learning_batch_size
         self.noise_layers_size = noise_layers_size
         self.layers_list = np.array(
             self._layers_count * [NoisyLayer(
                 layers_activation_function[0],
                 error_function,
+                layers_neuron_count[0],
+                layers_neuron_count[1],
+                learning_batch_size,
                 noise_layers_size[0]
             )]
         )
         for i in range(0, self._layers_count):
             self.layers_list[i] = NoisyLayer(layers_activation_function[i],
-                                              self.error,
-                                              layers_neuron_count[i],
-                                              layers_neuron_count[i + 1],
-                                              noise_layers_size[i]
-                                              )
+                                             self.error,
+                                             layers_neuron_count[i],
+                                             layers_neuron_count[i + 1],
+                                             learning_batch_size,
+                                             noise_layers_size[i]
+                                             )
 
         self.output = np.zeros(layers_neuron_count[-1])
 
