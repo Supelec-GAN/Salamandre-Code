@@ -13,7 +13,7 @@ class GanGame:
     ##
     def __init__(self, discriminator, learning_set, learning_fun, generator, eta_gen, eta_disc,
                  disc_learning_ratio=1, gen_learning_ratio=1, disc_fake_learning_ratio=0,
-                 gen_learning_ratio_alone=0):
+                 gen_learning_ratio_alone=0, batch_size=0):
         self.generator = generator
         self.discriminator = discriminator
         self.learning_set = learning_set
@@ -25,6 +25,7 @@ class GanGame:
         self.disc_learning_ratio = disc_learning_ratio
         self.disc_fake_learning_ratio = disc_fake_learning_ratio
         self.gen_learning_ratio_alone = gen_learning_ratio_alone
+        self.batch_size = batch_size
 
     ##
     # @brief      Execute a movement of the game, learning of dicriminator, then the generator
@@ -36,8 +37,8 @@ class GanGame:
             self.discriminatorLearningReal()
 
         for j in range(self.gen_learning_ratio):
-            fake_image = self.generatorLearning()
-            self.discriminatorLearningVirt(fake_image)
+            fake_images = self.generatorLearning()
+            self.discriminatorLearningVirt(fake_images)
 
         for k in range(self.disc_fake_learning_ratio):
             fake_image, noise = self.generateImage()
@@ -52,13 +53,14 @@ class GanGame:
         real_trust = []
         fake_trust = []
         for i in range(n):
-            real_item = self.learning_set[np.random.randint(self.set_size)]
+            real_item = [self.learning_set[np.random.randint(self.set_size)] for i in range(self.batch_size)]
             real_score = self.testTruth(real_item)
             real_trust.append(real_score)
 
         for j in range(n):
-            fake_image, noise = self.generateImage()
-            fake_score = self.testTruth(fake_image)
+            fake_images, noise = self.generateImage()
+            noises = [noise]*self.batch_size
+            fake_score = self.testTruth(np.transpose(fake_images))
             fake_trust.append(fake_score)
 
         return np.mean(real_trust), np.mean(fake_trust), np.std(real_trust), np.std(fake_trust)
@@ -67,20 +69,20 @@ class GanGame:
     # @brief      discriminator learning what is real image
     ##
     def discriminatorLearningReal(self):
-        real_item = self.learning_set[np.random.randint(self.set_size)]  # generate  a random item from the set
+        real_items = [self.learning_set[np.random.randint(self.set_size)] for i in range(self.batch_size)]  # generate  a random item from the set
         # expected_output = self.learning_fun.out(real_item)
-        self.discriminator.compute(real_item)
-        self.discriminator.backprop(self.eta_disc, real_item, 1)  # expected output = 1 pour le moment
+        self.discriminator.compute(real_items)
+        self.discriminator.backprop(self.eta_disc, real_items, [1]*self.batch_size)  # expected output = 1 pour le moment
 
         return 0
 
     ##
     # @brief      discriminator learning what is fake image
     ##
-    def discriminatorLearningVirt(self, fake_image, alone=False):
+    def discriminatorLearningVirt(self, fake_images, alone=False):
         if alone:
-            self.discriminator.compute(fake_image)
-        self.discriminator.backprop(self.eta_disc, fake_image, 0)
+            self.discriminator.compute(fake_images)
+        self.discriminator.backprop(self.eta_disc, fake_images, [0]*self.batch_size)
 
         return 0
 
@@ -92,21 +94,26 @@ class GanGame:
     # @comment    The cost function will be initialize with the network.
     ##
     def generatorLearning(self):
-        fake_image, noise = self.generateImage()
-        fooled = self.testTruth(fake_image)
-        disc_error_influence = self.discriminator.backprop(self.eta_gen, fake_image, fooled, False, True)
-        self.generator.backprop(self.eta_gen, noise, disc_error_influence, self.discriminator.layers_list[0].weights)
+        fake_images, noises = self.generateImage()
+        # real_items = [self.learning_set[np.random.randint(self.set_size)] for i in range(self.batch_size)]
+        # batch = fake_images.concatenate(real_items)
+        batch = np.transpose(fake_images)
+        fooled = self.testTruth(batch)
 
-        return fake_image
+        disc_error_influence = self.discriminator.backprop(self.eta_gen, batch, fooled, False, True)
+        self.generator.backprop(self.eta_gen, noises, disc_error_influence, self.discriminator.layers_list[0].weights)
+
+        return batch
 
     def generateImage(self):
-        noise = self.generateNoise()
-        image = self.generator.compute(noise)
-        return image, noise
+        noises = self.generateNoise()
+        images = self.generator.compute(noises)
+        return images, noises
 
     def generateNoise(self):
         n = self.generator.layers_neuron_count[0]
-        return 2*np.random.random(n)-1
+        noises = [2*np.random.random(n)-1 for i in range(self.batch_size)]
+        return noises
 
     ##
     # @brief      Give belief of discrimator about the image given

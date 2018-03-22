@@ -88,6 +88,8 @@ class Network:
             inputs = np.reshape(inputs, (dim[0], 1))
         elif nb_dim == 2 and self._learning_batch_size == dim[0]:
             inputs = np.transpose(inputs)
+        elif nb_dim ==2 and self._learning_batch_size == dim[1]:
+            inputs = inputs
         else:
             raise Exception("Incorrect inputs dimensions")
 
@@ -177,9 +179,10 @@ class Network:
 #
 class GeneratorNetwork(Network):
     def __init__(self, layers_neuron_count, layers_activation_function, error_function,
-                 weights_list=()):
+                 learning_batch_size=1, weights_list=()):
         self._layers_activation_function = layers_activation_function  # sauvegarde pour pouvoir
         # reinitialiser
+        self._learning_batch_size = learning_batch_size
         self.layers_neuron_count = layers_neuron_count
         self._layers_count = np.size(layers_neuron_count) - 1
         self.error = error_function
@@ -193,7 +196,8 @@ class GeneratorNetwork(Network):
             self.layers_list[i] = NeuronLayer(layers_activation_function[i],
                                               self.error,
                                               layers_neuron_count[i],
-                                              layers_neuron_count[i + 1]
+                                              layers_neuron_count[i + 1],
+                                              self._learning_batch_size
                                               )
 
         self.output = np.zeros(layers_neuron_count[-1])

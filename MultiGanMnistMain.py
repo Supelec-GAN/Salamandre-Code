@@ -66,7 +66,7 @@ for exp in range(number_exp):
     disc_activation_funs = np.array(param['disc_activation_funs'])
     disc_error_fun = param['disc_error_fun']
 
-    discriminator = Network(param['disc_network_layers'], disc_activation_funs, disc_error_fun)
+    discriminator = Network(param['disc_network_layers'], disc_activation_funs, disc_error_fun, 1)
 
     eta_disc = param['eta_disc']
 
@@ -81,10 +81,10 @@ for exp in range(number_exp):
     generator_layers_activation_function = np.array(param['generator_activation_funs'])
     # generator_error_function = param['generator_error_fun']
 
-    generator = NoisyGeneratorNetwork(generator_layers_neuron_count,
+    generator = GeneratorNetwork(generator_layers_neuron_count,
                         generator_layers_activation_function,
                         disc_error_fun,
-                        noise_layers_size) 
+                        1) 
 
     eta_gen = param['eta_gen']
 
@@ -104,7 +104,8 @@ for exp in range(number_exp):
                       disc_learning_ratio,
                       gen_learning_ratio,
                       disc_fake_learning_ratio,
-                      gen_learning_ratio_alone)
+                      gen_learning_ratio_alone,
+                      1)
 
     play_number = param['play_number']  # Nombre de partie  (Une partie = i fois apprentissage
     # discriminateur sur vrai image, j fois apprentissage génerateur+ discriminateur et
@@ -134,6 +135,9 @@ for exp in range(number_exp):
     # fake_std.append(d)
 
     image_evolution_number = play_number//nb_images_during_learning
+
+    for i in range(1000):
+        ganGame.discriminatorLearningReal()
 
     for i in range(play_number):
         ganGame.playAndLearn()

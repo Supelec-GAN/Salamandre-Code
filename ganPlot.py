@@ -45,7 +45,7 @@ class GanPlot:
         gs = GridSpec(high, min(n, 5))
         fig = plt.figure()
         for i in range(n):
-            image = np.reshape(out_vectors[i], [28, 28])
+            image = np.reshape(out_vectors[i][:,0], [28, 28])
             sub = fig.add_subplot(gs[i//5, i % 5])
             sub.imshow(image, cmap='Greys')
             sub.set_xticks([])
