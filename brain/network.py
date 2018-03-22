@@ -88,7 +88,7 @@ class Network:
             inputs = np.reshape(inputs, (dim[0], 1))
         elif nb_dim == 2 and self._learning_batch_size == dim[0]:
             inputs = np.transpose(inputs)
-        elif nb_dim ==2 and self._learning_batch_size == dim[1]:
+        elif nb_dim == 2 and self._learning_batch_size == dim[1]:
             inputs = inputs
         else:
             raise Exception("Incorrect inputs dimensions")
@@ -110,6 +110,8 @@ class Network:
             inputs = np.reshape(inputs, (dim[0], 1))
         elif nb_dim == 2 and self._learning_batch_size == dim[0]:
             inputs = np.reshape(inputs, (dim[1], dim[0]))
+        elif nb_dim == 2 and self._learning_batch_size == dim[1]:
+            inputs = inputs
         else:
             raise Exception("Incorrect inputs dimensions")
 
@@ -215,6 +217,8 @@ class GeneratorNetwork(Network):
             inputs = np.reshape(inputs, (dim[0], 1))
         elif nb_dim == 2 and self._learning_batch_size == dim[0]:
             inputs = np.reshape(inputs, (dim[1], dim[0]))
+        elif nb_dim == 2 and self._learning_batch_size == dim[1]:
+            inputs = inputs
         else:
             raise Exception("Incorrect inputs dimensions")
 

@@ -66,7 +66,7 @@ for exp in range(number_exp):
     disc_activation_funs = np.array(param['disc_activation_funs'])
     disc_error_fun = param['disc_error_fun']
 
-    discriminator = Network(param['disc_network_layers'], disc_activation_funs, disc_error_fun, 1)
+    discriminator = Network(param['disc_network_layers'], disc_activation_funs, disc_error_fun, 10)
 
     eta_disc = param['eta_disc']
 
@@ -84,7 +84,7 @@ for exp in range(number_exp):
     generator = GeneratorNetwork(generator_layers_neuron_count,
                         generator_layers_activation_function,
                         disc_error_fun,
-                        1) 
+                        10) 
 
     eta_gen = param['eta_gen']
 
@@ -105,7 +105,7 @@ for exp in range(number_exp):
                       gen_learning_ratio,
                       disc_fake_learning_ratio,
                       gen_learning_ratio_alone,
-                      1)
+                      10)
 
     play_number = param['play_number']  # Nombre de partie  (Une partie = i fois apprentissage
     # discriminateur sur vrai image, j fois apprentissage génerateur+ discriminateur et

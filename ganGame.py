@@ -53,12 +53,13 @@ class GanGame:
         real_trust = []
         fake_trust = []
         for i in range(n):
-            real_item = [self.learning_set[np.random.randint(self.set_size)] for i in range(self.batch_size)]
+            real_item = np.transpose([self.learning_set[np.random.randint(self.set_size)] for i in range(self.batch_size)])
             real_score = self.testTruth(real_item)
             real_trust.append(real_score)
 
         for j in range(n):
             fake_images, noise = self.generateImage()
+            print('fakereal ', np.shape(fake_images))
             noises = [noise]*self.batch_size
             fake_score = self.testTruth(np.transpose(fake_images))
             fake_trust.append(fake_score)
@@ -69,7 +70,7 @@ class GanGame:
     # @brief      discriminator learning what is real image
     ##
     def discriminatorLearningReal(self):
-        real_items = [self.learning_set[np.random.randint(self.set_size)] for i in range(self.batch_size)]  # generate  a random item from the set
+        real_items = np.transpose([self.learning_set[np.random.randint(self.set_size)] for i in range(self.batch_size)])  # generate  a random item from the set
         # expected_output = self.learning_fun.out(real_item)
         self.discriminator.compute(real_items)
         self.discriminator.backprop(self.eta_disc, real_items, [1]*self.batch_size)  # expected output = 1 pour le moment
@@ -98,12 +99,12 @@ class GanGame:
         # real_items = [self.learning_set[np.random.randint(self.set_size)] for i in range(self.batch_size)]
         # batch = fake_images.concatenate(real_items)
         batch = np.transpose(fake_images)
-        fooled = self.testTruth(batch)
+        fooled = self.testTruth(fake_images)
 
-        disc_error_influence = self.discriminator.backprop(self.eta_gen, batch, fooled, False, True)
+        disc_error_influence = self.discriminator.backprop(self.eta_gen, fake_images, fooled, False, True)
         self.generator.backprop(self.eta_gen, noises, disc_error_influence, self.discriminator.layers_list[0].weights)
 
-        return batch
+        return fake_images
 
     def generateImage(self):
         noises = self.generateNoise()
