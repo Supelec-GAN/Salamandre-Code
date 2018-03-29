@@ -82,7 +82,7 @@ class NeuronLayer:
         bias_influence = self.calculate_bias_influence(out_influence)
         if update:
             self.update_momentum(bias_influence, weight_influence)
-            self.updateweights(eta, weight_influence)
+            self.update_weights(eta, weight_influence)
             self.update_bias(eta, bias_influence)
             return self.weights
         else:
@@ -170,7 +170,7 @@ class NeuronLayer:
                     self.bias_moment[i][j] = self.gamma * self.bias_moment[i][j] + (1 - self.gamma) * bias_influence[i][j]
                     self.update_bias_value[i][j] = self.momentum * self.update_bias_value[i][j] - self.alpha*self.bias_moment[i][j]/(1-self.gamma_1**self.instant)*1/(sqrt(self.bias_gradients_sum[i][j]/(1 - self.gamma_2**self.instant))+ self.epsilon)
 
-    def updateweights(self, eta, weight_influence):
+    def update_weights(self, eta, weight_influence):
         # self.update_weights_value = momentum*self.update_weights_value - eta * weight_influence
         self.weights = self.weights + self.update_weights_value
 
@@ -225,21 +225,16 @@ class OutputLayer(NeuronLayer):
 ##
 class NoisyLayer(NeuronLayer):
     def __init__(self, activation_function, error_function, input_size=1, output_size=1, noise_size=0, error_function_gen=NonSatHeuristic()):
-        # Matrice de dimension q*p avec le nombre de sortie et p le nombre d'entrée
-        self._input_size = input_size
-        self._output_size = output_size
+        super(NoisyLayer, self).__init__(activation_function, error_function, input_size, output_size, error_function_gen)
         self._noise_size = noise_size
         self.weights = np.transpose(np.random.randn(input_size+noise_size, output_size))
-        self._bias = np.zeros((output_size, 1))            # Vecteur colonne
-        self._activation_function = activation_function
-        self.activation_levels = np.zeros((output_size, 1))  # Vecteur colonne
-        self.output = np.zeros((output_size, 1))             # Vecteur colonne
-        self.error = error_function
-        self.error_gen = error_function_gen
         self.noise_input = np.zeros((noise_size, 1))
 
-        self.update_weights_value = np.zeros((output_size, input_size+noise_size))
-        self.update_bias_value = np.zeros((output_size, 1))
+        self.weights_gradients_sum = np.zeros((output_size, input_size + noise_size))
+        self.update_weights_value = np.zeros((output_size, input_size + noise_size))
+        self.weights_moment = np.zeros((output_size, input_size + noise_size))
+        self.weights_eta = np.zeros((output_size, input_size + noise_size))          #need meilleur nom
+        
     ##
     # Compute très légèrement différent, on concatene un vecteur de bruits à l'input si nécéssaire
     ##
@@ -262,7 +257,8 @@ class NoisyLayer(NeuronLayer):
             input_layer, out_influence)
         bias_influence = self.calculate_bias_influence(out_influence)
         if update:
-            self.updateweights(eta, weight_influence)
+            self.update_momentum(bias_influence, weight_influence)
+            self.update_weights(eta, weight_influence)
             self.update_bias(eta, bias_influence)
             return self.weights[:, 0:self._input_size]  # On extrait les poids concernant les vrais inputs (le bruit n'a pas besoin d'influer sur les couches d'avant)
         else:
