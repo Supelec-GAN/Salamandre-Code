@@ -33,10 +33,13 @@ class GanGame:
     def playAndLearn(self):
         for i in range(self.disc_learning_ratio):
             self.discriminatorLearningReal()
+            # print("discRealLearnCheck", i)
 
         for j in range(self.gen_learning_ratio):
             fake_image = self.generatorLearning()
+            # print("GenLearnCheck", j)
             self.discriminatorLearningVirt(fake_image)
+            # print("discFakeLearnCheck", j)
 
         for k in range(self.disc_fake_learning_ratio):
             fake_image, noise = self.generateImage()

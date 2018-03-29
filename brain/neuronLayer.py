@@ -7,7 +7,7 @@ from dataInterface import DataInterface
 class NeuronLayer:
     """Classe permettant de créer une couche de neurones"""
 
-    def __init__(self, activation_function, error_function, input_size=1, output_size=1, error_function_gen=NonSatHeuristic()):
+    def __init__(self, activation_function, error_function, input_size=1, output_size=1, param_desc = 'Parametres de descente', error_function_gen=NonSatHeuristic()):
         # Matrice de dimension q*p avec le nombre de sortie et p le nombre d'entrée
         self._input_size = input_size
         self._output_size = output_size
@@ -30,7 +30,7 @@ class NeuronLayer:
         self.bias_eta = np.zeros((output_size, 1))                      #need meilleur nom
 
         data_interface = DataInterface()
-        param_liste = data_interface.read_conf('config_algo_descente.ini', 'Parametres de descente')  # Lecture du fichier de config
+        param_liste = data_interface.read_conf('config_algo_descente.ini', param_desc)  # Lecture du fichier de config
         self.algo_utilise = param_liste['algo_utilise']
         self.eta = param_liste['eta']
         self.momentum = param_liste['momentum']
@@ -107,14 +107,14 @@ class NeuronLayer:
         elif self.algo_utilise == "RMSProp":
 
             if self.moment == 2:
-                for i in range(len(weight_influence)):
-                    for j in range(len(weight_influence[0])):
-                        self.weights_gradients_sum[i][j] = self.gamma*self.weights_gradients_sum[i][j] + (1 - self.gamma)*weight_influence[i][j]**2
-                        self.update_weights_value[i][j] = self.momentum*self.update_weights_value[i][j] - self.eta*weight_influence[i][j]/(sqrt(self.weights_gradients_sum[i][j])+ self.epsilon)
-                for i in range(len(bias_influence)):
-                    for j in range(len(bias_influence[0])):
-                        self.bias_gradients_sum[i][j]= self.gamma*self.bias_gradients_sum[i][j] + (1-self.gamma)*bias_influence[i][j]**2
-                        self.update_bias_value[i][j] = self.momentum*self.update_bias_value[i][j] - self.eta*bias_influence[i][j]/(sqrt(self.bias_gradients_sum[i][j])+self.epsilon)
+                self.weights_gradients_sum = self.gamma*self.weights_gradients_sum + (1 - self.gamma)*(weight_influence**2)
+                partial = np.sqrt(np.add(self.weights_gradients_sum, self.epsilon))  # clip the value of eta to a maximum of the eta choosed
+                self.update_weights_value = - self.eta*np.divide(weight_influence, partial)
+
+                print(np.amax(partial))
+                self.bias_gradients_sum = self.gamma*self.bias_gradients_sum + (1-self.gamma)*(bias_influence**2)
+                partial = np.sqrt(np.add(self.bias_gradients_sum, self.epsilon))  # clip the value of eta to a maximum of the eta choosed
+                self.update_bias_value = - self.eta*np.divide(bias_influence, partial)
 
             if self.moment == 1:
                 for i in range(len(weight_influence)):
@@ -224,8 +224,8 @@ class OutputLayer(NeuronLayer):
 # @brief      Class for layer with noisy input added to inputs.
 ##
 class NoisyLayer(NeuronLayer):
-    def __init__(self, activation_function, error_function, input_size=1, output_size=1, noise_size=0, error_function_gen=NonSatHeuristic()):
-        super(NoisyLayer, self).__init__(activation_function, error_function, input_size, output_size, error_function_gen)
+    def __init__(self, activation_function, error_function, input_size=1, output_size=1, noise_size=0, param_desc = 'Parametres de descente', error_function_gen=NonSatHeuristic()):
+        super(NoisyLayer, self).__init__(activation_function, error_function, input_size, output_size, param_desc, error_function_gen)
         self._noise_size = noise_size
         self.weights = np.transpose(np.random.randn(input_size+noise_size, output_size))
         self.noise_input = np.zeros((noise_size, 1))

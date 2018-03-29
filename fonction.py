@@ -197,8 +197,10 @@ class CostFunction(Function):
     ##
     def derivate(self, reference, output):
         if(reference == 1):
+            # print('1', output)
             return -0.5/output
         else:
+            # print("0", output)
             return +0.5/(1-output)
 
     def save_fun(self):
