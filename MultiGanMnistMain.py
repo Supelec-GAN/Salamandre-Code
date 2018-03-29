@@ -32,6 +32,7 @@ for exp in range(number_exp):
     print("Lancement de l'experience n°", exp)
 
     param = data_interface.extract_param(param_liste, exp)
+
     numbers_to_draw = param['numbers_to_draw']
 
     """
@@ -44,6 +45,7 @@ for exp in range(number_exp):
     training_images_exp = np.delete(training_images, not_right_nb, axis=0)  # A proprifier plus tard,
     # c'est pas opti le delete
 
+    batch_size = param["batch_size"]
     """
     Initialisation du dossier de sauvegarde
     """
@@ -68,7 +70,7 @@ for exp in range(number_exp):
     disc_error_fun = param['disc_error_fun']
     disc_error_fun.vectorize()
 
-    discriminator = Network(param['disc_network_layers'], disc_activation_funs, disc_error_fun, 100)
+    discriminator = Network(param['disc_network_layers'], disc_activation_funs, disc_error_fun, batch_size)
 
     eta_disc = param['eta_disc']
 
@@ -88,7 +90,7 @@ for exp in range(number_exp):
     generator = GeneratorNetwork(generator_layers_neuron_count,
                                  generator_layers_activation_function,
                                  disc_error_fun,
-                                 100)
+                                 batch_size)
 
     eta_gen = param['eta_gen']
 
@@ -109,7 +111,7 @@ for exp in range(number_exp):
                       gen_learning_ratio,
                       disc_fake_learning_ratio,
                       gen_learning_ratio_alone,
-                      100)
+                      batch_size)
 
     play_number = param['play_number']  # Nombre de partie  (Une partie = i fois apprentissage
     # discriminateur sur vrai image, j fois apprentissage génerateur+ discriminateur et
@@ -139,9 +141,6 @@ for exp in range(number_exp):
     # fake_std.append(d)
 
     image_evolution_number = play_number//nb_images_during_learning
-
-    for i in range(1000):
-        ganGame.discriminatorLearningReal()
 
     for i in range(play_number):
         ganGame.playAndLearn()
