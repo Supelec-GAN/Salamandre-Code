@@ -42,10 +42,6 @@ class NeuronLayer:
         self.gamma_2 = param_liste['gamma_2']
         self.instant = 0
 
-
-
-
-
     @property
     def bias(self):
         """Get the current bias."""
@@ -79,19 +75,19 @@ class NeuronLayer:
     # @return     retourne influence of the input on the error
     #
     #
-    def backprop(self, out_influence, eta, input_layer, momentum=0, update=True):
+    def backprop(self, out_influence, eta, input_layer, update=True):
         weight_influence = self.calculate_weight_influence(
             input_layer, out_influence)
         bias_influence = self.calculate_bias_influence(out_influence)
         if update:
-            self.algo(bias_influence, weight_influence)
-            self.updateweights(eta, weight_influence, momentum)
-            self.update_bias(eta, bias_influence, momentum)
+            self.update_momentum(bias_influence, weight_influence)
+            self.updateweights(eta, weight_influence)
+            self.update_bias(eta, bias_influence)
             return self.weights
         else:
-            return self.weights - eta * weight_influence
+            return self.weights - eta * weight_influence 
 
-    def algo(self, bias_influence, weight_influence):
+    def update_momentum(self, bias_influence, weight_influence):
 
         if self.algo_utilise == "Gradient":
             self.update_weights_value = self.momentum*self.update_weights_value - self.eta*weight_influence
@@ -106,7 +102,6 @@ class NeuronLayer:
                 for j in range(len(bias_influence[0])):
                     self.bias_gradients_sum[i][j] = self.bias_gradients_sum[i][j] + bias_influence[i][j]**2
                     self.update_bias_value[i][j] = self.momentum*self.update_bias_value[i][j] - self.eta*weight_influence[i][j]/(sqrt(self.bias_gradients_sum[i][j])+self.epsilon)
-
 
         elif self.algo_utilise == "RMSProp":
 
@@ -131,7 +126,6 @@ class NeuronLayer:
                         self.bias_gradients_sum[i][j] = self.gamma * self.bias_gradients_sum[i][j] + (1 - self.gamma) * bias_influence[i][j] ** 2
                         self.bias_moment[i][j] = self.gamma * self.bias_moment[i][j] + (1 - self.gamma) * bias_influence[i][j]
                         self.update_bias_value[i][j] = self.momentum*self.update_bias_value[i][j] - self.eta*bias_influence[i][j]/sqrt(self.bias_gradients_sum[i][j] - self.bias_moment[i][j]**2 + self.epsilon)
-
 
         elif self.algo_utilise == "Adadelta":
 
@@ -175,14 +169,12 @@ class NeuronLayer:
                     self.bias_moment[i][j] = self.gamma * self.bias_moment[i][j] + (1 - self.gamma) * bias_influence[i][j]
                     self.update_bias_value[i][j] = self.momentum * self.update_bias_value[i][j] - self.alpha*self.bias_moment[i][j]/(1-self.gamma_1**self.instant)*1/(sqrt(self.bias_gradients_sum[i][j]/(1 - self.gamma_2**self.instant))+ self.epsilon)
 
-
-
-    def updateweights(self, eta, weight_influence, momentum):
-        self.update_weights_value = momentum*self.update_weights_value - eta * weight_influence
+    def updateweights(self, eta, weight_influence):
+        # self.update_weights_value = momentum*self.update_weights_value - eta * weight_influence
         self.weights = self.weights + self.update_weights_value
 
-    def update_bias(self, eta, bias_influence, momentum):
-        self.update_bias_value = momentum * self.update_bias_value + eta * bias_influence
+    def update_bias(self, eta, bias_influence):
+        # self.update_bias_value = momentum * self.update_bias_value + eta * bias_influence
         self._bias = self._bias + self.update_bias_value
 
     ##
