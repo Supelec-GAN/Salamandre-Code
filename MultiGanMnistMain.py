@@ -69,7 +69,6 @@ for exp in range(number_exp):
     discriminator = Network(param['disc_network_layers'], disc_activation_funs, disc_error_fun)
 
     eta_disc = param['eta_disc']
-    momentum_disc = param['momentum_disc']
 
     training_fun = param['training_fun']()  # Function donnant la réponse à une vrai image attendu (1
     # par défaut)
@@ -88,8 +87,6 @@ for exp in range(number_exp):
                         noise_layers_size) 
 
     eta_gen = param['eta_gen']
-    momentum_gen = param['momentum_gen']
-
     gen_learning_ratio = param['gen_learning_ratio']  # Pour chaque partie, nombre d'apprentissage du
     #  discriminant sur image réelle
     gen_learning_ratio_alone = param['gen_learning_ratio_alone']
@@ -103,8 +100,6 @@ for exp in range(number_exp):
                       generator,
                       eta_gen,
                       eta_disc,
-                      momentum_gen,
-                      momentum_disc,
                       disc_learning_ratio,
                       gen_learning_ratio,
                       disc_fake_learning_ratio,

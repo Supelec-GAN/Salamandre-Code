@@ -91,7 +91,7 @@ class Network:
                 next_weight
             )
             next_weight = self.layers_list[i].backprop(
-                out_influence, eta, input_layer, momentum, update)
+                out_influence, eta, input_layer, update)
 
         # On s'occupe de la couche d'entrée (si différente de couche de sortie)
         input_layer = inputs
@@ -99,7 +99,7 @@ class Network:
             out_influence,
             next_weight
         )
-        self.layers_list[0].backprop(out_influence, eta, input_layer, momentum, update)
+        self.layers_list[0].backprop(out_influence, eta, input_layer, update)
         return out_influence
 
     def save_state(self):
@@ -160,7 +160,7 @@ class GeneratorNetwork(Network):
                 self.layers_list[i].weights = weights_list[i][0]
                 self.layers_list[i].bias = weights_list[i][1]
 
-    def backprop(self, eta, inputs, disc_error_influence, first_weights_disc, momentum=0, update=True):
+    def backprop(self, eta, inputs, disc_error_influence, first_weights_disc, update=True):
         inputs = np.reshape(inputs, (len(inputs), 1))
         n = self._layers_count
 
