@@ -111,7 +111,7 @@ class NeuronLayer:
                 partial = np.sqrt(np.add(self.weights_gradients_sum, self.epsilon))  # clip the value of eta to a maximum of the eta choosed
                 self.update_weights_value = - self.eta*np.divide(weight_influence, partial)
 
-                print(np.amax(partial))
+                # print(np.amax(partial))
                 self.bias_gradients_sum = self.gamma*self.bias_gradients_sum + (1-self.gamma)*(bias_influence**2)
                 partial = np.sqrt(np.add(self.bias_gradients_sum, self.epsilon))  # clip the value of eta to a maximum of the eta choosed
                 self.update_bias_value = - self.eta*np.divide(bias_influence, partial)
