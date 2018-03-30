@@ -7,7 +7,7 @@ from dataInterface import DataInterface
 class NeuronLayer:
     """Classe permettant de créer une couche de neurones"""
 
-    def __init__(self, activation_function, error_function, input_size=1, output_size=1, param_desc = 'Parametres de descente', error_function_gen=NonSatHeuristic()):
+    def __init__(self, activation_function, error_function, param_desc, input_size=1, output_size=1):
         # Matrice de dimension q*p avec le nombre de sortie et p le nombre d'entrée
         self._input_size = input_size
         self._output_size = output_size
@@ -17,7 +17,6 @@ class NeuronLayer:
         self.activation_levels = np.zeros((output_size, 1))  # Vecteur colonne
         self.output = np.zeros((output_size, 1))             # Vecteur colonne
         self.error = error_function
-        self.error_gen = error_function_gen
 
         self.update_weights_value = np.zeros((output_size, input_size))
         self.update_bias_value = np.zeros((output_size, 1))
@@ -75,18 +74,17 @@ class NeuronLayer:
     # @return     retourne influence of the input on the error
     #
     #
-    def backprop(self, out_influence, eta, input_layer, update=True):
-        self.eta = eta
+    def backprop(self, out_influence, input_layer, update=True):
         weight_influence = self.calculate_weight_influence(
             input_layer, out_influence)
         bias_influence = self.calculate_bias_influence(out_influence)
         if update:
             self.update_momentum(bias_influence, weight_influence)
-            self.update_weights(eta, weight_influence)
-            self.update_bias(eta, bias_influence)
+            self.update_weights(weight_influence)
+            self.update_bias(bias_influence)
             return self.weights
         else:
-            return self.weights - eta * weight_influence 
+            return self.weights - self.eta * weight_influence 
 
     def update_momentum(self, bias_influence, weight_influence):
 
@@ -173,11 +171,11 @@ class NeuronLayer:
             partial2 = np.sqrt(np.add(np.divide(self.bias_gradients_sum, (1 - self.gamma_2**self.instant)), self.epsilon))
             self.update_bias_value = self.momentum * self.update_bias_value - self.alpha*np.divide(np.divide(self.bias_moment, partial), partial2)
 
-    def update_weights(self, eta, weight_influence):
+    def update_weights(self, weight_influence):
         # self.update_weights_value = momentum*self.update_weights_value - eta * weight_influence
         self.weights = self.weights + self.update_weights_value
 
-    def update_bias(self, eta, bias_influence):
+    def update_bias(self, bias_influence):
         # self.update_bias_value = momentum * self.update_bias_value + eta * bias_influence
         self._bias = self._bias + self.update_bias_value
 
@@ -214,6 +212,11 @@ class NeuronLayer:
 # @brief      Class for output layer (different derivate error).
 ##
 class OutputLayer(NeuronLayer):
+    def __init__(self, activation_function, error_function, param_desc, input_size=1, output_size=1, noise_size=0):
+        super(OutputLayer, self).__init__(activation_function, error_function, param_desc, input_size, output_size)
+        data_interface = DataInterface()
+        param_liste = data_interface.read_conf('config_algo_descente.ini', param_desc)  # Lecture du fichier de confi
+        self.error_gen = param_liste['error_function_gen']
 
     def derivate_error(self, reference, generator_backprop=False):
         deriv_vector = self._activation_function.derivate(self.activation_levels)
@@ -227,8 +230,8 @@ class OutputLayer(NeuronLayer):
 # @brief      Class for layer with noisy input added to inputs.
 ##
 class NoisyLayer(NeuronLayer):
-    def __init__(self, activation_function, error_function, input_size=1, output_size=1, noise_size=0, param_desc = 'Parametres de descente', error_function_gen=NonSatHeuristic()):
-        super(NoisyLayer, self).__init__(activation_function, error_function, input_size, output_size, param_desc, error_function_gen)
+    def __init__(self, activation_function, error_function, param_desc, input_size=1, output_size=1, noise_size=0):
+        super(NoisyLayer, self).__init__(activation_function, error_function, param_desc, input_size, output_size), 
         self._noise_size = noise_size
         self.weights = np.transpose(np.random.randn(input_size+noise_size, output_size))
         self.noise_input = np.zeros((noise_size, 1))
@@ -253,7 +256,7 @@ class NoisyLayer(NeuronLayer):
     # backptop très légèrement différent, on retropropage en considérant le vecteur bruit,
     # mais sans renvoyer son influence à la couche précédente
     ##
-    def backprop(self, out_influence, eta, input_layer, update=True):
+    def backprop(self, out_influence, input_layer, update=True):
         if self._noise_size != 1:
             input_layer = np.concatenate([input_layer, self.noise_input])
         weight_influence = self.calculate_weight_influence(
@@ -261,8 +264,8 @@ class NoisyLayer(NeuronLayer):
         bias_influence = self.calculate_bias_influence(out_influence)
         if update:
             self.update_momentum(bias_influence, weight_influence)
-            self.update_weights(eta, weight_influence)
-            self.update_bias(eta, bias_influence)
+            self.update_weights(weight_influence)
+            self.update_bias(bias_influence)
             return self.weights[:, 0:self._input_size]  # On extrait les poids concernant les vrais inputs (le bruit n'a pas besoin d'influer sur les couches d'avant)
         else:
-            return (self.weights - eta * weight_influence)[:, 0:self._input_size]
+            return (self.weights - self.eta * weight_influence)[:, 0:self._input_size]

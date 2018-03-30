@@ -11,14 +11,12 @@ class GanGame:
     # @param      generator       The generator (will be a Network object)
     # @param      learning_ratio  The learning ratio between discrimator and generator
     ##
-    def __init__(self, discriminator, learning_set, learning_fun, generator, eta_gen, eta_disc, disc_learning_ratio=1, gen_learning_ratio=1, disc_fake_learning_ratio=0, gen_learning_ratio_alone=0):
+    def __init__(self, discriminator, learning_set, learning_fun, generator, disc_learning_ratio=1, gen_learning_ratio=1, disc_fake_learning_ratio=0, gen_learning_ratio_alone=0):
         self.generator = generator
         self.discriminator = discriminator
         self.learning_set = learning_set
         self.set_size = len(learning_set)
         self.learning_fun = learning_fun
-        self.eta_gen = eta_gen
-        self.eta_disc = eta_disc
         self.gen_learning_ratio = gen_learning_ratio
         self.disc_learning_ratio = disc_learning_ratio
         self.disc_fake_learning_ratio = disc_fake_learning_ratio
@@ -72,7 +70,7 @@ class GanGame:
         real_item = self.learning_set[np.random.randint(self.set_size)]  # generate  a random item from the set
         # expected_output = self.learning_fun.out(real_item)
         self.discriminator.compute(real_item)
-        self.discriminator.backprop(self.eta_disc, real_item, 1)  # expected output = 1 pour le moment
+        self.discriminator.backprop(real_item, 1)  # expected output = 1 pour le moment
 
         return 0
 
@@ -82,7 +80,7 @@ class GanGame:
     def discriminatorLearningVirt(self, fake_image, alone=False):
         if alone:
             self.discriminator.compute(fake_image)
-        self.discriminator.backprop(self.eta_disc, fake_image, 0)
+        self.discriminator.backprop(fake_image, 0)
 
         return 0
 
@@ -96,8 +94,8 @@ class GanGame:
     def generatorLearning(self):
         fake_image, noise = self.generateImage()
         fooled = self.testTruth(fake_image)
-        disc_error_influence = self.discriminator.backprop(self.eta_gen, fake_image, fooled, False, True)
-        self.generator.backprop(self.eta_gen, noise, disc_error_influence, self.discriminator.layers_list[0].weights)
+        disc_error_influence = self.discriminator.backprop(fake_image, fooled, False, True)
+        self.generator.backprop(noise, disc_error_influence, self.discriminator.layers_list[0].weights)
 
         return fake_image
 

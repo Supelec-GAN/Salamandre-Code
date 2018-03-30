@@ -15,6 +15,8 @@ récuperation des paramètres du config.ini
 data_interface = DataInterface()  
 
 param_liste = data_interface.read_conf('multi_config.ini', 'GanMnist')  # Lecture du fichier de config,
+param_desc_disc = data_interface.read_conf('config_algo_descente.ini', 'Param de desc du disc')
+param_desc_gen = data_interface.read_conf('config_algo_descente.ini', 'Param de desc du gen')
 # dans la session [GanMnist]
 
 """
@@ -68,8 +70,6 @@ for exp in range(number_exp):
 
     discriminator = Network(param['disc_network_layers'], disc_activation_funs, disc_error_fun, 'Param de desc du disc')
 
-    eta_disc = param['eta_disc']
-
     training_fun = param['training_fun']()  # Function donnant la réponse à une vrai image attendu (1
     # par défaut)
 
@@ -88,7 +88,6 @@ for exp in range(number_exp):
                         'Param de desc du gen'
                         )
 
-    eta_gen = param['eta_gen']
     gen_learning_ratio = param['gen_learning_ratio']  # Pour chaque partie, nombre d'apprentissage du
     #  discriminant sur image réelle
     gen_learning_ratio_alone = param['gen_learning_ratio_alone']
@@ -100,8 +99,6 @@ for exp in range(number_exp):
                       training_images_exp,
                       training_fun,
                       generator,
-                      eta_gen,
-                      eta_disc,
                       disc_learning_ratio,
                       gen_learning_ratio,
                       disc_fake_learning_ratio,
@@ -172,7 +169,7 @@ for exp in range(number_exp):
     data_interface.save(real_std, 'real_std', conf)  # Sauvegarde des courbes de score
     data_interface.save(fake_std, 'fake_std', conf)
 
-    gan_plot.save_courbes(param, discriminator_real_score, discriminator_fake_score)
+    gan_plot.save_courbes(param, param_desc_gen, param_desc_disc, discriminator_real_score, discriminator_fake_score)
 
     state = generator.save_state()
     gan_plot.save_plot_network_state(state)

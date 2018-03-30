@@ -154,7 +154,7 @@ class GanPlot:
         image = np.reshape(bias, ([1, len(bias)]))
         plt.imshow(image, cmap='Greys', aspect='auto')
 
-    def plot_courbes(self, param, data_real, data_fake):
+    def plot_courbes(self, param, param_desc_gen, param_desc_disc, data_real, data_fake):
         plt.close()
         gs = GridSpec(1, 11)
         fig = plt.figure()
@@ -196,7 +196,7 @@ class GanPlot:
         info.text(0.01, 0.23, "Echantillons d'images toutes les  " + str(param['play_number']//param['nb_images_during_learning']) + " parties", fontsize=8)
         plt.show()
 
-    def save_courbes(self, param, data_real, data_fake):
+    def save_courbes(self, param, param_desc_gen, param_desc_disc, data_real, data_fake):
         if not os.path.exists(self._name):
             os.mkdir(self._name)
         if not os.path.exists(self._name + '/Images'):
@@ -236,8 +236,8 @@ class GanPlot:
         info.text(0.01, 0.57, 'Ratio G et D même image de synthèse : ' + str(param['gen_learning_ratio']), fontsize= 8)
         info.text(0.01, 0.53, 'Ratio D image de synthèse : ' + str(param['disc_fake_learning_ratio']), fontsize= 8)
         info.text(0.01, 0.49, 'Ratio G image de synthèse : ' + str(param['gen_learning_ratio_alone']), fontsize= 8)
-        info.text(0.01, 0.45, 'Eta générateur : ' + str(param['eta_gen']), fontsize= 8)
-        info.text(0.01, 0.41, 'Eta discriminateur : ' + str(param['eta_disc']), fontsize= 8)
+        info.text(0.01, 0.45, 'Eta générateur : ' + str(param_desc_gen['eta']), fontsize= 8)
+        info.text(0.01, 0.41, 'Eta discriminateur : ' + str(param_desc_disc['eta']), fontsize= 8)
              
         info.text(0.01, 0.31, "Infos courbe", fontsize=12)
         info.text(0.01, 0.27, 'Nombre de partie : ' + str(param['play_number']), fontsize=8)
