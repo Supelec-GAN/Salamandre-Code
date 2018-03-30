@@ -15,8 +15,8 @@ récuperation des paramètres du config.ini
 data_interface = DataInterface()  
 
 param_liste = data_interface.read_conf('multi_config.ini', 'GanMnist')  # Lecture du fichier de config,
-param_desc_disc = data_interface.read_conf('config_algo_descente.ini', 'Param de desc du disc')
-param_desc_gen = data_interface.read_conf('config_algo_descente.ini', 'Param de desc du gen')
+param_desc_disc_liste = data_interface.read_conf('config_algo_descente.ini', 'Param de desc du disc')
+param_desc_gen_liste = data_interface.read_conf('config_algo_descente.ini', 'Param de desc du gen')
 # dans la session [GanMnist]
 
 """
@@ -34,6 +34,8 @@ for exp in range(number_exp):
     print("Lancement de l'experience n°", exp)
 
     param = data_interface.extract_param(param_liste, exp)
+    param_desc_disc = data_interface.extract_param(param_desc_disc_liste, exp)
+    param_desc_gen = data_interface.extract_param(param_desc_gen_liste, exp)
     numbers_to_draw = param['numbers_to_draw']
 
     """
@@ -68,7 +70,12 @@ for exp in range(number_exp):
     disc_activation_funs = np.array(param['disc_activation_funs'])
     disc_error_fun = param['disc_error_fun']
 
-    discriminator = Network(param['disc_network_layers'], disc_activation_funs, disc_error_fun, 'Param de desc du disc')
+    discriminator = Network(param['disc_network_layers'], 
+                            disc_activation_funs, 
+                            disc_error_fun, 
+                            'Param de desc du disc', 
+                            exp
+                            )
 
     training_fun = param['training_fun']()  # Function donnant la réponse à une vrai image attendu (1
     # par défaut)
@@ -85,7 +92,8 @@ for exp in range(number_exp):
                         generator_layers_activation_function,
                         disc_error_fun,
                         noise_layers_size,
-                        'Param de desc du gen'
+                        'Param de desc du gen',
+                        exp
                         )
 
     gen_learning_ratio = param['gen_learning_ratio']  # Pour chaque partie, nombre d'apprentissage du

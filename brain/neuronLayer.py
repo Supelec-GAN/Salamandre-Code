@@ -7,7 +7,7 @@ from dataInterface import DataInterface
 class NeuronLayer:
     """Classe permettant de créer une couche de neurones"""
 
-    def __init__(self, activation_function, error_function, param_desc, input_size=1, output_size=1):
+    def __init__(self, activation_function, error_function, param_desc, input_size=1, output_size=1, nb_exp=0):
         # Matrice de dimension q*p avec le nombre de sortie et p le nombre d'entrée
         self._input_size = input_size
         self._output_size = output_size
@@ -30,6 +30,7 @@ class NeuronLayer:
 
         data_interface = DataInterface()
         param_liste = data_interface.read_conf('config_algo_descente.ini', param_desc)  # Lecture du fichier de config
+        param_liste = data_interface.extract_param(param_liste, nb_exp)
         self.algo_utilise = param_liste['algo_utilise']
         self.eta = param_liste['eta']
         self.momentum = param_liste['momentum']
@@ -212,10 +213,12 @@ class NeuronLayer:
 # @brief      Class for output layer (different derivate error).
 ##
 class OutputLayer(NeuronLayer):
-    def __init__(self, activation_function, error_function, param_desc, input_size=1, output_size=1, noise_size=0):
-        super(OutputLayer, self).__init__(activation_function, error_function, param_desc, input_size, output_size)
+    def __init__(self, activation_function, error_function, param_desc, input_size=1, output_size=1, noise_size=0, nb_exp=0):
+        super(OutputLayer, self).__init__(activation_function, error_function, param_desc, input_size, output_size, nb_exp)
+
         data_interface = DataInterface()
         param_liste = data_interface.read_conf('config_algo_descente.ini', param_desc)  # Lecture du fichier de confi
+        param_liste = data_interface.extract_param(param_liste, nb_exp)
         self.error_gen = param_liste['error_function_gen']
 
     def derivate_error(self, reference, generator_backprop=False):
@@ -230,8 +233,8 @@ class OutputLayer(NeuronLayer):
 # @brief      Class for layer with noisy input added to inputs.
 ##
 class NoisyLayer(NeuronLayer):
-    def __init__(self, activation_function, error_function, param_desc, input_size=1, output_size=1, noise_size=0):
-        super(NoisyLayer, self).__init__(activation_function, error_function, param_desc, input_size, output_size), 
+    def __init__(self, activation_function, error_function, param_desc, input_size=1, output_size=1, noise_size=0, nb_exp=0):
+        super(NoisyLayer, self).__init__(activation_function, error_function, param_desc, input_size, output_size, nb_exp)
         self._noise_size = noise_size
         self.weights = np.transpose(np.random.randn(input_size+noise_size, output_size))
         self.noise_input = np.zeros((noise_size, 1))
@@ -239,7 +242,7 @@ class NoisyLayer(NeuronLayer):
         self.weights_gradients_sum = np.zeros((output_size, input_size + noise_size))
         self.update_weights_value = np.zeros((output_size, input_size + noise_size))
         self.weights_moment = np.zeros((output_size, input_size + noise_size))
-        self.weights_eta = np.zeros((output_size, input_size + noise_size))          #need meilleur nom
+        self.weights_eta = np.zeros((output_size, input_size + noise_size))
         
     ##
     # Compute très légèrement différent, on concatene un vecteur de bruits à l'input si nécéssaire

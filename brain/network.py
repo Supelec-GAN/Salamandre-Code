@@ -13,7 +13,7 @@ class Network:
     #                                         en incluant le nombres d'entrées en position 0
     # @param      layers_activation_function  The layers activation function
     #
-    def __init__(self, layers_neuron_count, layers_activation_function, error_function, param_desc,
+    def __init__(self, layers_neuron_count, layers_activation_function, error_function, param_desc, nb_exp=0,
                  weights_list=()):
         self._layers_activation_function = layers_activation_function  # sauvegarde pour pouvoir
         # reinitialiser
@@ -33,9 +33,15 @@ class Network:
                                               self.error,
                                               param_desc,
                                               layers_neuron_count[i],
-                                              layers_neuron_count[i + 1]
+                                              layers_neuron_count[i + 1],
+                                              nb_exp
                                               )
-        self.layers_list[self._layers_count - 1] = OutputLayer(layers_activation_function[self._layers_count - 1], self.error, param_desc, layers_neuron_count[self._layers_count - 1], layers_neuron_count[self._layers_count]
+        self.layers_list[self._layers_count - 1] = OutputLayer(layers_activation_function[self._layers_count - 1],
+                                                                self.error, 
+                                                                param_desc, 
+                                                                layers_neuron_count[self._layers_count - 1], 
+                                                                layers_neuron_count[self._layers_count],
+                                                                nb_exp
                                                                )
         self.output = np.zeros(layers_neuron_count[-1])
 
@@ -137,7 +143,7 @@ class Network:
 ## @particularite :  il n'a pas de couche de sortie, car pour une backprop il est relié à un discriminateur
 ##
 class GeneratorNetwork(Network):
-    def __init__(self, layers_neuron_count, layers_activation_function, error_function, param_desc, weights_list=()):
+    def __init__(self, layers_neuron_count, layers_activation_function, error_function, param_desc, nb_exp=0, weights_list=()):
         self._layers_activation_function = layers_activation_function  # sauvegarde pour pouvoir
         # reinitialiser
         self.layers_neuron_count = layers_neuron_count
@@ -196,7 +202,7 @@ class GeneratorNetwork(Network):
 ##
 class NoisyGeneratorNetwork(GeneratorNetwork):
     def __init__(self, layers_neuron_count, layers_activation_function, error_function,
-                 noise_layers_size, param_desc, weights_list=()):
+                 noise_layers_size, param_desc, nb_exp=0, weights_list=()):
         self._layers_activation_function = layers_activation_function  # sauvegarde pour pouvoir
         # reinitialiser
         self.layers_neuron_count = layers_neuron_count
@@ -217,7 +223,8 @@ class NoisyGeneratorNetwork(GeneratorNetwork):
                                               param_desc,
                                               layers_neuron_count[i],
                                               layers_neuron_count[i + 1],
-                                              noise_layers_size[i]
+                                              noise_layers_size[i],
+                                              nb_exp
                                               )
 
         self.output = np.zeros(layers_neuron_count[-1])
