@@ -95,80 +95,83 @@ class NeuronLayer:
             self.update_bias_value = self.momentum*self.update_bias_value - self.eta * bias_influence
 
         elif self.algo_utilise == "Adagrad":
-            for i in range(len(weight_influence)):
-                for j in range(len(weight_influence[0])):
-                    self.weights_gradients_sum[i][j] = self.weights_gradients_sum[i][j] + weight_influence[i][j]**2
-                    self.update_weights_value[i][j] = self.momentum*self.update_weights_value[i][j] - self.eta*weight_influence[i][j]/(sqrt(self.weights_gradients_sum[i][j])+self.epsilon)
-            for i in range(len(bias_influence)):
-                for j in range(len(bias_influence[0])):
-                    self.bias_gradients_sum[i][j] = self.bias_gradients_sum[i][j] + bias_influence[i][j]**2
-                    self.update_bias_value[i][j] = self.momentum*self.update_bias_value[i][j] - self.eta*weight_influence[i][j]/(sqrt(self.bias_gradients_sum[i][j])+self.epsilon)
+            self.weights_gradients_sum = self.weights_gradients_sum + weight_influence**2
+            partial = np.sqrt(np.add(self.weights_gradients_sum, self.epsilon))
+            self.update_weights_value = self.momentum*self.update_weights_value - delf.eta*np.divide(weight_influence, partial)
+
+            self.bias_gradients_sum = self.bias_gradients_sum + bias_influence**2
+            partial = np.sqrt(np.add(self.bias_gradients_sum, self.epsilon))
+            self.update_bias_value = self.momentum*self.update_bias_value - self.eta*np.divide(weight_influence, partial)
 
         elif self.algo_utilise == "RMSProp":
 
             if self.moment == 2:
                 self.weights_gradients_sum = self.gamma*self.weights_gradients_sum + (1 - self.gamma)*(weight_influence**2)
-                partial = np.sqrt(np.add(self.weights_gradients_sum, self.epsilon))  # clip the value of eta to a maximum of the eta choosed
-                self.update_weights_value = - self.eta*np.divide(weight_influence, partial)
+                partial = np.sqrt(np.add(self.weights_gradients_sum, self.epsilon))
+                self.update_weights_value = self.momentum*self.update_weights_value - self.eta*np.divide(weight_influence, partial)
 
                 # print(np.amax(partial))
                 self.bias_gradients_sum = self.gamma*self.bias_gradients_sum + (1-self.gamma)*(bias_influence**2)
-                partial = np.sqrt(np.add(self.bias_gradients_sum, self.epsilon))  # clip the value of eta to a maximum of the eta choosed
-                self.update_bias_value = - self.eta*np.divide(bias_influence, partial)
+                partial = np.sqrt(np.add(self.bias_gradients_sum, self.epsilon))
+                self.update_bias_value = self.momentum*self.update_bias_value - self.eta*np.divide(bias_influence, partial)
 
             if self.moment == 1:
-                for i in range(len(weight_influence)):
-                    for j in range(len(weight_influence[0])):
-                        self.weights_gradients_sum[i][j] = self.gamma * self.weights_gradients_sum[i][j] + (1 - self.gamma) * weight_influence[i][j] ** 2
-                        self.weights_moment[i][j] = self.gamma * self.weights_moment[i][j] + (1- self.gamma) * weight_influence[i][j]
-                        self.update_weights_value[i][j] = self.momentum*self.update_weights_value[i][j] - self.eta*weight_influence[i][j]/sqrt(self.weights_gradients_sum[i][j] - self.weights_moment[i][j]**2 + self.epsilon)
-                for i in range(len(bias_influence)):
-                    for j in range(len(bias_influence[0])):
-                        self.bias_gradients_sum[i][j] = self.gamma * self.bias_gradients_sum[i][j] + (1 - self.gamma) * bias_influence[i][j] ** 2
-                        self.bias_moment[i][j] = self.gamma * self.bias_moment[i][j] + (1 - self.gamma) * bias_influence[i][j]
-                        self.update_bias_value[i][j] = self.momentum*self.update_bias_value[i][j] - self.eta*bias_influence[i][j]/sqrt(self.bias_gradients_sum[i][j] - self.bias_moment[i][j]**2 + self.epsilon)
+                self.weights_gradients_sum = self.gamma * self.weights_gradients_sum + (1 - self.gamma) * weight_influence ** 2
+                self.weights_moment = self.gamma * self.weights_moment + (1- self.gamma) * weight_influence
+                partial = np.sqrt(np.add((self.weights_gradients_sum - self.weights_moment**2), self.epsilon))
+                self.update_weights_value = self.momentum*self.update_weights_value - self.eta*np.divide(weight_influence, partial)
+                
+                self.bias_gradients_sum = self.gamma * self.bias_gradients_sum + (1 - self.gamma) * bias_influence ** 2
+                self.bias_moment = self.gamma * self.bias_moment + (1 - self.gamma) * bias_influence
+                partial = np.sqrt(np.add((self.bias_gradients_sum - self.bias_moment**2), self.epsilon))
+                self.update_bias_value = self.momentum*self.update_bias_value - self.eta*np.divide(bias_influence, partial)
 
         elif self.algo_utilise == "Adadelta":
 
             if self.moment == 2:
-                for i in range(len(weight_influence)):
-                    for j in range(len(weight_influence[0])):
-                        self.weights_gradients_sum[i][j] = self.gamma * self.weights_gradients_sum[i][j] + (1 - self.gamma) * weight_influence[i][j] ** 2
-                        self.weights_eta[i][j] = self.gamma * self.weights_eta[i][j] + (1 - self.gamma) * self.update_weights_value[i][j]**2
-                        self.update_weights_value[i][j] = self.momentum*self.update_weights_value[i][j] - sqrt(self.weights_eta[i][j] + self.epsilon)*weight_influence[i][j]/(sqrt(self.weights_gradients_sum[i][j])+ self.epsilon)
-                for i in range(len(bias_influence)):
-                    for j in range(len(bias_influence[0])):
-                        self.bias_gradients_sum[i][j] = self.gamma * self.bias_gradients_sum[i][j] + (1 - self.gamma) * bias_influence[i][j] ** 2
-                        self.bias_eta[i][j] = self.gamma * self.bias_eta[i][j] + (1 - self.gamma) * self.update_bias_value[i][j] ** 2
-                        self.update_bias_value[i][j] = self.momentum*self.update_bias_value[i][j] - sqrt(self.bias_eta[i][j] + self.epsilon)*bias_influence[i][j]/(sqrt(self.bias_gradients_sum[i][j])+self.epsilon)
+                self.weights_gradients_sum = self.gamma * self.weights_gradients_sum + (1 - self.gamma) * weight_influence ** 2
+                self.weights_eta = self.gamma * self.weights_eta + (1 - self.gamma) * self.update_weights_value**2
+                partial = np.sqrt(np.add(self.weights_eta, self.epsilon))*weight_influence
+                partial2 = np.sqrt(np.add(self.weights_gradients_sum, self.epsilon))
+                self.update_weights_value = self.momentum*self.update_weights_value - np.divide(partial, partial2)
+                
+                self.bias_gradients_sum = self.gamma * self.bias_gradients_sum + (1 - self.gamma) * bias_influence ** 2
+                self.bias_eta = self.gamma * self.bias_eta + (1 - self.gamma) * self.update_bias_value ** 2
+                partial = np.sqrt(np.add(self.bias_eta, self.epsilon))*bias_influence
+                partial2 = np.sqrt(np.add(self.bias_gradients_sum, self.epsilon))
+                self.update_bias_value = self.momentum*self.update_bias_value - np.divide(partial, partial2)
 
             if self.moment == 1:
-                for i in range(len(weight_influence)):
-                    for j in range(len(weight_influence[0])):
-                        self.weights_gradients_sum[i][j] = self.gamma * self.weights_gradients_sum[i][j] + (1 - self.gamma) * weight_influence[i][j] ** 2
-                        self.weights_eta[i][j] = self.gamma * self.weights_eta[i][j] + (1 - self.gamma) * self.update_weights_value[i][j] ** 2
-                        self.weights_moment[i][j] = self.gamma * self.weights_moment[i][j] + (1 - self.gamma) * weight_influence[i][j]
-                        self.update_weights_value[i][j] = self.momentum*self.update_weights_value[i][j] - sqrt(self.weights_eta[i][j] + self.epsilon)*weight_influence[i][j]/sqrt(self.weights_gradients_sum[i][j] - self.weights_moment[i][j]**2 + self.epsilon)
-                for i in range(len(bias_influence)):
-                    for j in range(len(bias_influence[0])):
-                        self.bias_gradients_sum[i][j] = self.gamma * self.bias_gradients_sum[i][j] + (1 - self.gamma) * bias_influence[i][j] ** 2
-                        self.bias_eta[i][j] = self.gamma * self.bias_eta[i][j] + (1 - self.gamma) * self.update_bias_value[i][j] ** 2
-                        self.bias_moment[i][j] = self.gamma * self.bias_moment[i][j] + (1 - self.gamma) * bias_influence[i][j]
-                        self.update_bias_value[i][j] = self.momentum*self.update_bias_value[i][j] - sqrt(self.bias_eta[i][j] + self.epsilon)*bias_influence[i][j]/sqrt(self.bias_gradients_sum[i][j] - self.bias_moment[i][j]**2 + self.epsilon)
+                
+                self.weights_gradients_sum = self.gamma * self.weights_gradients_sum + (1 - self.gamma) * weight_influence ** 2
+                self.weights_eta = self.gamma * self.weights_eta + (1 - self.gamma) * self.update_weights_value ** 2
+                self.weights_moment = self.gamma * self.weights_moment + (1 - self.gamma) * weight_influence
+                partial = np.sqrt(np.add(self.bias_eta, self.epsilon))*bias_influence
+                partial2 = np.sqrt(np.add((self.weights_gradients_sum - self.weights_moment**2), self.epsilon))
+                self.update_weights_value = self.momentum*self.update_weights_value - np.divide(partial, partial2)
+                
+                self.bias_gradients_sum = self.gamma * self.bias_gradients_sum + (1 - self.gamma) * bias_influence ** 2
+                self.bias_eta = self.gamma * self.bias_eta + (1 - self.gamma) * self.update_bias_value ** 2
+                self.bias_moment = self.gamma * self.bias_moment + (1 - self.gamma) * bias_influence
+                partial = np.sqrt(np.add(self.bias_eta, self.epsilon))*bias_influence
+                partial2 = np.sqrt(np.add((self.bias_gradients_sum - self.bias_moment**2), self.epsilon))
+                self.update_bias_value = self.momentum*self.update_bias_value - np.divide(partial, partial2)
 
         elif self.algo_utilise == "Adam":
 
             self.instant += 1
-            for i in range(len(weight_influence)):
-                for j in range(len(weight_influence[0])):
-                    self.weights_gradients_sum[i][j] = self.gamma * self.weights_gradients_sum[i][j] + (1 - self.gamma) * weight_influence[i][j] ** 2
-                    self.weights_moment[i][j] = self.gamma * self.weights_moment[i][j] + (1 - self.gamma) * weight_influence[i][j]
-                    self.update_weights_value[i][j] = self.momentum * self.update_weights_value[i][j] - self.alpha*self.weights_moment[i][j]/(1 - self.gamma_1**self.instant)*1/(sqrt(self.weights_gradients_sum[i][j]/(1 - self.gamma_2**self.instant)) + self.epsilon)
-            for i in range(len(bias_influence)):
-                for j in range(len(bias_influence[0])):
-                    self.bias_gradients_sum[i][j] = self.gamma * self.bias_gradients_sum[i][j] + (1 - self.gamma) * bias_influence[i][j] ** 2
-                    self.bias_moment[i][j] = self.gamma * self.bias_moment[i][j] + (1 - self.gamma) * bias_influence[i][j]
-                    self.update_bias_value[i][j] = self.momentum * self.update_bias_value[i][j] - self.alpha*self.bias_moment[i][j]/(1-self.gamma_1**self.instant)*1/(sqrt(self.bias_gradients_sum[i][j]/(1 - self.gamma_2**self.instant))+ self.epsilon)
+            
+            self.weights_gradients_sum = self.gamma * self.weights_gradients_sum + (1 - self.gamma) * weight_influence ** 2
+            self.weights_moment = self.gamma * self.weights_moment + (1 - self.gamma) * weight_influence
+            partial =(1 - self.gamma_1**self.instant)
+            partial2 = np.sqrt(np.add(np.divide(self.weights_gradients_sum, (1 - self.gamma_2**self.instant)), self.epsilon))
+            self.update_weights_value = self.momentum * self.update_weights_value - self.alpha*np.divide(np.divide(self.weights_moment, partial), partial2)
+            
+            self.bias_gradients_sum = self.gamma * self.bias_gradients_sum + (1 - self.gamma) * bias_influence ** 2
+            self.bias_moment = self.gamma * self.bias_moment + (1 - self.gamma) * bias_influence
+            partial =(1 - self.gamma_1**self.instant)
+            partial2 = np.sqrt(np.add(np.divide(self.bias_gradients_sum, (1 - self.gamma_2**self.instant)), self.epsilon))
+            self.update_bias_value = self.momentum * self.update_bias_value - self.alpha*np.divide(np.divide(self.bias_moment, partial), partial2)
 
     def update_weights(self, eta, weight_influence):
         # self.update_weights_value = momentum*self.update_weights_value - eta * weight_influence
