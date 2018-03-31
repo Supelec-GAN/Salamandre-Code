@@ -55,7 +55,8 @@ class Engine:
 
                 # Enregistrement périodique de l'erreur sur le set de test
                 if (pass_nb*self._learning_set_size + batch_nb) % self._test_period == 0:
-                    test_number = (pass_nb*self._learning_set_size // self._learning_batch_size + batch_nb) // self._test_period
+                    test_number = (pass_nb*self._learning_set_size // self._learning_batch_size
+                                   + batch_nb) // self._test_period
                     testing_success_rate[test_number] = self.get_current_success_rate()
 
         return testing_success_rate
@@ -86,7 +87,7 @@ class Engine:
             expected_output = self._testing_fun.out(test_nb)
             success_during_testing[test_nb] = self._success_fun(output, expected_output)
         success_rate = np.mean(success_during_testing)
- #       self.net.learning_batch_size = self._learning_batch_size
+#        self.net.learning_batch_size = self._learning_batch_size
         return success_rate
 
     def run(self):

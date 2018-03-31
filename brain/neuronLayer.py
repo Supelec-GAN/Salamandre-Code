@@ -181,7 +181,8 @@ class NoisyLayer(NeuronLayer):
         if update:
             self.update_weights(eta, weight_influence)
             self.update_bias(eta, bias_influence)
-            return self.weights[:, 0:self._input_size]  # On extrait les poids concernant les vrais inputs (le bruit n'a pas besoin d'influer sur les couches d'avant)
+            return self.weights[:, 0:self._input_size]  # On extrait les poids concernant les
+            # vrais inputs (le bruit n'a pas besoin d'influer sur les couches d'avant)
         else:
             return (self.weights - eta * weight_influence)[:, 0:self._input_size]
 
@@ -218,9 +219,9 @@ class ConvolutionalLayer(NeuronLayer):
             self._output_size = (self._input_size[0] + (self._mask_size[0]-1),
                                  self._input_size[1] + (self._mask_size[1]-1))
             self._reverse_convolution_mode = 'valid'
-        #elif self._convolution_mode == 'same':
-        #    self._output_size = self._input_size
-        #    self._reverse_convolution_mode = 'same'
+        # elif self._convolution_mode == 'same':
+        #     self._output_size = self._input_size
+        #     self._reverse_convolution_mode = 'same'
         elif self._convolution_mode == 'valid':
             self._output_size = (self._input_size[0] - (self._mask_size[0]-1),
                                  self._input_size[1] - (self._mask_size[1]-1))
@@ -239,19 +240,44 @@ class ConvolutionalLayer(NeuronLayer):
         return self.output
 
     def calculate_weight_influence(self, input_layer, out_influence):
+        output_shape = (self._output_feature_maps, self._input_feature_maps,
+                        self._input_size[0], self._input_size[1])
         weight_influence = conv2d_transpose(np.transpose(out_influence, axes=(1, 0, 2, 3)),
                                             input_layer,
+                                            output_shape,
                                             border_mode=self._reverse_convolution_mode,
                                             filter_flip=False)
-        return weight_influence.eval() / self.learning_batch_size
+        return weight_influence.eval() / self._learning_batch_size
 
     def calculate_bias_influence(self, out_influence):
         return np.mean(out_influence, axis=(0, 2, 3))
 
     def derivate_error(self, out_influence, next_weights):
         deriv_vector = self._activation_function.derivate(self.activation_levels)
+        output_shape = (self._learning_batch_size, self._output_feature_maps,
+                        self._output_size[0], self._output_size[1])
         conv = conv2d_transpose(out_influence,
                                 self._weights,
+                                output_shape,
                                 border_mode=self._reverse_convolution_mode,
                                 filter_flip=False)
         return deriv_vector * conv.eval()
+
+    def tensorize_inputs(self, inputs):
+        ndim = inputs.ndim
+        shape = inputs.shape
+        if ndim == 4:
+            return inputs
+        elif ndim == 2:
+            # check with self dimension (input_shape, input_channels), then reshape
+            if self._input_size[0]*self._input_size[1]*self._input_feature_maps != shape[0]:
+                raise Exception('Wrong dimensions : cannot reshape')
+            inputs_reshape = inputs.ravel('F').reshape((self._learning_batch_size,
+                                                        self._input_feature_maps,
+                                                        self._input_size[0],
+                                                        self._input_size[1]))
+            return inputs_reshape
+        else:
+            raise Exception('Wrong inputs dimension, inputs should be a 4D tensor with '
+                            'shape : (batch_size, inputs_channel, img_h, img_w), or a matrix of'
+                            'flatten inputs')
