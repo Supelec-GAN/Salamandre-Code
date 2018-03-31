@@ -1,5 +1,8 @@
 import numpy as np
 from fonction import Sigmoid, MnistTest, Norm2, NonSatHeuristic
+import theano
+from theano import tensor as T
+from theano.tensor.nnet import conv2d, conv2d_transpose
 
 
 class NeuronLayer:
@@ -192,3 +195,63 @@ class NoisyLayer(NeuronLayer):
         self.output = np.zeros((self._output_size, new_learning_batch_size))
         self.noise_input = np.zeros((self._noise_size, new_learning_batch_size))
         self._learning_batch_size = new_learning_batch_size
+
+
+class ConvolutionalLayer(NeuronLayer):
+
+    def __init__(self, activation_function, error_function, input_size=(1, 1), output_size=(1, 1),
+                 learning_batch_size=1, error_function_gen=NonSatHeuristic(), mask_size=(1, 1),
+                 input_feature_maps=1, output_feature_maps=1, convolution_mode='valid', step=1):
+        super(ConvolutionalLayer, self).__init__(activation_function, error_function, input_size,
+                                                 output_size, learning_batch_size,
+                                                 error_function_gen)
+        self._mask_size = mask_size
+        self._input_feature_maps = input_feature_maps
+        self._output_feature_maps = output_feature_maps
+        self._step = step  # Laisser à 1 pour l'instant
+        self._convolution_mode = convolution_mode
+        self._weights = np.random.randn(self._output_feature_maps, self._input_feature_maps,
+                                        self._mask_size[0], self._mask_size[1])
+        self._bias = np.zeros(self._output_feature_maps)
+        self._input_size = input_size
+        if self._convolution_mode == 'full':
+            self._output_size = (self._input_size[0] + (self._mask_size[0]-1),
+                                 self._input_size[1] + (self._mask_size[1]-1))
+            self._reverse_convolution_mode = 'valid'
+        #elif self._convolution_mode == 'same':
+        #    self._output_size = self._input_size
+        #    self._reverse_convolution_mode = 'same'
+        elif self._convolution_mode == 'valid':
+            self._output_size = (self._input_size[0] - (self._mask_size[0]-1),
+                                 self._input_size[1] - (self._mask_size[1]-1))
+            self._reverse_convolution_mode = 'full'
+        else:
+            raise Exception("Invalid convolution mode")
+        self.activation_levels = np.zeros((self._learning_batch_size, self._output_feature_maps,
+                                           self._output_size[0], self._output_size[1]))
+        self.output = np.zeros((self._learning_batch_size, self._output_feature_maps,
+                                self._output_size[0], self._output_size[1]))
+
+    def compute(self, inputs):
+        conv = conv2d(inputs, self._weights, border_mode=self._convolution_mode)
+        self.activation_levels = conv.eval() + self._bias[np.newaxis, :, np.newaxis, np.newaxis]
+        self.output = self._activation_function(self.activation_levels)
+        return self.output
+
+    def calculate_weight_influence(self, input_layer, out_influence):
+        weight_influence = conv2d_transpose(np.transpose(out_influence, axes=(1, 0, 2, 3)),
+                                            input_layer,
+                                            border_mode=self._reverse_convolution_mode,
+                                            filter_flip=False)
+        return weight_influence.eval() / self.learning_batch_size
+
+    def calculate_bias_influence(self, out_influence):
+        return np.mean(out_influence, axis=(0, 2, 3))
+
+    def derivate_error(self, out_influence, next_weights):
+        deriv_vector = self._activation_function.derivate(self.activation_levels)
+        conv = conv2d_transpose(out_influence,
+                                self._weights,
+                                border_mode=self._reverse_convolution_mode,
+                                filter_flip=False)
+        return deriv_vector * conv.eval()
