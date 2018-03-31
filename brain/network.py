@@ -281,7 +281,7 @@ class NoisyGeneratorNetwork(GeneratorNetwork):
         for i in range(0, self._layers_count):
             self.layers_list[i] = NoisyLayer(layers_activation_function[i],
                                              self.error,
-                                             param_desc;
+                                             param_desc,
                                              layers_neuron_count[i],
                                              layers_neuron_count[i + 1],
                                              noise_layers_size[i],

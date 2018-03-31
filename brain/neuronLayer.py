@@ -221,6 +221,7 @@ class NeuronLayer:
     # @return     vecteur of same dimension than weights.
     #
     def calculate_weight_influence(self, input_layer, out_influence):
+        print('learning_batch_size : ', self._learning_batch_size)
         return np.dot(out_influence, np.transpose(input_layer)) / self._learning_batch_size
 
     ##
@@ -246,7 +247,7 @@ class NeuronLayer:
 # @brief      Class for output layer (different derivate error).
 ##
 class OutputLayer(NeuronLayer):
-    def __init__(self, activation_function, error_function, param_desc, input_size=1, output_size=1, noise_size=0,  learning_batch_size=1, nb_exp=0):
+    def __init__(self, activation_function, error_function, param_desc, input_size=1, output_size=1, learning_batch_size=1, nb_exp=0):
         super(OutputLayer, self).__init__(activation_function, error_function, param_desc, input_size, output_size, learning_batch_size, nb_exp)
 
         data_interface = DataInterface()
@@ -301,11 +302,11 @@ class NoisyLayer(NeuronLayer):
         bias_influence = self.calculate_bias_influence(out_influence)
         if update:
             self.update_momentum(bias_influence, weight_influence)
-            self.update_weights(eta, weight_influence)
-            self.update_bias(eta, bias_influence)
+            self.update_weights(weight_influence)
+            self.update_bias(bias_influence)
             return self.weights[:, 0:self._input_size]  # On extrait les poids concernant les vrais inputs (le bruit n'a pas besoin d'influer sur les couches d'avant)
         else:
-            return (self.weights - eta * weight_influence)[:, 0:self._input_size]
+            return (self.weights - self.eta * weight_influence)[:, 0:self._input_size]
 
     @property
     def learning_batch_size(self):
@@ -317,4 +318,3 @@ class NoisyLayer(NeuronLayer):
         self.output = np.zeros((self._output_size, new_learning_batch_size))
         self.noise_input = np.zeros((self._noise_size, new_learning_batch_size))
         self._learning_batch_size = new_learning_batch_size
-

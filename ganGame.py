@@ -74,7 +74,7 @@ class GanGame:
         real_items = np.transpose([self.learning_set[np.random.randint(self.set_size)] for i in range(self.batch_size)])  # generate  a random item from the set
         # expected_output = self.learning_fun.out(real_item)
         self.discriminator.compute(real_items)
-        self.discriminator.backprop(self.eta_disc, real_items, np.ones((self.batch_size, 1))) # expected output = 1 pour le moment
+        self.discriminator.backprop(real_items, np.ones((self.batch_size, 1))) # expected output = 1 pour le moment
 
         return 0
 
@@ -84,7 +84,7 @@ class GanGame:
     def discriminatorLearningVirt(self, fake_images, alone=False):
         if alone:
             self.discriminator.compute(fake_images)
-        self.discriminator.backprop(self.eta_disc, fake_images, np.zeros((self.batch_size, 1)))
+        self.discriminator.backprop(fake_images, np.zeros((self.batch_size, 1)))
 
         return 0
 
@@ -102,8 +102,8 @@ class GanGame:
         batch = np.transpose(fake_images)
         fooled = self.testTruth(fake_images)
 
-        disc_error_influence = self.discriminator.backprop(self.eta_gen, fake_images, fooled, False, True)
-        self.generator.backprop(self.eta_gen, noises, disc_error_influence, self.discriminator.layers_list[0].weights)
+        disc_error_influence = self.discriminator.backprop(fake_images, fooled, False, True)
+        self.generator.backprop(noises, disc_error_influence, self.discriminator.layers_list[0].weights)
 
         return fake_images
 
