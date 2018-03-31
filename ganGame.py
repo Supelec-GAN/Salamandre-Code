@@ -11,21 +11,21 @@ class GanGame:
     # @param      generator       The generator (will be a Network object)
     # @param      learning_ratio  The learning ratio between discrimator and generator
     ##
-    def __init__(self, discriminator, learning_set, learning_fun, generator, eta_gen, eta_disc,
-                 disc_learning_ratio=1, gen_learning_ratio=1, disc_fake_learning_ratio=0,
-                 gen_learning_ratio_alone=0, batch_size=1):
+
+    def __init__(self, discriminator, learning_set, learning_fun, generator,
+                disc_learning_ratio=1, gen_learning_ratio=1, disc_fake_learning_ratio=0, 
+                gen_learning_ratio_alone=0, batch_size=0):
         self.generator = generator
         self.discriminator = discriminator
         self.learning_set = learning_set
         self.set_size = len(learning_set)
         self.learning_fun = learning_fun
-        self.eta_gen = eta_gen
-        self.eta_disc = eta_disc
         self.gen_learning_ratio = gen_learning_ratio
         self.disc_learning_ratio = disc_learning_ratio
         self.disc_fake_learning_ratio = disc_fake_learning_ratio
         self.gen_learning_ratio_alone = gen_learning_ratio_alone
         self.batch_size = batch_size
+
 
     ##
     # @brief      Execute a movement of the game, learning of dicriminator, then the generator
@@ -35,6 +35,7 @@ class GanGame:
     def playAndLearn(self):
         for i in range(self.disc_learning_ratio):
             self.discriminatorLearningReal()
+            # print("discRealLearnCheck", i)
 
         for j in range(self.gen_learning_ratio):
             fake_images = self.generatorLearning()

@@ -15,6 +15,8 @@ récuperation des paramètres du config.ini
 data_interface = DataInterface()  
 
 param_liste = data_interface.read_conf('multi_config.ini', 'GanMnist')  # Lecture du fichier de config,
+param_desc_disc_liste = data_interface.read_conf('config_algo_descente.ini', 'Param de desc du disc')
+param_desc_gen_liste = data_interface.read_conf('config_algo_descente.ini', 'Param de desc du gen')
 # dans la session [GanMnist]
 
 """
@@ -33,6 +35,8 @@ for exp in range(number_exp):
 
     param = data_interface.extract_param(param_liste, exp)
 
+    param_desc_disc = data_interface.extract_param(param_desc_disc_liste, exp)
+    param_desc_gen = data_interface.extract_param(param_desc_gen_liste, exp)
     numbers_to_draw = param['numbers_to_draw']
 
     """
@@ -70,9 +74,13 @@ for exp in range(number_exp):
     disc_error_fun = param['disc_error_fun']
     disc_error_fun.vectorize()
 
-    discriminator = Network(param['disc_network_layers'], disc_activation_funs, disc_error_fun, batch_size)
-
-    eta_disc = param['eta_disc']
+    discriminator = Network(param['disc_network_layers'], 
+                            disc_activation_funs, 
+                            disc_error_fun, 
+                            'Param de desc du disc',
+                            batch_size,
+                            exp
+                            )
 
     training_fun = param['training_fun']()  # Function donnant la réponse à une vrai image attendu (1
     # par défaut)
@@ -87,12 +95,14 @@ for exp in range(number_exp):
     map(Function.vectorize, generator_layers_activation_function)
     # generator_error_function = param['generator_error_fun']
 
-    generator = GeneratorNetwork(generator_layers_neuron_count,
-                                 generator_layers_activation_function,
-                                 disc_error_fun,
-                                 batch_size)
-
-    eta_gen = param['eta_gen']
+    generator = NoisyGeneratorNetwork(generator_layers_neuron_count,
+                                      generator_layers_activation_function,
+                                      disc_error_fun,
+                                      noise_layers_size,
+                                      'Param de desc du gen',
+                                      batch_size,
+                                      exp
+                                      )
 
     gen_learning_ratio = param['gen_learning_ratio']  # Pour chaque partie, nombre d'apprentissage
     # du discriminant sur image réelle
@@ -105,8 +115,6 @@ for exp in range(number_exp):
                       training_images_exp,
                       training_fun,
                       generator,
-                      eta_gen,
-                      eta_disc,
                       disc_learning_ratio,
                       gen_learning_ratio,
                       disc_fake_learning_ratio,
@@ -145,7 +153,7 @@ for exp in range(number_exp):
     for i in range(play_number):
         ganGame.playAndLearn()
         if i % test_period == 0:
-            print(i)
+            print("i", i)
             a, b, c, d = ganGame.testDiscriminatorLearning(lissage_test)  # effectue n test et renvoie la moyenne
             # des scores
             discriminator_real_score.append(a)
@@ -178,7 +186,7 @@ for exp in range(number_exp):
     data_interface.save(real_std, 'real_std', conf)  # Sauvegarde des courbes de score
     data_interface.save(fake_std, 'fake_std', conf)
 
-    gan_plot.save_courbes(param, discriminator_real_score, discriminator_fake_score)
+    gan_plot.save_courbes(param, param_desc_gen, param_desc_disc, discriminator_real_score, discriminator_fake_score)
 
     state = generator.save_state()
     gan_plot.save_plot_network_state(state)

@@ -13,34 +13,40 @@ class Network:
     #                                         en incluant le nombres d'entrées en position 0
     # @param      layers_activation_function  The layers activation function
     #
+
     def __init__(self, layers_neuron_count, layers_activation_function, error_function,
-                 learning_batch_size=1, weights_list=()):
+                 param_desc, learning_batch_size=1, nb_exp=0, weights_list=()):
         self._layers_activation_function = layers_activation_function  # sauvegarde pour pouvoir
         # reinitialiser
         self.layers_neuron_count = layers_neuron_count
+        self.param_desc = param_desc
         self._layers_count = np.size(layers_neuron_count) - 1
         self.error = error_function
         self._learning_batch_size = learning_batch_size
         self.layers_list = np.array(
-                            self._layers_count * [NeuronLayer(
-                                                        self._layers_activation_function[0],
-                                                        self.error
-                                                        )]
-                            )
+            self._layers_count * [NeuronLayer(
+                layers_activation_function[0],
+                error_function,
+                param_desc
+            )]
+        )
         for i in range(0, self._layers_count - 1):
             self.layers_list[i] = NeuronLayer(self._layers_activation_function[i],
                                               self.error,
-                                              self.layers_neuron_count[i],
-                                              self.layers_neuron_count[i + 1],
-                                              self._learning_batch_size
+                                              param_desc,
+                                              layers_neuron_count[i],
+                                              layers_neuron_count[i + 1],
+                                              self._learning_batch_size,
+                                              nb_exp
                                               )
-        self.layers_list[self._layers_count - 1] = OutputLayer(
-            self._layers_activation_function[self._layers_count - 1],
-            self.error,
-            self.layers_neuron_count[self._layers_count - 1],
-            self.layers_neuron_count[self._layers_count],
-            self._learning_batch_size
-            )
+        self.layers_list[self._layers_count - 1] = OutputLayer(layers_activation_function[self._layers_count - 1],
+                                                               self.error, 
+                                                               param_desc, 
+                                                               layers_neuron_count[self._layers_count - 1], 
+                                                               layers_neuron_count[self._layers_count],
+                                                               self._learning_batch_size,
+                                                               nb_exp
+                                                               )
         self.output = np.zeros(layers_neuron_count[-1])
 
         if len(weights_list) != 0:  # si l'on a donné une liste de poids
@@ -58,6 +64,7 @@ class Network:
         for i in range(0, self._layers_count - 1):
             self.layers_list[i] = NeuronLayer(self._layers_activation_function[i],
                                               self.error,
+                                              self.param_desc,
                                               self.layers_neuron_count[i],
                                               self.layers_neuron_count[i + 1],
                                               self._learning_batch_size
@@ -102,7 +109,7 @@ class Network:
         On considère ici toujours des réseaux avec plusieurs couches !
     """
 
-    def backprop(self, eta, inputs, reference, update=True, gen_backprop=False):
+    def backprop(self, inputs, reference, update=True, gen_backprop=False):
         dim = np.shape(inputs)
         nb_dim = len(dim)
         if nb_dim == 1:  # and self._learning_batch_size == 1:  # Pour conserver le fonctionnement
@@ -114,7 +121,6 @@ class Network:
             inputs = inputs
         else:
             raise Exception("Incorrect inputs dimensions")
-
         n = self._layers_count
 
         # On initialise avec des valeurs très particulière pour les couches d'entrée (class
@@ -129,7 +135,7 @@ class Network:
                 next_weight
             )
             next_weight = self.layers_list[i].backprop(
-                out_influence, eta, input_layer, update)
+                out_influence, input_layer, update)
 
         # On s'occupe de la couche d'entrée (si différente de couche de sortie)
         input_layer = inputs
@@ -137,7 +143,7 @@ class Network:
             out_influence,
             next_weight
         )
-        self.layers_list[0].backprop(out_influence, eta, input_layer, update)
+        self.layers_list[0].backprop(out_influence, input_layer, update)
         return out_influence
 
     @property
@@ -181,7 +187,7 @@ class Network:
 #
 class GeneratorNetwork(Network):
     def __init__(self, layers_neuron_count, layers_activation_function, error_function,
-                 learning_batch_size=1, weights_list=()):
+                 param_desc, learning_batch_size=1, nb_exp=0, weights_list=()):
         self._layers_activation_function = layers_activation_function  # sauvegarde pour pouvoir
         # reinitialiser
         self._learning_batch_size = learning_batch_size
@@ -197,9 +203,11 @@ class GeneratorNetwork(Network):
         for i in range(0, self._layers_count):
             self.layers_list[i] = NeuronLayer(layers_activation_function[i],
                                               self.error,
+                                              param_desc,
                                               layers_neuron_count[i],
                                               layers_neuron_count[i + 1],
-                                              self._learning_batch_size
+                                              self._learning_batch_size,
+                                              nb_exp
                                               )
 
         self.output = np.zeros(layers_neuron_count[-1])
@@ -209,7 +217,7 @@ class GeneratorNetwork(Network):
                 self.layers_list[i].weights = weights_list[i][0]
                 self.layers_list[i].bias = weights_list[i][1]
 
-    def backprop(self, eta, inputs, disc_error_influence, first_weights_disc, update=True):
+    def backprop(self, inputs, disc_error_influence, first_weights_disc, update=True):
         dim = np.shape(inputs)
         nb_dim = len(dim)
         if nb_dim == 1:  # and self._learning_batch_size == 1:  # Pour conserver le fonctionnement
@@ -221,7 +229,6 @@ class GeneratorNetwork(Network):
             inputs = inputs
         else:
             raise Exception("Incorrect inputs dimensions")
-
         n = self._layers_count
 
         # On initialise avec des valeurs très particulière pour les couches d'entrée (class
@@ -236,7 +243,7 @@ class GeneratorNetwork(Network):
                 next_weight
             )
             next_weight = self.layers_list[i].backprop(
-                out_influence, eta, input_layer, update)
+                out_influence, input_layer, update)
 
         # On s'occupe de la couche d'entrée (si différente de couche de sortie)
         input_layer = inputs
@@ -244,7 +251,7 @@ class GeneratorNetwork(Network):
             out_influence,
             next_weight
         )
-        self.layers_list[0].backprop(out_influence, eta, input_layer, update)
+        self.layers_list[0].backprop(out_influence, input_layer, update)
         return out_influence
 
 
@@ -253,7 +260,7 @@ class GeneratorNetwork(Network):
 ##
 class NoisyGeneratorNetwork(GeneratorNetwork):
     def __init__(self, layers_neuron_count, layers_activation_function, error_function,
-                 noise_layers_size, learning_batch_size=1, weights_list=()):
+                 noise_layers_size, param_desc, learning_batch_size=1, nb_exp=0, weights_list=()):
         self._layers_activation_function = layers_activation_function  # sauvegarde pour pouvoir
         # reinitialiser
         self.layers_neuron_count = layers_neuron_count
@@ -265,19 +272,21 @@ class NoisyGeneratorNetwork(GeneratorNetwork):
             self._layers_count * [NoisyLayer(
                 layers_activation_function[0],
                 error_function,
+                param_desc,
                 layers_neuron_count[0],
                 layers_neuron_count[1],
-                learning_batch_size,
-                noise_layers_size[0]
+                noise_layers_size[0],
             )]
         )
         for i in range(0, self._layers_count):
             self.layers_list[i] = NoisyLayer(layers_activation_function[i],
                                              self.error,
+                                             param_desc;
                                              layers_neuron_count[i],
                                              layers_neuron_count[i + 1],
+                                             noise_layers_size[i],
                                              learning_batch_size,
-                                             noise_layers_size[i]
+                                             nb_exp
                                              )
 
         self.output = np.zeros(layers_neuron_count[-1])

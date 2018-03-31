@@ -214,8 +214,7 @@ class CostFunction(Function):
             return +0.5/(1-output)
 
     def save_fun(self):
-        return 'CostFunction()'
-        
+        return 'CostFunction()'      
 
 # class GeneratorError(Function):
 

@@ -5,7 +5,7 @@ class Engine:
     """Classe gérant l'apprentissage d'un réseau, tout en fournissant des données au fur et à mesure
     """
 
-    def __init__(self, net, eta, learning_set, learning_fun, testing_set, testing_fun, success_fun,
+    def __init__(self, net, eta, learning_set, learning_fun, testing_set, testing_fun, success_fun, momentum=0,
                  learning_iterations=1, test_period=100, learning_set_pass_nb=1,
                  randomize_learning_set=True):
         # Réseau utilisé
@@ -23,6 +23,7 @@ class Engine:
 
         # Paramètres pour l'apprentissage
         self.eta = eta
+        self.momentum = momentum
         self._randomize_learning_set = randomize_learning_set
         self._permutation = np.arange(self._learning_set_size)
         self._learning_set_pass_nb = learning_set_pass_nb
@@ -99,4 +100,6 @@ class Engine:
             if self._randomize_learning_set:
                 self._permutation = np.random.permutation(self._learning_set_size)
             self._error_during_learning[i] = self.learn()
+            if i % self._test_period == 0:
+                print(i)
         return self._error_during_learning

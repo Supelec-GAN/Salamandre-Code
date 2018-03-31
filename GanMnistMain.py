@@ -66,6 +66,8 @@ batch_size_disc = param['batch_size_disc']
 
 discriminator = Network(param['disc_network_layers'], disc_activation_funs, disc_error_fun)
 
+momentum_disc = param['momentum_disc']
+
 training_fun = param['training_fun']()  # Function donnant la réponse à une vrai image attendu (1
 # par défaut)
 
@@ -85,6 +87,7 @@ generator = NoisyGeneratorNetwork(generator_layers_neuron_count,
                                   generator_layers_activation_function,
                                   disc_error_fun,
                                   noise_layers_size)
+momentum_gen = param['momentum_gen']
 
 gen_learning_ratio = param['gen_learning_ratio']  # Pour chaque partie, nombre d'apprentissage du
 #  discriminant sur image réelle
