@@ -1,5 +1,5 @@
 import numpy as np
-from brain.neuronLayer import NeuronLayer, OutputLayer, NoisyLayer
+from brain.neuronLayer import NeuronLayer, OutputLayer
 
 
 class Network:
@@ -36,6 +36,7 @@ class Network:
                                               param_desc,
                                               layers_neuron_count[i],
                                               layers_neuron_count[i + 1],
+                                              0,  # Il n'y a pas de bruit dans layer classique
                                               self._learning_batch_size,
                                               nb_exp
                                               )
@@ -187,29 +188,37 @@ class Network:
 #
 class GeneratorNetwork(Network):
     def __init__(self, layers_neuron_count, layers_activation_function, error_function,
-                 param_desc, learning_batch_size=1, nb_exp=0, weights_list=()):
+                 noise_layers_size, param_desc, learning_batch_size=1, nb_exp=0, weights_list=()):
+
         self._layers_activation_function = layers_activation_function  # sauvegarde pour pouvoir
         # reinitialiser
-        self._learning_batch_size = learning_batch_size
         self.layers_neuron_count = layers_neuron_count
+        self.param_desc = param_desc
         self._layers_count = np.size(layers_neuron_count) - 1
         self.error = error_function
+        self._learning_batch_size = learning_batch_size
+
+        self.noise_layers_size = noise_layers_size
         self.layers_list = np.array(
             self._layers_count * [NeuronLayer(
                 layers_activation_function[0],
-                error_function
+                error_function,
+                param_desc,
+                layers_neuron_count[0],
+                layers_neuron_count[1],
+                noise_layers_size[0],
             )]
         )
         for i in range(0, self._layers_count):
             self.layers_list[i] = NeuronLayer(layers_activation_function[i],
-                                              self.error,
-                                              param_desc,
-                                              layers_neuron_count[i],
-                                              layers_neuron_count[i + 1],
-                                              self._learning_batch_size,
-                                              nb_exp
-                                              )
-
+                                             self.error,
+                                             param_desc,
+                                             layers_neuron_count[i],
+                                             layers_neuron_count[i + 1],
+                                             noise_layers_size[i],
+                                             learning_batch_size,
+                                             nb_exp
+                                             )
         self.output = np.zeros(layers_neuron_count[-1])
 
         if len(weights_list) != 0:  # si l'on a donné une liste de poids
@@ -253,45 +262,3 @@ class GeneratorNetwork(Network):
         )
         self.layers_list[0].backprop(out_influence, input_layer, update)
         return out_influence
-
-
-##
-# @brief      Class for noisy generator network. It has NoisyLayer instead of NetworkLayer
-##
-class NoisyGeneratorNetwork(GeneratorNetwork):
-    def __init__(self, layers_neuron_count, layers_activation_function, error_function,
-                 noise_layers_size, param_desc, learning_batch_size=1, nb_exp=0, weights_list=()):
-        self._layers_activation_function = layers_activation_function  # sauvegarde pour pouvoir
-        # reinitialiser
-        self.layers_neuron_count = layers_neuron_count
-        self._layers_count = np.size(layers_neuron_count) - 1
-        self.error = error_function
-        self._learning_batch_size = learning_batch_size
-        self.noise_layers_size = noise_layers_size
-        self.layers_list = np.array(
-            self._layers_count * [NoisyLayer(
-                layers_activation_function[0],
-                error_function,
-                param_desc,
-                layers_neuron_count[0],
-                layers_neuron_count[1],
-                noise_layers_size[0],
-            )]
-        )
-        for i in range(0, self._layers_count):
-            self.layers_list[i] = NoisyLayer(layers_activation_function[i],
-                                             self.error,
-                                             param_desc,
-                                             layers_neuron_count[i],
-                                             layers_neuron_count[i + 1],
-                                             noise_layers_size[i],
-                                             learning_batch_size,
-                                             nb_exp
-                                             )
-
-        self.output = np.zeros(layers_neuron_count[-1])
-
-        if len(weights_list) != 0:  # si l'on a donné une liste de poids
-            for i in range(0, self._layers_count):
-                self.layers_list[i].weights = weights_list[i][0]
-                self.layers_list[i].bias = weights_list[i][1]

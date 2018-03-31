@@ -7,13 +7,17 @@ from dataInterface import DataInterface
 class NeuronLayer:
     """Classe permettant de créer une couche de neurones"""
 
-    def __init__(self, activation_function, error_function, param_desc, input_size=1,
-                 output_size=1, learning_batch_size=1, nb_exp=0):
+    def __init__(self, activation_function, error_function, param_desc, 
+                 input_size=1, output_size=1, noise_size=0, learning_batch_size=1, nb_exp=0):
         # Matrice de dimension q*p avec le nombre de sortie et p le nombre d'entrée
         self._input_size = input_size
         self._output_size = output_size
         self._learning_batch_size = learning_batch_size
-        self._weights = np.transpose(np.random.randn(input_size, output_size))
+        # self._weights = np.transpose(np.random.randn(input_size, output_size))
+        self._noise_size = noise_size
+
+        self.weights = np.transpose(np.random.randn(input_size+noise_size, output_size))
+
         self._bias = np.zeros((output_size, 1))                                # Vecteur colonne
         # On peut laisser le biais comme un vecteur colonne, car en faire une matrice contenant
         # learning_batch_size fois la même colonne. Lorsque l'on aura besoin du biais dans les
@@ -27,14 +31,21 @@ class NeuronLayer:
         # correspond à une entrée du batch
         self.error = error_function
 
-        self.update_weights_value = np.zeros((output_size, input_size))
+        self.update_weights_value = np.zeros((output_size, input_size + noise_size))
         self.update_bias_value = np.zeros((output_size, 1))
 
-        self.weights_gradients_sum = np.zeros((output_size, input_size))
+        self.noise_input = np.zeros((noise_size, learning_batch_size))
+
+        # self.update_weights_value = np.zeros((output_size, input_size))
+
+        self.weights_gradients_sum = np.zeros((output_size, input_size + noise_size))
+        # self.weights_gradients_sum = np.zeros((output_size, input_size))
         self.bias_gradients_sum = np.zeros((output_size, 1))
-        self.weights_moment = np.zeros((output_size, input_size))
+        self.weights_moment = np.zeros((output_size, input_size + noise_size))
+        # self.weights_moment = np.zeros((output_size, input_size))
         self.bias_moment = np.zeros((output_size, 1))
-        self.weights_eta = np.zeros((output_size, input_size))          #need meilleur nom
+        self.weights_eta = np.zeros((output_size, input_size + noise_size))
+        # self.weights_eta = np.zeros((output_size, input_size))          #need meilleur nom
         self.bias_eta = np.zeros((output_size, 1))                      #need meilleur nom
 
         data_interface = DataInterface()
@@ -85,29 +96,24 @@ class NeuronLayer:
     def learning_batch_size(self, new_learning_batch_size):
         self.activation_levels = np.zeros((self._output_size, new_learning_batch_size))
         self.output = np.zeros((self._output_size, new_learning_batch_size))
+        self.noise_input = np.zeros((self._noise_size, new_learning_batch_size))
         self._learning_batch_size = new_learning_batch_size
 
+    def compute(self, inputs):
+        if self._noise_size != 0:  # nécessaire car np.zeros( (0,1)) est un objet chelou
+            self.noise_input = np.random.randn(self._noise_size, self._learning_batch_size)
+            inputs = np.concatenate([inputs, self.noise_input])
+        self.activation_levels = np.dot(self.weights, inputs) - self._bias
+        self.output = self._activation_function.out(self.activation_levels)
+        return self.output
     ##
     # @brief      Calcul des sorties de la couche
     #
     # @param      inputs  Inputs
 
-    def compute(self, inputs):
-        self.activation_levels = np.dot(self._weights, inputs) - self._bias
-        self.output = self._activation_function.out(self.activation_levels)
-        return self.output
-
-    ##
-    # @brief      Retropropagation au niveau d'une couche
-    #
-    # @param      out_influence  influence of output on the error
-    # @param      eta            The eta
-    # @param      input_layer    The input value of the layer
-    #
-    # @return     retourne influence of the input on the error
-    #
-    #
     def backprop(self, out_influence, input_layer, update=True):
+        if self._noise_size != 1:
+            input_layer = np.concatenate([input_layer, self.noise_input])
         weight_influence = self.calculate_weight_influence(
             input_layer, out_influence)
         bias_influence = self.calculate_bias_influence(out_influence)
@@ -115,9 +121,10 @@ class NeuronLayer:
             self.update_momentum(bias_influence, weight_influence)
             self.update_weights(weight_influence)
             self.update_bias(bias_influence)
-            return self.weights
+            return self.weights[:, 0:self._input_size]  # On extrait les poids concernant les vrais inputs (le bruit n'a pas besoin d'influer sur les couches d'avant)
         else:
-            return self.weights - self.eta * weight_influence 
+            return (self.weights - self.eta * weight_influence)[:, 0:self._input_size]
+
 
     def update_momentum(self, bias_influence, weight_influence):
 
@@ -248,7 +255,7 @@ class NeuronLayer:
 ##
 class OutputLayer(NeuronLayer):
     def __init__(self, activation_function, error_function, param_desc, input_size=1, output_size=1, learning_batch_size=1, nb_exp=0):
-        super(OutputLayer, self).__init__(activation_function, error_function, param_desc, input_size, output_size, learning_batch_size, nb_exp)
+        super(OutputLayer, self).__init__(activation_function, error_function, param_desc, input_size, output_size, 0, learning_batch_size, nb_exp)
 
         data_interface = DataInterface()
         param_liste = data_interface.read_conf('config_algo_descente.ini', param_desc)  # Lecture du fichier de confi
@@ -261,60 +268,3 @@ class OutputLayer(NeuronLayer):
             return deriv_vector * self.error_gen.derivate(reference, self.output)
         else:
             return deriv_vector * self.error.derivate(reference, self.output)
-
-
-##
-# @brief      Class for layer with noisy input added to inputs.
-##
-class NoisyLayer(NeuronLayer):
-    def __init__(self, activation_function, error_function, param_desc, input_size=1, output_size=1,
-                 noise_size=0, learning_batch_size=1, nb_exp=0):
-        super(NoisyLayer, self).__init__(activation_function, error_function, param_desc, input_size, output_size, learning_batch_size, nb_exp)
-        self._noise_size = noise_size
-        self.weights = np.transpose(np.random.randn(input_size+noise_size, output_size))
-        self.noise_input = np.zeros((noise_size, learning_batch_size))
-
-        self.weights_gradients_sum = np.zeros((output_size, input_size + noise_size))
-        self.update_weights_value = np.zeros((output_size, input_size + noise_size))
-        self.weights_moment = np.zeros((output_size, input_size + noise_size))
-        self.weights_eta = np.zeros((output_size, input_size + noise_size))
-        
-    ##
-    # Compute très légèrement différent, on concatene un vecteur de bruits à l'input si nécéssaire
-    ##
-    def compute(self, inputs):
-        if self._noise_size != 0:  # nécessaire car np.zeros( (0,1)) est un objet chelou
-            self.noise_input = np.random.randn(self._noise_size, self._learning_batch_size)
-            inputs = np.concatenate([inputs, self.noise_input])
-        self.activation_levels = np.dot(self.weights, inputs) - self._bias
-        self.output = self._activation_function.out(self.activation_levels)
-        return self.output
-
-    ##
-    # backptop très légèrement différent, on retropropage en considérant le vecteur bruit,
-    # mais sans renvoyer son influence à la couche précédente
-    ##
-    def backprop(self, out_influence, input_layer, update=True):
-        if self._noise_size != 1:
-            input_layer = np.concatenate([input_layer, self.noise_input])
-        weight_influence = self.calculate_weight_influence(
-            input_layer, out_influence)
-        bias_influence = self.calculate_bias_influence(out_influence)
-        if update:
-            self.update_momentum(bias_influence, weight_influence)
-            self.update_weights(weight_influence)
-            self.update_bias(bias_influence)
-            return self.weights[:, 0:self._input_size]  # On extrait les poids concernant les vrais inputs (le bruit n'a pas besoin d'influer sur les couches d'avant)
-        else:
-            return (self.weights - self.eta * weight_influence)[:, 0:self._input_size]
-
-    @property
-    def learning_batch_size(self):
-        return self._learning_batch_size
-
-    @learning_batch_size.setter
-    def learning_batch_size(self, new_learning_batch_size):
-        self.activation_levels = np.zeros((self._output_size, new_learning_batch_size))
-        self.output = np.zeros((self._output_size, new_learning_batch_size))
-        self.noise_input = np.zeros((self._noise_size, new_learning_batch_size))
-        self._learning_batch_size = new_learning_batch_size

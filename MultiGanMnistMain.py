@@ -1,5 +1,5 @@
 import numpy as np
-from brain.network import Network, GeneratorNetwork, NoisyGeneratorNetwork
+from brain.network import Network, GeneratorNetwork
 from fonction import Function, Sigmoid, MnistTest, Norm2
 from mnist import MNIST
 from dataInterface import DataInterface
@@ -76,7 +76,7 @@ for exp in range(number_exp):
 
     discriminator = Network(param['disc_network_layers'], 
                             disc_activation_funs, 
-                            disc_error_fun, 
+                            disc_error_fun,
                             'Param de desc du disc',
                             batch_size,
                             exp
@@ -88,14 +88,16 @@ for exp in range(number_exp):
 
     """
     Initialisation du generator
+
     """
+    print(batch_size)
     generator_layers_neuron_count = param['generator_network_layers']
     noise_layers_size = param['noise_layers_size']
     generator_layers_activation_function = np.array(param['generator_activation_funs'])
     map(Function.vectorize, generator_layers_activation_function)
     # generator_error_function = param['generator_error_fun']
 
-    generator = NoisyGeneratorNetwork(generator_layers_neuron_count,
+    generator = GeneratorNetwork(generator_layers_neuron_count,
                                       generator_layers_activation_function,
                                       disc_error_fun,
                                       noise_layers_size,
