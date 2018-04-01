@@ -11,29 +11,37 @@ data_interface = DataInterface('Mnist_debug')
 
 param = data_interface.read_conf()
 
+
+# Chargement des données de MNIST
 mndata = MNIST(param['file'])
 training_images, training_labels = mndata.load_training()
 testing_images, testing_labels = mndata.load_testing()
 
+# Configuration des images d'entrainement
 training_images = np.array(training_images)
 training_labels = np.array(training_labels)
 training_size = param['training_size']
 
+# Configuration des images de test
 testing_images = np.array(testing_images)
 testing_labels = np.array(testing_labels)
 testing_size = param['testing_size']
 
+
+# Chargement des paramètres de gestion de l'apprentissage
 learning_iterations = param['learning_iterations']
 test_period = param['test_period']
 randomize_learning_set = param['learning_iterations']
 
-
+# Chargement des fonctions utilisées
 activation_funs = np.array(param['activation_funs'])
 error_fun = param['error_fun']
 
+# Chargement des paramètres d'apprentissage
 eta = param['eta']
 learning_set_pass_nb = param['learning_set_pass_nb']
 batch_size = param['batch_size']
+
 
 net = Network(param['network_layers'], activation_funs, error_fun, batch_size)
 

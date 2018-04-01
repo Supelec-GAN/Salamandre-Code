@@ -62,6 +62,10 @@ class NeuronLayer:
         self.output = np.zeros((self._output_size, new_learning_batch_size))
         self._learning_batch_size = new_learning_batch_size
 
+    @property
+    def output_size(self):
+        return self._output_size
+
     ##
     # @brief      Calcul des sorties de la couche
     #

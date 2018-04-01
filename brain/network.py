@@ -56,7 +56,7 @@ class Network:
                                )
             else:
                 raise Exception('Wrong layer type')
-#        self.output = np.zeros(layers_neuron_count[-1])
+        self.output = np.zeros(self.layers_list[-1].output_size)
 
         if len(weights_list) != 0:  # si l'on a donné une liste de poids
             for i in range(0, self._layers_count):
@@ -100,7 +100,7 @@ class Network:
                                )
             else:
                 raise Exception('Wrong layer type')
-#        self.output = np.zeros(layers_neuron_count[-1])
+        self.output = np.zeros(self.layers_list[-1].output_size)
 
     def compute(self, inputs):
         """
@@ -166,6 +166,7 @@ class Network:
             layer.learning_batch_size = new_learning_batch_size
         self._learning_batch_size = new_learning_batch_size
 
+# A mettre à jour avec les nouveaux attributs !!
     def save_state(self):
         """
         Permet de sauvegarder l'état du réseau, ainsi que ses paramètres
