@@ -1,5 +1,5 @@
 import numpy as np
-from brain.network import Network, GeneratorNetwork, NoisyGeneratorNetwork
+from brain.network import Network
 from fonction import Sigmoid, MnistTest, Norm2
 from mnist import MNIST
 from dataInterface import DataInterface
@@ -137,30 +137,32 @@ final_images = param['final_images']
 image_evolution_number = play_number//nb_images_during_learning
 
 for i in range(play_number):
-    ganGame.playAndLearn()
+    ganGame.play_and_learn()
     if i % test_period == 0:
         print(i)
-        a, b, c, d = ganGame.testDiscriminatorLearning(lissage_test)  # effectue n test et renvoie la moyenne
-        # des scores
+        a, b, c, d = ganGame.test_discriminator_learning(lissage_test)  # effectue n test et
+        # renvoie la moyenne des scores
         discriminator_real_score.append(a)
         discriminator_fake_score.append(b)
         real_std.append(c)
         fake_std.append(d)
     if i % image_evolution_number == 0:
-        a, b, c, d = ganGame.testDiscriminatorLearning(1)
+        a, b, c, d = ganGame.test_discriminator_learning(1)
 
         for j in range(nb_images_par_sortie_during_learning):
-            image, associate_noise = ganGame.generateImage()  # Generation d'une image à la fin de
+            image, associate_noise = ganGame.generate_image()  # Generation d'une image à la fin de
             # l'apprentissage
 
-            gan_plot.save(image, str(numbers_to_draw) + "_" + str(j) +  "_au_rang_" + str(i),str(i),a, b)
+            gan_plot.save(image, str(numbers_to_draw) + "_" + str(j) + "_au_rang_" + str(i),
+                          str(i), a, b)
 
 
 for i in range(final_images):
-    image_test, associate_noise = ganGame.generateImage()  # génération d'une image à la fin de
+    image_test, associate_noise = ganGame.generate_image()  # génération d'une image à la fin de
     # l'apprentissage
 
-    gan_plot.save(image_test, str(numbers_to_draw)+ str(i), str(i), discriminator_real_score[-1], discriminator_fake_score[-1])
+    gan_plot.save(image_test, str(numbers_to_draw) + str(i), str(i), discriminator_real_score[-1],
+                  discriminator_fake_score[-1])
 
 
 conf = data_interface.save_conf('config.ini', 'GanMnist')  # récupération de la configuration

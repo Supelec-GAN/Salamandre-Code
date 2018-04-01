@@ -145,23 +145,23 @@ for exp in range(number_exp):
     image_evolution_number = play_number//nb_images_during_learning
 
     for i in range(1000):
-        ganGame.discriminatorLearningReal()
+        ganGame.discriminator_learning_real()
 
     for i in range(play_number):
-        ganGame.playAndLearn()
+        ganGame.play_and_learn()
         if i % test_period == 0:
             print(i)
-            a, b, c, d = ganGame.testDiscriminatorLearning(lissage_test)  # effectue n test et
+            a, b, c, d = ganGame.test_discriminator_learning(lissage_test)  # effectue n test et
             # renvoie la moyenne des scores
             discriminator_real_score.append(a)
             discriminator_fake_score.append(b)
             real_std.append(c)
             fake_std.append(d)
         if i % image_evolution_number == 0:
-            a, b, c, d = ganGame.testDiscriminatorLearning(lissage_test)
+            a, b, c, d = ganGame.test_discriminator_learning(lissage_test)
             images_evolution = [[]]*nb_images_par_sortie_during_learning
             for j in range(nb_images_par_sortie_during_learning):
-                image, associate_noise = ganGame.generateImage()  # Generation d'une image à la
+                image, associate_noise = ganGame.generate_image()  # Generation d'une image à la
                 # fin de l'apprentissage
                 images_evolution[j] = image
             if nb_images_par_sortie_during_learning > 0:
@@ -170,7 +170,7 @@ for exp in range(number_exp):
 
     images_finales = [[]]*final_images
     for i in range(final_images):
-        image_test, _ = ganGame.generateImage()  # génération d'une image à la fin de
+        image_test, associate_noise = ganGame.generate_image()  # génération d'une image à la fin de
         # l'apprentissage
         images_finales[i] = image_test
     if final_images > 0:
