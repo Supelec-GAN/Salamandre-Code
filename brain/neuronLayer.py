@@ -21,6 +21,7 @@ class NeuronLayer:
         # calculs, il y aura mathématiquement parlant un problème de dimension (addition vecteur
         # + matrice), cependant numpy gère ça en additionnant le vecteur de biais à chacune des
         # colonnes de la matrice
+        self.input = np.zeros((input_size, learning_batch_size))
         self._activation_function = activation_function
         self.activation_levels = np.zeros((output_size, learning_batch_size))  # Chaque colonne
         # correspond à une entrée du batch
@@ -71,7 +72,8 @@ class NeuronLayer:
     # @param      inputs  Inputs
 
     def compute(self, inputs):
-        self.activation_levels = np.dot(self._weights, inputs) - self._bias
+        self.input = self.flatten_inputs(inputs)
+        self.activation_levels = np.dot(self._weights, self.input) - self._bias
         self.output = self._activation_function.out(self.activation_levels)
         return self.output
 
@@ -85,8 +87,7 @@ class NeuronLayer:
     # @return     retourne influence of the input on the error
     #
     def backprop(self, out_influence, eta, input_layer, update=True):
-        weight_influence = self.calculate_weight_influence(
-            input_layer, out_influence)
+        weight_influence = self.calculate_weight_influence(out_influence)
         bias_influence = self.calculate_bias_influence(out_influence)
         if update:
             self.update_weights(eta, weight_influence)
@@ -109,8 +110,8 @@ class NeuronLayer:
     #
     # @return     vecteur of same dimension than weights.
     #
-    def calculate_weight_influence(self, input_layer, out_influence):
-        return np.dot(out_influence, np.transpose(input_layer)) / self._learning_batch_size
+    def calculate_weight_influence(self, out_influence):
+        return np.dot(out_influence, np.transpose(self.input)) / self._learning_batch_size
 
     ##
     # @brief      Calculates the bias influence (which is out_influence)
@@ -129,6 +130,18 @@ class NeuronLayer:
     def derivate_error(self, out_influence, next_weights):
         deriv_vector = self._activation_function.derivate(self.activation_levels)
         return deriv_vector * np.dot(np.transpose(next_weights), out_influence)
+
+    def flatten_inputs(self, inputs):
+        ndim = inputs.ndim
+        if ndim == 2:
+            return inputs
+        elif ndim == 4:
+            # Maybe add a check
+            inputs_reshaped = inputs.ravel().reshape((self._learning_batch_size,
+                                                      self._input_size)).T
+            return inputs_reshaped
+        else:
+            raise Exception('Wrong inputs dimension : it should be a matrix or a 4D tensor')
 
 
 ##
@@ -156,27 +169,26 @@ class NoisyLayer(NeuronLayer):
         self._noise_size = noise_size
         self.weights = np.transpose(np.random.randn(input_size+noise_size, output_size))
         self.noise_input = np.zeros((noise_size, learning_batch_size))
+        self._full_input = np.concatenate([self.input, self.noise_input])
 
     ##
-    # Compute très légèrement différent, on concatene un vecteur de bruits à l'input si nécéssaire
+    # Compute très légèrement différent, on concatène un vecteur de bruits à l'input si nécessaire
     ##
     def compute(self, inputs):
+        self.input = inputs
         if self._noise_size != 0:  # nécessaire car np.zeros( (0,1)) est un objet chelou
             self.noise_input = np.random.randn(self._noise_size, self._learning_batch_size)
-            inputs = np.concatenate([inputs, self.noise_input])
+            self._full_input = np.concatenate([self.input, self.noise_input])
         self.activation_levels = np.dot(self.weights, inputs) - self._bias
         self.output = self._activation_function.out(self.activation_levels)
         return self.output
 
     ##
-    # backptop très légèrement différent, on retropropage en considérant le vecteur bruit,
+    # backprop très légèrement différente, on rétropropage en considérant le vecteur bruit,
     # mais sans renvoyer son influence à la couche précédente
     ##
     def backprop(self, out_influence, eta, input_layer, update=True):
-        if self._noise_size != 1:
-            input_layer = np.concatenate([input_layer, self.noise_input])
-        weight_influence = self.calculate_weight_influence(
-            input_layer, out_influence)
+        weight_influence = self.calculate_weight_influence(out_influence)
         bias_influence = self.calculate_bias_influence(out_influence)
         if update:
             self.update_weights(eta, weight_influence)
@@ -228,22 +240,25 @@ class ConvolutionalLayer(NeuronLayer):
             self._reverse_convolution_mode = 'full'
         else:
             raise Exception("Invalid convolution mode")
+        self.input = np.zeros((self._learning_batch_size, self._input_feature_maps,
+                               self._input_size[0], self._input_size[1]))
         self.activation_levels = np.zeros((self._learning_batch_size, self._output_feature_maps,
                                            self._output_size[0], self._output_size[1]))
         self.output = np.zeros((self._learning_batch_size, self._output_feature_maps,
                                 self._output_size[0], self._output_size[1]))
 
     def compute(self, inputs):
-        conv = conv2d(inputs, self._weights, border_mode=self._convolution_mode)
+        self.input = self.tensorize_inputs(inputs)
+        conv = conv2d(self.input, self._weights, border_mode=self._convolution_mode)
         self.activation_levels = conv.eval() + self._bias[np.newaxis, :, np.newaxis, np.newaxis]
         self.output = self._activation_function(self.activation_levels)
         return self.output
 
-    def calculate_weight_influence(self, input_layer, out_influence):
+    def calculate_weight_influence(self, out_influence):
         output_shape = (self._output_feature_maps, self._input_feature_maps,
                         self._input_size[0], self._input_size[1])
         weight_influence = conv2d_transpose(np.transpose(out_influence, axes=(1, 0, 2, 3)),
-                                            input_layer,
+                                            self.input,
                                             output_shape,
                                             border_mode=self._reverse_convolution_mode,
                                             filter_flip=False)
@@ -264,6 +279,16 @@ class ConvolutionalLayer(NeuronLayer):
         return deriv_vector * conv.eval()
 
     def tensorize_inputs(self, inputs):
+        """
+        Create a tensor for convolutional layers from a batch of flattened inputs
+
+        This method should be called during each compute or backprop of the layer. Return a reshaped
+        input with shape (learning_batch_size, input_feature_maps, input_size[0], input_size[1])
+
+        :param inputs: A 4D tensor as a batch of 3D input tensors, or a matrix as a batch
+        of flattened inputs
+        :return: A 4D tensor as a batch 3D input tensors
+        """
         ndim = inputs.ndim
         shape = inputs.shape
         if ndim == 4:
@@ -272,12 +297,12 @@ class ConvolutionalLayer(NeuronLayer):
             # check with self dimension (input_shape, input_channels), then reshape
             if self._input_size[0]*self._input_size[1]*self._input_feature_maps != shape[0]:
                 raise Exception('Wrong dimensions : cannot reshape')
-            inputs_reshape = inputs.ravel('F').reshape((self._learning_batch_size,
+            inputs_reshaped = inputs.ravel('F').reshape((self._learning_batch_size,
                                                         self._input_feature_maps,
                                                         self._input_size[0],
                                                         self._input_size[1]))
-            return inputs_reshape
+            return inputs_reshaped
         else:
             raise Exception('Wrong inputs dimension, inputs should be a 4D tensor with '
                             'shape : (batch_size, inputs_channel, img_h, img_w), or a matrix of'
-                            'flatten inputs')
+                            'flattened inputs')
