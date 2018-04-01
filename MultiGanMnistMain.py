@@ -90,7 +90,6 @@ for exp in range(number_exp):
     Initialisation du generator
 
     """
-    print(batch_size)
     generator_layers_neuron_count = param['generator_network_layers']
     noise_layers_size = param['noise_layers_size']
     generator_layers_activation_function = np.array(param['generator_activation_funs'])

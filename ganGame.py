@@ -13,8 +13,8 @@ class GanGame:
     ##
 
     def __init__(self, discriminator, learning_set, learning_fun, generator,
-                disc_learning_ratio=1, gen_learning_ratio=1, disc_fake_learning_ratio=0, 
-                gen_learning_ratio_alone=0, batch_size=0):
+                 disc_learning_ratio=1, gen_learning_ratio=1, disc_fake_learning_ratio=0, 
+                 gen_learning_ratio_alone=0, batch_size=0):
         self.generator = generator
         self.discriminator = discriminator
         self.learning_set = learning_set
@@ -60,7 +60,6 @@ class GanGame:
 
         for j in range(n):
             fake_images, noise = self.generateImage()
-            print('fakereal ', np.shape(fake_images))
             noises = [noise]*self.batch_size
             fake_score = self.testTruth(np.transpose(fake_images))
             fake_trust.append(fake_score)

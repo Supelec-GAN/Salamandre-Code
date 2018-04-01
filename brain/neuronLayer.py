@@ -228,7 +228,6 @@ class NeuronLayer:
     # @return     vecteur of same dimension than weights.
     #
     def calculate_weight_influence(self, input_layer, out_influence):
-        print('learning_batch_size : ', self._learning_batch_size)
         return np.dot(out_influence, np.transpose(input_layer)) / self._learning_batch_size
 
     ##

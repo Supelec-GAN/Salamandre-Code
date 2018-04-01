@@ -23,31 +23,28 @@ class Network:
         self._layers_count = np.size(layers_neuron_count) - 1
         self.error = error_function
         self._learning_batch_size = learning_batch_size
-        self.layers_list = np.array(
-            self._layers_count * [NeuronLayer(
-                layers_activation_function[0],
-                error_function,
-                param_desc
-            )]
-        )
-        for i in range(0, self._layers_count - 1):
-            self.layers_list[i] = NeuronLayer(self._layers_activation_function[i],
-                                              self.error,
-                                              param_desc,
-                                              layers_neuron_count[i],
-                                              layers_neuron_count[i + 1],
-                                              0,  # Il n'y a pas de bruit dans layer classique
-                                              self._learning_batch_size,
-                                              nb_exp
-                                              )
-        self.layers_list[self._layers_count - 1] = OutputLayer(layers_activation_function[self._layers_count - 1],
-                                                               self.error, 
-                                                               param_desc, 
-                                                               layers_neuron_count[self._layers_count - 1], 
-                                                               layers_neuron_count[self._layers_count],
-                                                               self._learning_batch_size,
-                                                               nb_exp
-                                                               )
+
+        self.layers_list = [NeuronLayer(self._layers_activation_function[i],
+                                        self.error,
+                                        param_desc,
+                                        layers_neuron_count[i],
+                                        layers_neuron_count[i + 1],
+                                        0,  # Il n'y a pas de bruit dans layer classique
+                                        self._learning_batch_size,
+                                        nb_exp
+                                        )
+                            for i in range(0, self._layers_count - 1)]
+
+        self.layers_list.append(OutputLayer(layers_activation_function[self._layers_count - 1],
+                                            self.error,
+                                            param_desc,
+                                            layers_neuron_count[self._layers_count - 1], 
+                                            layers_neuron_count[self._layers_count],
+                                            self._learning_batch_size,
+                                            nb_exp
+                                            )
+                                )
+
         self.output = np.zeros(layers_neuron_count[-1])
 
         if len(weights_list) != 0:  # si l'on a donné une liste de poids
@@ -199,26 +196,18 @@ class GeneratorNetwork(Network):
         self._learning_batch_size = learning_batch_size
 
         self.noise_layers_size = noise_layers_size
-        self.layers_list = np.array(
-            self._layers_count * [NeuronLayer(
-                layers_activation_function[0],
-                error_function,
-                param_desc,
-                layers_neuron_count[0],
-                layers_neuron_count[1],
-                noise_layers_size[0],
-            )]
-        )
-        for i in range(0, self._layers_count):
-            self.layers_list[i] = NeuronLayer(layers_activation_function[i],
-                                             self.error,
-                                             param_desc,
-                                             layers_neuron_count[i],
-                                             layers_neuron_count[i + 1],
-                                             noise_layers_size[i],
-                                             learning_batch_size,
-                                             nb_exp
-                                             )
+
+        self.layers_list = [NeuronLayer(layers_activation_function[i],
+                                        self.error,
+                                        param_desc,
+                                        layers_neuron_count[i],
+                                        layers_neuron_count[i + 1],
+                                        noise_layers_size[i],
+                                        learning_batch_size,
+                                        nb_exp
+                                        )
+                            for i in range(0, self._layers_count)]
+
         self.output = np.zeros(layers_neuron_count[-1])
 
         if len(weights_list) != 0:  # si l'on a donné une liste de poids
