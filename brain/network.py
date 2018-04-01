@@ -1,22 +1,17 @@
 import numpy as np
-from brain.neuronLayer import NeuronLayer, NoisyLayer
+from brain.neuronLayer import NeuronLayer, NoisyLayer, ConvolutionalLayer
 from fonction import Norm2, NonSatHeuristic
 
 
 class Network:
     """Classe permettant de créer un perceptron multicouche"""
 
-    def __init__(self, layers_neuron_count, layers_activation_function, layers_type,
-                 error_function=Norm2(), learning_batch_size=1, error_gen=NonSatHeuristic(),
-                 weights_list=()):
+    def __init__(self, layers_parameters, error_function=Norm2(), learning_batch_size=1,
+                 error_gen=NonSatHeuristic(), weights_list=()):
         """
         Contruit un réseau de neurones avec des poids initialisés uniformément entre 0 et 1
 
-        :param layers_neuron_count: Liste avec le nombre de neurones par couches, en incluant le
-        nombre d'entrées en position 0
-        :param layers_activation_function: Liste des fonctions d'activation de chaque couche
-        :param layers_type: Liste des types de couches ('N': NeuronLayer, 'C': ConvolutionalLayer,
-        'B': NoisyLayer)
+        :param layers_parameters: Liste des paramètres de couches
         :param error_function: Fonction d'erreur du réseau
         :param learning_batch_size: Taille des batchs
         :param error_gen: Fonction d'erreur utilisée par le GAN pendant la rétropropagation sans
@@ -25,22 +20,43 @@ class Network:
         réseau
         """
 
-        self._layers_activation_function = layers_activation_function  # sauvegarde pour pouvoir
-        # réinitialiser
-        self.layers_neuron_count = layers_neuron_count
-        self._layers_type = layers_type
-        self._layers_count = np.size(layers_neuron_count) - 1
+        self._layers_parameters = layers_parameters  # sauvegarde pour pouvoir réinitialiser
+        self._layers_count = len(layers_parameters)
         self._error = error_function
         self._error_gen = error_gen
         self._learning_batch_size = learning_batch_size
         self.layers_list = np.array(self._layers_count * [NeuronLayer()])
         for i in range(0, self._layers_count):
-            self.layers_list[i] = NeuronLayer(self._layers_activation_function[i],
-                                              self.layers_neuron_count[i],
-                                              self.layers_neuron_count[i + 1],
-                                              self._learning_batch_size
-                                              )
-        self.output = np.zeros(layers_neuron_count[-1])
+            params = self._layers_parameters[i]
+            if params['type'] == 'N':
+                self.layers_list[i] = \
+                    NeuronLayer(params['activation_function'],
+                                input_size=params['input_size'],
+                                output_size=params['output_size'],
+                                learning_batch_size=self._learning_batch_size
+                                )
+            elif params['type'] == 'C':
+                self.layers_list[i] = \
+                    ConvolutionalLayer(params['activation_function'],
+                                       input_size=params['input_size'],
+                                       output_size=params['output_size'],
+                                       filter_size=params['filter_size'],
+                                       input_feature_maps=params['input_feature_maps'],
+                                       output_feature_maps=params['output_feature_maps'],
+                                       convolution_mode=params['convolution_mode'],
+                                       learning_batch_size=self._learning_batch_size
+                                       )
+            elif params['type'] == 'B':
+                self.layers_list[i] = \
+                    NoisyLayer(params['activation_function'],
+                               input_size=params['input_size'],
+                               output_size=params['output_size'],
+                               noise_size=params['noise_size'],
+                               learning_batch_size=self._learning_batch_size
+                               )
+            else:
+                raise Exception('Wrong layer type')
+#        self.output = np.zeros(layers_neuron_count[-1])
 
         if len(weights_list) != 0:  # si l'on a donné une liste de poids
             for i in range(0, self._layers_count):
@@ -54,14 +70,37 @@ class Network:
         :return: None
         """
 
-        self.layers_list = np.array(self._layers_count * [NeuronLayer()])
         for i in range(0, self._layers_count):
-            self.layers_list[i] = NeuronLayer(self._layers_activation_function[i],
-                                              self.layers_neuron_count[i],
-                                              self.layers_neuron_count[i + 1],
-                                              self._learning_batch_size
-                                              )
-        self.output = np.zeros(self.layers_neuron_count[-1])
+            params = self._layers_parameters[i]
+            if params['type'] == 'N':
+                self.layers_list[i] = \
+                    NeuronLayer(params['activation_function'],
+                                input_size=params['input_size'],
+                                output_size=params['output_size'],
+                                learning_batch_size=self._learning_batch_size
+                                )
+            elif params['type'] == 'C':
+                self.layers_list[i] = \
+                    ConvolutionalLayer(params['activation_function'],
+                                       input_size=params['input_size'],
+                                       output_size=params['output_size'],
+                                       filter_size=params['filter_size'],
+                                       input_feature_maps=params['input_feature_maps'],
+                                       output_feature_maps=params['output_feature_maps'],
+                                       convolution_mode=params['convolution_mode'],
+                                       learning_batch_size=self._learning_batch_size
+                                       )
+            elif params['type'] == 'B':
+                self.layers_list[i] = \
+                    NoisyLayer(params['activation_function'],
+                               input_size=params['input_size'],
+                               output_size=params['output_size'],
+                               noise_size=params['noise_size'],
+                               learning_batch_size=self._learning_batch_size
+                               )
+            else:
+                raise Exception('Wrong layer type')
+#        self.output = np.zeros(layers_neuron_count[-1])
 
     def compute(self, inputs):
         """
@@ -148,35 +187,3 @@ class Network:
             coefs.append(layer_coefs)
         state = [params, coefs]
         return state
-
-
-##
-# @brief      Class for noisy generator network. It has NoisyLayer instead of NeuronLayer
-##
-class NoisyNetwork(Network):
-    def __init__(self, layers_neuron_count, layers_activation_function, error_function,
-                 noise_layers_size, learning_batch_size=1, weights_list=()):
-        super(NoisyNetwork, self).__init__(layers_neuron_count, layers_activation_function, _,
-                                           error_function, learning_batch_size, weights_list)
-        self.noise_layers_size = noise_layers_size
-        self.layers_list = np.array(
-            self._layers_count * [NoisyLayer(self._layers_activation_function[0],
-                                             self.layers_neuron_count[0],
-                                             self.layers_neuron_count[1],
-                                             self._learning_batch_size,
-                                             self.noise_layers_size[0])]
-        )
-        for i in range(0, self._layers_count):
-            self.layers_list[i] = NoisyLayer(self._layers_activation_function[i],
-                                             self.layers_neuron_count[i],
-                                             self.layers_neuron_count[i + 1],
-                                             self._learning_batch_size,
-                                             self.noise_layers_size[i]
-                                             )
-
-        self.output = np.zeros(layers_neuron_count[-1])
-
-        if len(weights_list) != 0:  # si l'on a donné une liste de poids
-            for i in range(0, self._layers_count):
-                self.layers_list[i].weights = weights_list[i][0]
-                self.layers_list[i].bias = weights_list[i][1]

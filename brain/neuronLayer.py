@@ -199,29 +199,29 @@ class NoisyLayer(NeuronLayer):
 class ConvolutionalLayer(NeuronLayer):
 
     def __init__(self, activation_function, input_size=(1, 1), output_size=(1, 1),
-                 learning_batch_size=1, mask_size=(1, 1),
-                 input_feature_maps=1, output_feature_maps=1, convolution_mode='valid', step=1):
+                 learning_batch_size=1, filter_size=(1, 1), input_feature_maps=1,
+                 output_feature_maps=1, convolution_mode='valid', step=1):
         super(ConvolutionalLayer, self).__init__(activation_function, input_size,
                                                  output_size, learning_batch_size)
-        self._mask_size = mask_size
+        self._filter_size = filter_size
         self._input_feature_maps = input_feature_maps
         self._output_feature_maps = output_feature_maps
         self._step = step  # Laisser à 1 pour l'instant
         self._convolution_mode = convolution_mode
         self._weights = np.random.randn(self._output_feature_maps, self._input_feature_maps,
-                                        self._mask_size[0], self._mask_size[1])
+                                        self._filter_size[0], self._filter_size[1])
         self._bias = np.zeros(self._output_feature_maps)
         self._input_size = input_size
         if self._convolution_mode == 'full':
-            self._output_size = (self._input_size[0] + (self._mask_size[0]-1),
-                                 self._input_size[1] + (self._mask_size[1]-1))
+            self._output_size = (self._input_size[0] + (self._filter_size[0]-1),
+                                 self._input_size[1] + (self._filter_size[1]-1))
             self._reverse_convolution_mode = 'valid'
         # elif self._convolution_mode == 'same':
         #     self._output_size = self._input_size
         #     self._reverse_convolution_mode = 'same'
         elif self._convolution_mode == 'valid':
-            self._output_size = (self._input_size[0] - (self._mask_size[0]-1),
-                                 self._input_size[1] - (self._mask_size[1]-1))
+            self._output_size = (self._input_size[0] - (self._filter_size[0]-1),
+                                 self._input_size[1] - (self._filter_size[1]-1))
             self._reverse_convolution_mode = 'full'
         else:
             raise Exception("Invalid convolution mode")
