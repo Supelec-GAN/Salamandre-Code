@@ -253,8 +253,11 @@ class ConvolutionalLayer(NeuronLayer):
     def calculate_bias_influence(self, out_influence):
         return np.mean(out_influence, axis=(0, 2, 3))
 
-    def derivate_error(self, out_influence):
+    def derivate_error(self, in_influence):
         deriv_vector = self._activation_function.derivate(self.activation_levels)
+        return deriv_vector * in_influence
+
+    def input_error(self, out_influence):
         output_shape = (self._learning_batch_size, self._output_feature_maps,
                         self._output_size[0], self._output_size[1])
         conv = conv2d_transpose(out_influence,
@@ -262,7 +265,7 @@ class ConvolutionalLayer(NeuronLayer):
                                 output_shape,
                                 border_mode=self._reverse_convolution_mode,
                                 filter_flip=False)
-        return deriv_vector * conv.eval()
+        return conv.eval
 
     def tensorize_inputs(self, inputs):
         """
