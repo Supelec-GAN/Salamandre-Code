@@ -53,7 +53,8 @@ class GanGame:
         real_trust = []
         fake_trust = []
         for i in range(n):
-            real_item = np.transpose([self.learning_set[np.random.randint(self.set_size)] for i in range(self.batch_size)])
+            real_item = np.transpose([self.learning_set[np.random.randint(self.set_size)]
+                                      for i in range(self.batch_size)])
             real_score = self.testTruth(real_item)
             real_trust.append(real_score)
 
@@ -101,8 +102,8 @@ class GanGame:
         batch = np.transpose(fake_images)
         fooled = self.testTruth(fake_images)
 
-        disc_error_influence = self.discriminator.backprop(self.eta_gen, fake_images, fooled, False, True)
-        self.generator.backprop(self.eta_gen, noises, disc_error_influence, self.discriminator.layers_list[0].weights)
+        disc_error_influence = self.discriminator.backprop(self.eta_gen, fooled, False, True)
+        self.generator.backprop(self.eta_gen, disc_error_influence)
 
         return fake_images
 

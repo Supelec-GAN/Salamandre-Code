@@ -39,7 +39,7 @@ class Engine:
         self._success_fun = success_fun
 
     def learn(self):
-        self.net.reset()
+        # self.net.reset()
         testing_success_rate = np.zeros(self._test_count)
         for pass_nb in range(self._learning_set_pass_nb):
             # Boucle pour une fois le set d'entrainement
@@ -49,9 +49,7 @@ class Engine:
                 intervalle = np.arange(debut, fin)  # self._permutation[debut:fin]
                 self.net.compute(self._learning_set[intervalle])
                 expected_output = self._learning_fun.out(intervalle)
-                self.net.backprop(self.eta,
-                                  self._learning_set[intervalle],
-                                  expected_output)
+                self.net.backprop(self.eta, expected_output)
 
                 # Enregistrement périodique de l'erreur sur le set de test
                 if (pass_nb*self._learning_set_size + batch_nb) % self._test_period == 0:

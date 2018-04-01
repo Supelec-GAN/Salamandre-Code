@@ -1,15 +1,13 @@
 import numpy as np
-from fonction import Sigmoid, MnistTest, Norm2, NonSatHeuristic
-import theano
-from theano import tensor as T
+from fonction import Function
 from theano.tensor.nnet import conv2d, conv2d_transpose
 
 
 class NeuronLayer:
     """Classe permettant de créer une couche de neurones"""
 
-    def __init__(self, activation_function, error_function, input_size=1, output_size=1,
-                 learning_batch_size=1, error_function_gen=NonSatHeuristic()):
+    def __init__(self, activation_function=Function(), input_size=1, output_size=1,
+                 learning_batch_size=1):
         # Matrice de dimension q*p avec le nombre de sortie et p le nombre d'entrée
         self._input_size = input_size
         self._output_size = output_size
@@ -20,15 +18,13 @@ class NeuronLayer:
         # learning_batch_size fois la même colonne. Lorsque l'on aura besoin du biais dans les
         # calculs, il y aura mathématiquement parlant un problème de dimension (addition vecteur
         # + matrice), cependant numpy gère ça en additionnant le vecteur de biais à chacune des
-        # colonnes de la matrice
+        # colonnes de la matrice (broadcast)
         self.input = np.zeros((input_size, learning_batch_size))
         self._activation_function = activation_function
         self.activation_levels = np.zeros((output_size, learning_batch_size))  # Chaque colonne
         # correspond à une entrée du batch
         self.output = np.zeros((output_size, learning_batch_size))             # Chaque colonne
         # correspond à une entrée du batch
-        self.error = error_function
-        self.error_gen = error_function_gen
 
     @property
     def weights(self):
@@ -86,7 +82,7 @@ class NeuronLayer:
     #
     # @return     retourne influence of the input on the error
     #
-    def backprop(self, out_influence, eta, input_layer, update=True):
+    def backprop(self, out_influence, eta, update=True):
         weight_influence = self.calculate_weight_influence(out_influence)
         bias_influence = self.calculate_bias_influence(out_influence)
         if update:
@@ -127,9 +123,13 @@ class NeuronLayer:
     #
     # @return     the error used in the recursive formula
     #
-    def derivate_error(self, out_influence, next_weights):
+    def derivate_error(self, in_influence):
         deriv_vector = self._activation_function.derivate(self.activation_levels)
-        return deriv_vector * np.dot(np.transpose(next_weights), out_influence)
+        return deriv_vector * in_influence
+
+    def input_error(self, out_influence):
+        in_influence = np.dot(np.transpose(self.weights), out_influence)
+        return in_influence
 
     def flatten_inputs(self, inputs):
         ndim = inputs.ndim
@@ -145,26 +145,13 @@ class NeuronLayer:
 
 
 ##
-# @brief      Class for output layer (different derivate error).
-##
-class OutputLayer(NeuronLayer):
-
-    def derivate_error(self, reference, generator_backprop=False):
-        deriv_vector = self._activation_function.derivate(self.activation_levels)
-        if generator_backprop:
-            return deriv_vector * self.error_gen.derivate(reference, self.output)
-        else:
-            return deriv_vector * self.error.derivate(reference, self.output)
-
-
-##
 # @brief      Class for layer with noisy input added to inputs.
 ##
 class NoisyLayer(NeuronLayer):
-    def __init__(self, activation_function, error_function, input_size=1, output_size=1,
-                 learning_batch_size=1, noise_size=0, error_function_gen=NonSatHeuristic()):
-        super(NoisyLayer, self).__init__(activation_function, error_function, input_size,
-                                         output_size, learning_batch_size, error_function_gen)
+    def __init__(self, activation_function, input_size=1, output_size=1,
+                 learning_batch_size=1, noise_size=0):
+        super(NoisyLayer, self).__init__(activation_function, input_size,
+                                         output_size, learning_batch_size)
         # Matrice de dimension q*p avec le nombre de sortie et p le nombre d'entrée
         self._noise_size = noise_size
         self.weights = np.transpose(np.random.randn(input_size+noise_size, output_size))
@@ -187,7 +174,7 @@ class NoisyLayer(NeuronLayer):
     # backprop très légèrement différente, on rétropropage en considérant le vecteur bruit,
     # mais sans renvoyer son influence à la couche précédente
     ##
-    def backprop(self, out_influence, eta, input_layer, update=True):
+    def backprop(self, out_influence, eta, update=True):
         weight_influence = self.calculate_weight_influence(out_influence)
         bias_influence = self.calculate_bias_influence(out_influence)
         if update:
@@ -212,12 +199,11 @@ class NoisyLayer(NeuronLayer):
 
 class ConvolutionalLayer(NeuronLayer):
 
-    def __init__(self, activation_function, error_function, input_size=(1, 1), output_size=(1, 1),
-                 learning_batch_size=1, error_function_gen=NonSatHeuristic(), mask_size=(1, 1),
+    def __init__(self, activation_function, input_size=(1, 1), output_size=(1, 1),
+                 learning_batch_size=1, mask_size=(1, 1),
                  input_feature_maps=1, output_feature_maps=1, convolution_mode='valid', step=1):
-        super(ConvolutionalLayer, self).__init__(activation_function, error_function, input_size,
-                                                 output_size, learning_batch_size,
-                                                 error_function_gen)
+        super(ConvolutionalLayer, self).__init__(activation_function, input_size,
+                                                 output_size, learning_batch_size)
         self._mask_size = mask_size
         self._input_feature_maps = input_feature_maps
         self._output_feature_maps = output_feature_maps
@@ -251,7 +237,7 @@ class ConvolutionalLayer(NeuronLayer):
         self.input = self.tensorize_inputs(inputs)
         conv = conv2d(self.input, self._weights, border_mode=self._convolution_mode)
         self.activation_levels = conv.eval() + self._bias[np.newaxis, :, np.newaxis, np.newaxis]
-        self.output = self._activation_function(self.activation_levels)
+        self.output = self._activation_function.out(self.activation_levels)
         return self.output
 
     def calculate_weight_influence(self, out_influence):
@@ -267,7 +253,7 @@ class ConvolutionalLayer(NeuronLayer):
     def calculate_bias_influence(self, out_influence):
         return np.mean(out_influence, axis=(0, 2, 3))
 
-    def derivate_error(self, out_influence, next_weights):
+    def derivate_error(self, out_influence):
         deriv_vector = self._activation_function.derivate(self.activation_levels)
         output_shape = (self._learning_batch_size, self._output_feature_maps,
                         self._output_size[0], self._output_size[1])
