@@ -6,19 +6,29 @@ from fonction import Norm2, NonSatHeuristic
 class Network:
     """Classe permettant de créer un perceptron multicouche"""
 
-    ##
-    # @brief      Constructs the object.
-    #
-    # @param      self                        The object
-    # @param      layers_neuron_count         Nombre de Neurones par couches,
-    #                                         en incluant le nombres d'entrées en position 0
-    # @param      layers_activation_function  The layers activation function
-    #
-    def __init__(self, layers_neuron_count, layers_activation_function, error_function=Norm2(),
-                 learning_batch_size=1, error_gen=NonSatHeuristic(), weights_list=()):
+    def __init__(self, layers_neuron_count, layers_activation_function, layers_type,
+                 error_function=Norm2(), learning_batch_size=1, error_gen=NonSatHeuristic(),
+                 weights_list=()):
+        """
+        Contruit un réseau de neurones avec des poids initialisés uniformément entre 0 et 1
+
+        :param layers_neuron_count: Liste avec le nombre de neurones par couches, en incluant le
+        nombre d'entrées en position 0
+        :param layers_activation_function: Liste des fonctions d'activation de chaque couche
+        :param layers_type: Liste des types de couches ('N': NeuronLayer, 'C': ConvolutionalLayer,
+        'B': NoisyLayer)
+        :param error_function: Fonction d'erreur du réseau
+        :param learning_batch_size: Taille des batchs
+        :param error_gen: Fonction d'erreur utilisée par le GAN pendant la rétropropagation sans
+        mise à jour dans le discriminateur lors de l'appprentissage du générateur
+        :param weights_list: Liste de poids/biais à renseigner si l'on veut restaurer un ancien
+        réseau
+        """
+
         self._layers_activation_function = layers_activation_function  # sauvegarde pour pouvoir
         # réinitialiser
         self.layers_neuron_count = layers_neuron_count
+        self._layers_type = layers_type
         self._layers_count = np.size(layers_neuron_count) - 1
         self._error = error_function
         self._error_gen = error_gen
@@ -38,6 +48,12 @@ class Network:
                 self.layers_list[i].bias = weights_list[i][1]
 
     def reset(self):
+        """
+        Réinitialise un réseau de neurones (poids uniformément répartis entre 0 et 1, biais nuls)
+
+        :return: None
+        """
+
         self.layers_list = np.array(self._layers_count * [NeuronLayer()])
         for i in range(0, self._layers_count):
             self.layers_list[i] = NeuronLayer(self._layers_activation_function[i],
@@ -47,16 +63,15 @@ class Network:
                                               )
         self.output = np.zeros(self.layers_neuron_count[-1])
 
-    ##
-    # @brief      On calcule la sortie du réseau
-    #
-    # @param      self    The object
-    # @param      inputs  The inputs
-    #
-    # @return     La sortie de la dernière couche est la sortie finale
-    #
-
     def compute(self, inputs):
+        """
+        Calcule la sortie du réseau pour un batch d'entrées
+
+        :param inputs: Batch d'entrées, sous le format (input_size, batch_size) (sera reshape ou
+        transposé si nécessaire
+        :return: Sortie du réseau, c'est-à-dire la sortie de la dernière couche
+        """
+
         ndim = inputs.ndim
         shape = inputs.shape
         if ndim == 1:  # and self._learning_batch_size == 1:  # Pour conserver le fonctionnement
@@ -78,14 +93,23 @@ class Network:
     # On considère ici toujours des réseaux avec plusieurs couches !
     # !! Rajouter la non_update_backprop
     def backprop(self, eta, reference, update=True, gen_backprop=False):
-        n = self._layers_count
+        """
+        Rétropropagation selon la méthode de la descente du gradient
 
+        :param eta: Coefficient d'apprentissage
+        :param reference: Sortie idéale
+        :param update: Si vrai, on met à jour les poids/biais, sinon on ne renvoie que l'influence
+        de l'erreur sur l'entrée
+        :param gen_backprop: Dans le cas du GAN, indique d'utiliser _error_gen à la place de _error
+        :return: Influence de l'erreur sur l'entrée
+        """
         # On initialise avec une valeur particulière pour la couche de sortie
         if gen_backprop:
             in_influence = self._error_gen.derivate(reference, self.output)
         else:
             in_influence = self._error.derivate(reference, self.output)
 
+        n = self._layers_count
         for i in range(n - 1, -1, -1):
             out_influence = self.layers_list[i].derivate_error(in_influence)
             self.layers_list[i].backprop(out_influence, eta, update)
@@ -132,7 +156,7 @@ class Network:
 class NoisyNetwork(Network):
     def __init__(self, layers_neuron_count, layers_activation_function, error_function,
                  noise_layers_size, learning_batch_size=1, weights_list=()):
-        super(NoisyNetwork, self).__init__(layers_neuron_count, layers_activation_function,
+        super(NoisyNetwork, self).__init__(layers_neuron_count, layers_activation_function, _,
                                            error_function, learning_batch_size, weights_list)
         self.noise_layers_size = noise_layers_size
         self.layers_list = np.array(

@@ -152,7 +152,6 @@ class NoisyLayer(NeuronLayer):
                  learning_batch_size=1, noise_size=0):
         super(NoisyLayer, self).__init__(activation_function, input_size,
                                          output_size, learning_batch_size)
-        # Matrice de dimension q*p avec le nombre de sortie et p le nombre d'entrée
         self._noise_size = noise_size
         self.weights = np.transpose(np.random.randn(input_size+noise_size, output_size))
         self.noise_input = np.zeros((noise_size, learning_batch_size))
