@@ -205,8 +205,7 @@ class ConvolutionalLayer(NeuronLayer):
     def __init__(self, activation_function, input_size=(1, 1), output_size=(1, 1),
                  learning_batch_size=1, filter_size=(1, 1), input_feature_maps=1,
                  output_feature_maps=1, convolution_mode='valid', step=1):
-        super(ConvolutionalLayer, self).__init__(activation_function, input_size,
-                                                 output_size, learning_batch_size)
+        super(ConvolutionalLayer, self).__init__(activation_function, 1, 1, learning_batch_size)
         self._filter_size = filter_size
         self._input_feature_maps = input_feature_maps
         self._output_feature_maps = output_feature_maps
@@ -245,30 +244,28 @@ class ConvolutionalLayer(NeuronLayer):
 
     def calculate_weight_influence(self, out_influence):
         output_shape = (self._output_feature_maps, self._input_feature_maps,
-                        self._input_size[0], self._input_size[1])
-        weight_influence = conv2d_transpose(np.transpose(out_influence, axes=(1, 0, 2, 3)),
-                                            self.input,
-                                            output_shape,
-                                            border_mode=self._reverse_convolution_mode,
-                                            filter_flip=False)
-        return weight_influence.eval() / self._learning_batch_size
+                        self._filter_size[0], self._filter_size[1])
+        weight_influence = conv2d(np.transpose(self.input, axes=(1, 0, 2, 3)),
+                                  np.transpose(out_influence, axes=(1, 0, 2, 3)),
+                                  border_mode=self._convolution_mode,
+                                  filter_flip=False)
+        return np.transpose(weight_influence.eval(), axes=(1, 0, 2, 3)) / self._learning_batch_size
 
     def calculate_bias_influence(self, out_influence):
         return np.mean(out_influence, axis=(0, 2, 3))
 
     def derivate_error(self, in_influence):
         deriv_vector = self._activation_function.derivate(self.activation_levels)
-        return deriv_vector * in_influence
+        return deriv_vector * self.tensorize_outputs(in_influence)
 
     def input_error(self, out_influence):
-        output_shape = (self._learning_batch_size, self._output_feature_maps,
-                        self._output_size[0], self._output_size[1])
-        conv = conv2d_transpose(out_influence,
-                                self._weights,
-                                output_shape,
-                                border_mode=self._reverse_convolution_mode,
-                                filter_flip=False)
-        return conv.eval
+        output_shape = (self._learning_batch_size, self._input_feature_maps,
+                        self._input_size[0], self._input_size[1])
+        conv = conv2d(out_influence,
+                      np.transpose(self._weights, axes=(1, 0, 2, 3)),
+                      border_mode=self._reverse_convolution_mode,
+                      filter_flip=False)
+        return conv.eval()
 
     def tensorize_inputs(self, inputs):
         """
@@ -294,6 +291,32 @@ class ConvolutionalLayer(NeuronLayer):
                                                         self._input_size[0],
                                                         self._input_size[1]))
             return inputs_reshaped
+        else:
+            raise Exception('Wrong inputs dimension, inputs should be a 4D tensor with '
+                            'shape : (batch_size, inputs_channel, img_h, img_w), or a matrix of'
+                            'flattened inputs')
+
+    def tensorize_outputs(self, outputs):
+        """
+        Create a tensor for convolutional layers from a batch of flattened outputs
+
+        This method should be called during each backprop of the layer. Return a reshaped
+        output with shape (learning_batch_size, output_feature_maps, output_size[0], output_size[1])
+
+        :param outputs: A 4D tensor as a batch of 3D output tensors, or a matrix as a batch
+        of flattened outputs
+        :return: A 4D tensor as a batch 3D output tensors
+        """
+        ndim = outputs.ndim
+        shape = outputs.shape
+        if ndim == 4:
+            return outputs
+        elif ndim == 2:
+            outputs_reshaped = outputs.ravel('F').reshape((self._learning_batch_size,
+                                                          self._output_feature_maps,
+                                                          self._output_size[0],
+                                                          self._output_size[1]))
+            return outputs_reshaped
         else:
             raise Exception('Wrong inputs dimension, inputs should be a 4D tensor with '
                             'shape : (batch_size, inputs_channel, img_h, img_w), or a matrix of'

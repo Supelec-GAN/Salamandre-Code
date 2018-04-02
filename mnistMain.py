@@ -43,7 +43,34 @@ learning_set_pass_nb = param['learning_set_pass_nb']
 batch_size = param['batch_size']
 
 
-net = Network(param['network_layers'], activation_funs, error_fun, batch_size)
+couche0 = {'type': 'C',
+           'activation_function': Sigmoid(0.1),
+           'input_size': (28, 28),
+           'output_size': (24, 24),
+           'filter_size': (5, 5),
+           'input_feature_maps': 1,
+           'output_feature_maps': 6,
+           'convolution_mode': 'valid'}
+
+couche1 = {'type': 'C',
+           'activation_function': Sigmoid(0.1),
+           'input_size': (24, 24),
+           'output_size': (20, 20),
+           'filter_size': (5, 5),
+           'input_feature_maps': 6,
+           'output_feature_maps': 16,
+           'convolution_mode': 'valid'}
+
+couche2 = {'type': 'N',
+           'activation_function': Sigmoid(0.1),
+           'input_size': 6400,
+           'output_size': 10}
+
+layers_params = [couche0, couche1, couche2]
+
+net = Network(layers_params,
+              error_function=error_fun,
+              learning_batch_size=batch_size)
 
 error_graphs = ErrorGraphs('Mnist_debug_graphes', learning_iterations, eta, net, test_period)
 
