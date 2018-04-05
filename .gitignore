@@ -27,3 +27,6 @@ database/
 
 # Image
 *.png
+
+# Matplotlib config file
+matplotlibrc

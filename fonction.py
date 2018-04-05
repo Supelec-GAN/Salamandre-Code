@@ -32,6 +32,10 @@ class Function:
     def save_fun(self):
         return 'Function()'
 
+    def vectorize(self):
+        self.out = np.vectorize(self.out)
+        self.derivate = np.vectorize(self.derivate)
+
 
 class Sigmoid(Function):
     """
@@ -120,10 +124,17 @@ class MnistTest(Function):
         self._set_labels = set_labels
 
     def out(self, x):
-        r = np.zeros(10)
-        r[self._set_labels[x]] = 1
-        r = np.reshape(r, (10, 1))
+        if type(x) in [int, np.int32, np.int64]:
+            r = np.zeros(10)
+            r[self._set_labels[x]] = 1
+            r = np.reshape(r, (10, 1))
+        else:
+            n = len(x)
+            r = np.zeros((10, n))
+            for i in range(n):
+                r[self._set_labels[x[i]]][i] = 1
         return r
+
 
     def save_fun(self):
         return 'MnistTest({})'.format(self._set_labels)
@@ -153,7 +164,7 @@ class Norm2(Function):
         pass
 
     def out(self, reference, x):
-        return np.linalg.norm(x - reference)
+        return np.linalg.norm(x - reference, axis=0)
 
     def derivate(self, reference, x):
         return -2 * (reference - x)
@@ -181,13 +192,14 @@ class NonSatHeuristic(Function):
     def save_fun(self):
         return 'NonSatHeuritic()'
 
+
 class CostFunction(Function):
 
     def __init__(self):
         pass
 
     def out(self, reference, output):
-        if (reference == 1):
+        if reference == 1:
             return -0.5*np.log(output)
         else:
             return -0.5*np.log(1 - output)
@@ -196,7 +208,7 @@ class CostFunction(Function):
     # Reference est 1 si on donne une vrai image, 0 si c'est une image virtuelle
     ##
     def derivate(self, reference, output):
-        if(reference == 1):
+        if reference == 1:
             return -0.5/output
         else:
             return +0.5/(1-output)

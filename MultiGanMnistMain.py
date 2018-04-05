@@ -1,6 +1,6 @@
 import numpy as np
 from brain.network import Network, GeneratorNetwork, NoisyGeneratorNetwork
-from fonction import Sigmoid, MnistTest, Norm2
+from fonction import Function, Sigmoid, MnistTest, Norm2
 from mnist import MNIST
 from dataInterface import DataInterface
 from ganGame import GanGame
@@ -32,6 +32,7 @@ for exp in range(number_exp):
     print("Lancement de l'experience n°", exp)
 
     param = data_interface.extract_param(param_liste, exp)
+
     numbers_to_draw = param['numbers_to_draw']
 
     """
@@ -44,6 +45,7 @@ for exp in range(number_exp):
     training_images_exp = np.delete(training_images, not_right_nb, axis=0)  # A proprifier plus tard,
     # c'est pas opti le delete
 
+    batch_size = param["batch_size"]
     """
     Initialisation du dossier de sauvegarde
     """
@@ -64,14 +66,17 @@ for exp in range(number_exp):
     # nombre d'apprentissage du discriminant sur image fausse, !!!  sans apprentissage du génerateur !!!
 
     disc_activation_funs = np.array(param['disc_activation_funs'])
+    map(Function.vectorize, disc_activation_funs)
     disc_error_fun = param['disc_error_fun']
+    disc_error_fun.vectorize()
 
-    discriminator = Network(param['disc_network_layers'], disc_activation_funs, disc_error_fun)
+    discriminator = Network(param['disc_network_layers'], disc_activation_funs, disc_error_fun, batch_size)
 
     eta_disc = param['eta_disc']
 
     training_fun = param['training_fun']()  # Function donnant la réponse à une vrai image attendu (1
     # par défaut)
+    training_fun.vectorize()
 
     """
     Initialisation du generator
@@ -79,17 +84,18 @@ for exp in range(number_exp):
     generator_layers_neuron_count = param['generator_network_layers']
     noise_layers_size = param['noise_layers_size']
     generator_layers_activation_function = np.array(param['generator_activation_funs'])
+    map(Function.vectorize, generator_layers_activation_function)
     # generator_error_function = param['generator_error_fun']
 
-    generator = NoisyGeneratorNetwork(generator_layers_neuron_count,
-                        generator_layers_activation_function,
-                        disc_error_fun,
-                        noise_layers_size) 
+    generator = GeneratorNetwork(generator_layers_neuron_count,
+                                 generator_layers_activation_function,
+                                 disc_error_fun,
+                                 batch_size)
 
     eta_gen = param['eta_gen']
 
-    gen_learning_ratio = param['gen_learning_ratio']  # Pour chaque partie, nombre d'apprentissage du
-    #  discriminant sur image réelle
+    gen_learning_ratio = param['gen_learning_ratio']  # Pour chaque partie, nombre d'apprentissage
+    # du discriminant sur image réelle
     gen_learning_ratio_alone = param['gen_learning_ratio_alone']
 
     """
@@ -104,7 +110,8 @@ for exp in range(number_exp):
                       disc_learning_ratio,
                       gen_learning_ratio,
                       disc_fake_learning_ratio,
-                      gen_learning_ratio_alone)
+                      gen_learning_ratio_alone,
+                      batch_size)
 
     play_number = param['play_number']  # Nombre de partie  (Une partie = i fois apprentissage
     # discriminateur sur vrai image, j fois apprentissage génerateur+ discriminateur et

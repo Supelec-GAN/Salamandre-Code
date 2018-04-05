@@ -11,8 +11,6 @@ data_interface = DataInterface('Mnist_debug')
 
 param = data_interface.read_conf()
 
-print(param)
-
 mndata = MNIST(param['file'])
 training_images, training_labels = mndata.load_training()
 testing_images, testing_labels = mndata.load_testing()
@@ -33,10 +31,13 @@ randomize_learning_set = param['learning_iterations']
 activation_funs = np.array(param['activation_funs'])
 error_fun = param['error_fun']
 
-net = Network(param['network_layers'], activation_funs, error_fun)
-
 eta = param['eta']
-error_graphs = ErrorGraphs('Mnist_debug_graphes',learning_iterations, eta, net, test_period)
+learning_set_pass_nb = param['learning_set_pass_nb']
+batch_size = param['batch_size']
+
+net = Network(param['network_layers'], activation_funs, error_fun, batch_size)
+
+error_graphs = ErrorGraphs('Mnist_debug_graphes', learning_iterations, eta, net, test_period)
 
 
 training_fun = param['training_fun'](training_labels)
@@ -44,10 +45,13 @@ testing_fun = param['testing_fun'](testing_labels)
 
 
 def success_fun(o, eo):
-    omax = np.max(o)
-    if omax == np.dot(np.transpose(o), eo):
-        return 1
-    return 0
+    omax = np.max(o, axis=0)
+    a = np.max(o*eo, axis=0)
+    res = np.array([omax[i] == a[i] for i in range(len(a))])
+    return res
+#    if omax == np.dot(np.transpose(o), eo):
+#        return 1
+#    return 0
 
 
 engine = Engine(net,
@@ -59,6 +63,7 @@ engine = Engine(net,
                 success_fun,
                 learning_iterations,
                 test_period,
+                learning_set_pass_nb,
                 randomize_learning_set)
 
 error_during_learning = engine.run()

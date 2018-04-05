@@ -5,17 +5,39 @@ from fonction import Sigmoid, MnistTest, Norm2, NonSatHeuristic
 class NeuronLayer:
     """Classe permettant de créer une couche de neurones"""
 
-    def __init__(self, activation_function, error_function, input_size=1, output_size=1, error_function_gen=NonSatHeuristic()):
+    def __init__(self, activation_function, error_function, input_size=1, output_size=1,
+                 learning_batch_size=1, error_function_gen=NonSatHeuristic()):
         # Matrice de dimension q*p avec le nombre de sortie et p le nombre d'entrée
         self._input_size = input_size
         self._output_size = output_size
-        self.weights = np.transpose(np.random.randn(input_size, output_size))
-        self._bias = np.zeros((output_size, 1))            # Vecteur colonne
+        self._learning_batch_size = learning_batch_size
+        self._weights = np.transpose(np.random.randn(input_size, output_size))
+        self._bias = np.zeros((output_size, 1))                                # Vecteur colonne
+        # On peut laisser le biais comme un vecteur colonne, car en faire une matrice contenant
+        # learning_batch_size fois la même colonne. Lorsque l'on aura besoin du biais dans les
+        # calculs, il y aura mathématiquement parlant un problème de dimension (addition vecteur
+        # + matrice), cependant numpy gère ça en additionnant le vecteur de biais à chacune des
+        # colonnes de la matrice
         self._activation_function = activation_function
-        self.activation_levels = np.zeros((output_size, 1))  # Vecteur colonne
-        self.output = np.zeros((output_size, 1))             # Vecteur colonne
+        self.activation_levels = np.zeros((output_size, learning_batch_size))  # Chaque colonne
+        # correspond à une entrée du batch
+        self.output = np.zeros((output_size, learning_batch_size))             # Chaque colonne
+        # correspond à une entrée du batch
         self.error = error_function
         self.error_gen = error_function_gen
+
+    @property
+    def weights(self):
+        """Get the current weights."""
+        return self._weights
+
+    @weights.setter
+    def weights(self, new_weights):
+        self._weights = new_weights
+
+    @weights.deleter
+    def weights(self):
+        del self._weights
 
     @property
     def bias(self):
@@ -30,13 +52,23 @@ class NeuronLayer:
     def bias(self):
         del self._bias
 
+    @property
+    def learning_batch_size(self):
+        return self._learning_batch_size
+
+    @learning_batch_size.setter
+    def learning_batch_size(self, new_learning_batch_size):
+        self.activation_levels = np.zeros((self._output_size, new_learning_batch_size))
+        self.output = np.zeros((self._output_size, new_learning_batch_size))
+        self._learning_batch_size = new_learning_batch_size
+
     ##
     # @brief      Calcul des sorties de la couche
     #
     # @param      inputs  Inputs
 
     def compute(self, inputs):
-        self.activation_levels = np.dot(self.weights, inputs) - self._bias
+        self.activation_levels = np.dot(self._weights, inputs) - self._bias
         self.output = self._activation_function.out(self.activation_levels)
         return self.output
 
@@ -49,20 +81,19 @@ class NeuronLayer:
     #
     # @return     retourne influence of the input on the error
     #
-    #
     def backprop(self, out_influence, eta, input_layer, update=True):
         weight_influence = self.calculate_weight_influence(
             input_layer, out_influence)
         bias_influence = self.calculate_bias_influence(out_influence)
         if update:
-            self.updateweights(eta, weight_influence)
+            self.update_weights(eta, weight_influence)
             self.update_bias(eta, bias_influence)
-            return self.weights
+            return self._weights
         else:
-            return self.weights - eta * weight_influence
+            return self._weights - eta * weight_influence
 
-    def updateweights(self, eta, weight_influence):
-        self.weights = self.weights - eta * weight_influence
+    def update_weights(self, eta, weight_influence):
+        self._weights = self._weights - eta * weight_influence
 
     def update_bias(self, eta, bias_influence):
         self._bias = self._bias + eta * bias_influence
@@ -74,15 +105,16 @@ class NeuronLayer:
     # @param      out_influence  influence of output on the error
     #
     # @return     vecteur of same dimension than weights.
-    ##
+    #
     def calculate_weight_influence(self, input_layer, out_influence):
-        return np.dot(out_influence, np.transpose(input_layer))
+        return np.dot(out_influence, np.transpose(input_layer)) / self._learning_batch_size
 
     ##
     # @brief      Calculates the bias influence (which is out_influence)
     ##
     def calculate_bias_influence(self, out_influence):
-        return out_influence
+        mean_out_influence = np.mean(out_influence, axis=1, keepdims=True)
+        return mean_out_influence
 
     ##
     # @brief      Calculates the error derivation
@@ -113,26 +145,21 @@ class OutputLayer(NeuronLayer):
 # @brief      Class for layer with noisy input added to inputs.
 ##
 class NoisyLayer(NeuronLayer):
-    def __init__(self, activation_function, error_function, input_size=1, output_size=1, noise_size=0, error_function_gen=NonSatHeuristic()):
+    def __init__(self, activation_function, error_function, input_size=1, output_size=1,
+                 learning_batch_size=1, noise_size=0, error_function_gen=NonSatHeuristic()):
+        super(NoisyLayer, self).__init__(activation_function, error_function, input_size,
+                                         output_size, learning_batch_size, error_function_gen)
         # Matrice de dimension q*p avec le nombre de sortie et p le nombre d'entrée
-        self._input_size = input_size
-        self._output_size = output_size
         self._noise_size = noise_size
         self.weights = np.transpose(np.random.randn(input_size+noise_size, output_size))
-        self._bias = np.zeros((output_size, 1))            # Vecteur colonne
-        self._activation_function = activation_function
-        self.activation_levels = np.zeros((output_size, 1))  # Vecteur colonne
-        self.output = np.zeros((output_size, 1))             # Vecteur colonne
-        self.error = error_function
-        self.error_gen = error_function_gen
-        self.noise_input = np.zeros((noise_size, 1))
+        self.noise_input = np.zeros((noise_size, learning_batch_size))
 
     ##
     # Compute très légèrement différent, on concatene un vecteur de bruits à l'input si nécéssaire
     ##
     def compute(self, inputs):
         if self._noise_size != 0:  # nécessaire car np.zeros( (0,1)) est un objet chelou
-            self.noise_input = np.random.randn(self._noise_size, 1)
+            self.noise_input = np.random.randn(self._noise_size, self._learning_batch_size)
             inputs = np.concatenate([inputs, self.noise_input])
         self.activation_levels = np.dot(self.weights, inputs) - self._bias
         self.output = self._activation_function.out(self.activation_levels)
@@ -149,8 +176,19 @@ class NoisyLayer(NeuronLayer):
             input_layer, out_influence)
         bias_influence = self.calculate_bias_influence(out_influence)
         if update:
-            self.updateweights(eta, weight_influence)
+            self.update_weights(eta, weight_influence)
             self.update_bias(eta, bias_influence)
             return self.weights[:, 0:self._input_size]  # On extrait les poids concernant les vrais inputs (le bruit n'a pas besoin d'influer sur les couches d'avant)
         else:
             return (self.weights - eta * weight_influence)[:, 0:self._input_size]
+
+    @property
+    def learning_batch_size(self):
+        return self._learning_batch_size
+
+    @learning_batch_size.setter
+    def learning_batch_size(self, new_learning_batch_size):
+        self.activation_levels = np.zeros((self._output_size, new_learning_batch_size))
+        self.output = np.zeros((self._output_size, new_learning_batch_size))
+        self.noise_input = np.zeros((self._noise_size, new_learning_batch_size))
+        self._learning_batch_size = new_learning_batch_size
