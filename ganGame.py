@@ -24,6 +24,10 @@ class GanGame:
         self.disc_fake_learning_ratio = disc_fake_learning_ratio
         self.gen_learning_ratio_alone = gen_learning_ratio_alone
 
+        self.bruit_pres = [self.generateNoise() for i in range(20)]
+        self.bruit_prez_couches = [[2*np.random.random(n)-1 for n in self.generator.layers_neuron_count ] for i in range(20) ]
+        # print(self.bruit_pres)
+
     ##
     # @brief      Execute a movement of the game, learning of dicriminator, then the generator
     #
@@ -101,6 +105,14 @@ class GanGame:
         noise = self.generateNoise()
         image = self.generator.compute(noise)
         return image, noise
+
+    def generateOut(self):
+        images = []
+        for i in range(20):
+            # print(self.bruit_pres[i])
+            image = self.generator.compute_fix(np.array(self.bruit_pres[i]), self.bruit_prez_couches[i])
+            images.append(image)
+        return images
 
     def generateNoise(self):
         n = self.generator.layers_neuron_count[0]

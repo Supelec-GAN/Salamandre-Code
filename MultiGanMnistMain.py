@@ -147,19 +147,14 @@ for exp in range(number_exp):
             fake_std.append(d)
         if i % image_evolution_number == 0:
             a, b, c, d = ganGame.testDiscriminatorLearning(lissage_test)
-            images_evolution = [[]]*nb_images_par_sortie_during_learning
-            for j in range(nb_images_par_sortie_during_learning):
-                image, associate_noise = ganGame.generateImage()  # Generation d'une image à la fin de
-                # l'apprentissage
-                images_evolution[j] = image
+            images_evolution = ganGame.generateOut()
             if nb_images_par_sortie_during_learning > 0:
                 gan_plot.save_multiple_output(images_evolution, str(numbers_to_draw) + "_au_rang_" + str(i), str(i), a, b)
 
     images_finales = [[]]*final_images
     for i in range(final_images):
-        image_test, associate_noise = ganGame.generateImage()  # génération d'une image à la fin de
-        # l'apprentissage
-        images_finales[i] = image_test
+
+        images_finales = ganGame.generateOut()
     if final_images > 0:
         gan_plot.save_multiple_output(images_finales, str(numbers_to_draw) + str(play_number), str(play_number), discriminator_real_score[-1], discriminator_fake_score[-1])
 
@@ -178,5 +173,4 @@ for exp in range(number_exp):
     # if os.name == 'nt':     # pour exécuter l'affichage uniquement sur nos ordis, et pas la vm
     #     state = generator.save_state()
     #     gan_plot.plot_network_state(state)
-
     #     gan_plot.plot_courbes(param, discriminator_real_score, discriminator_fake_score)

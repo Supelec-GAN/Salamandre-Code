@@ -138,6 +138,14 @@ class NoisyLayer(NeuronLayer):
         self.output = self._activation_function.out(self.activation_levels)
         return self.output
 
+    def compute_fix(self, inputs, noise):
+        if self._noise_size != 0:  # nécessaire car np.zeros( (0,1)) est un objet chelou
+            self.noise_input = np.reshape(noise, (self._noise_size, 1))
+            inputs = np.concatenate([inputs, self.noise_input])
+        self.activation_levels = np.dot(self.weights, inputs) - self._bias
+        self.output = self._activation_function.out(self.activation_levels)
+        return self.output
+
     ##
     # backptop très légèrement différent, on retropropage en considérant le vecteur bruit,
     # mais sans renvoyer son influence à la couche précédente

@@ -76,6 +76,13 @@ class Network:
         On considère ici toujours des réseaux avec plusieurs couches !
     """
 
+    def compute_fix(self, inputs, noise):
+        inputs = np.reshape(inputs, (len(inputs), 1))
+        self.layers_list[0].compute(inputs)
+        for i in range(1, self._layers_count):
+            self.layers_list[i].compute_fix(self.layers_list[i - 1].output, noise[i])
+        return self.layers_list[-1].output
+
     def backprop(self, eta, inputs, reference, update=True, gen_backprop=False):
         inputs = np.reshape(inputs, (len(inputs), 1))
         n = self._layers_count
