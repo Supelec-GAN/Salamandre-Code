@@ -1,6 +1,6 @@
 import numpy as np
 from fonction import Function
-from theano.tensor.nnet import conv2d, conv2d_transpose
+from theano.tensor.nnet import conv2d  # , conv2d_transpose
 
 
 class NeuronLayer:
@@ -87,6 +87,14 @@ class NeuronLayer:
     # @return     retourne influence of the input on the error
     #
     def backprop(self, out_influence, eta, update=True):
+        """
+        Rétropropagation au niveau d'une couche
+
+        :param out_influence:
+        :param eta:
+        :param update:
+        :return:
+        """
         weight_influence = self.calculate_weight_influence(out_influence)
         bias_influence = self.calculate_bias_influence(out_influence)
         if update:
@@ -120,18 +128,23 @@ class NeuronLayer:
         mean_out_influence = np.mean(out_influence, axis=1, keepdims=True)
         return mean_out_influence
 
-    ##
-    # @brief      Calculates the error derivation
-    #
-    # @param      out_influence  influence of output on the error
-    #
-    # @return     the error used in the recursive formula
-    #
     def derivate_error(self, in_influence):
+        """
+        Calculates the error derivation
+
+        :param in_influence: influence of the input of the next layer
+        :return: error used in the recusive formula
+        """
         deriv_vector = self._activation_function.derivate(self.activation_levels)
         return deriv_vector * in_influence
 
     def input_error(self, out_influence):
+        """
+        Propagates the error from the activation levels to the inputs
+
+        :param out_influence: influence of the activation levels
+        :return: influence of the input
+        """
         in_influence = np.dot(np.transpose(self.weights), out_influence)
         return in_influence
 
@@ -205,6 +218,18 @@ class ConvolutionalLayer(NeuronLayer):
     def __init__(self, activation_function, input_size=(1, 1), output_size=(1, 1),
                  learning_batch_size=1, filter_size=(1, 1), input_feature_maps=1,
                  output_feature_maps=1, convolution_mode='valid', step=1):
+        """
+
+        :param activation_function:
+        :param input_size:
+        :param output_size:
+        :param learning_batch_size:
+        :param filter_size:
+        :param input_feature_maps:
+        :param output_feature_maps:
+        :param convolution_mode:
+        :param step:
+        """
         super(ConvolutionalLayer, self).__init__(activation_function, 1, 1, learning_batch_size)
         self._filter_size = filter_size
         self._input_feature_maps = input_feature_maps
@@ -215,6 +240,7 @@ class ConvolutionalLayer(NeuronLayer):
                                         self._filter_size[0], self._filter_size[1])
         self._bias = np.zeros(self._output_feature_maps)
         self._input_size = input_size
+        self._output_size = output_size
         if self._convolution_mode == 'full':
             self._output_size = (self._input_size[0] + (self._filter_size[0]-1),
                                  self._input_size[1] + (self._filter_size[1]-1))
@@ -243,8 +269,8 @@ class ConvolutionalLayer(NeuronLayer):
         return self.output
 
     def calculate_weight_influence(self, out_influence):
-        output_shape = (self._output_feature_maps, self._input_feature_maps,
-                        self._filter_size[0], self._filter_size[1])
+        # output_shape = (self._output_feature_maps, self._input_feature_maps,
+        #                 self._filter_size[0], self._filter_size[1])
         weight_influence = conv2d(np.transpose(self.input, axes=(1, 0, 2, 3)),
                                   np.transpose(out_influence, axes=(1, 0, 2, 3)),
                                   border_mode=self._convolution_mode,
@@ -259,8 +285,8 @@ class ConvolutionalLayer(NeuronLayer):
         return deriv_vector * self.tensorize_outputs(in_influence)
 
     def input_error(self, out_influence):
-        output_shape = (self._learning_batch_size, self._input_feature_maps,
-                        self._input_size[0], self._input_size[1])
+        # output_shape = (self._learning_batch_size, self._input_feature_maps,
+        #                 self._input_size[0], self._input_size[1])
         conv = conv2d(out_influence,
                       np.transpose(self._weights, axes=(1, 0, 2, 3)),
                       border_mode=self._reverse_convolution_mode,
@@ -287,9 +313,9 @@ class ConvolutionalLayer(NeuronLayer):
             if self._input_size[0]*self._input_size[1]*self._input_feature_maps != shape[0]:
                 raise Exception('Wrong dimensions : cannot reshape')
             inputs_reshaped = inputs.ravel('F').reshape((self._learning_batch_size,
-                                                        self._input_feature_maps,
-                                                        self._input_size[0],
-                                                        self._input_size[1]))
+                                                         self._input_feature_maps,
+                                                         self._input_size[0],
+                                                         self._input_size[1]))
             return inputs_reshaped
         else:
             raise Exception('Wrong inputs dimension, inputs should be a 4D tensor with '
@@ -308,14 +334,14 @@ class ConvolutionalLayer(NeuronLayer):
         :return: A 4D tensor as a batch 3D output tensors
         """
         ndim = outputs.ndim
-        shape = outputs.shape
+        # shape = outputs.shape
         if ndim == 4:
             return outputs
         elif ndim == 2:
             outputs_reshaped = outputs.ravel('F').reshape((self._learning_batch_size,
-                                                          self._output_feature_maps,
-                                                          self._output_size[0],
-                                                          self._output_size[1]))
+                                                           self._output_feature_maps,
+                                                           self._output_size[0],
+                                                           self._output_size[1]))
             return outputs_reshaped
         else:
             raise Exception('Wrong inputs dimension, inputs should be a 4D tensor with '

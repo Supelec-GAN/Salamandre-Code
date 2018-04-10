@@ -39,14 +39,14 @@ class Engine:
         self._success_fun = success_fun
 
     def learn(self):
-        # self.net.reset()
+        self.net.reset()
         testing_success_rate = np.zeros(self._test_count)
         for pass_nb in range(self._learning_set_pass_nb):
             # Boucle pour une fois le set d'entrainement
             for batch_nb in range(self._learning_set_size // self._learning_batch_size):
                 debut = batch_nb * self._learning_batch_size
                 fin = (batch_nb+1) * self._learning_batch_size
-                intervalle = np.arange(debut, fin)  # self._permutation[debut:fin]
+                intervalle = self._permutation[debut:fin]
                 self.net.compute(self._learning_set[intervalle])
                 expected_output = self._learning_fun.out(intervalle)
                 self.net.backprop(self.eta, expected_output)
@@ -74,18 +74,16 @@ class Engine:
         return mean_error
 
     def get_current_success_rate(self):
-        """Calcule le taux de succès courant du réseau sur le set de test"""
-#        self.net.learning_batch_size = self._testing_set_size
-#        output = self.net.compute(self._testing_set)
-#        expected_output = self._testing_fun.out(np.arange(self._testing_set_size))
-#        success_during_testing = self._success_fun(output, expected_output)
-        success_during_testing = np.zeros(self._testing_set_size)
-        for test_nb in range(self._testing_set_size):
-            output = self.net.compute(self._testing_set[test_nb])
-            expected_output = self._testing_fun.out(test_nb)
-            success_during_testing[test_nb] = self._success_fun(output, expected_output)
+        """Calcule le taux de succès courant du réseau sur le set de test
+
+        :return: The success rate of the network for the testing set
+        """
+        self.net.learning_batch_size = self._testing_set_size
+        output = self.net.compute(self._testing_set)
+        expected_output = self._testing_fun.out(np.arange(self._testing_set_size))
+        success_during_testing = self._success_fun(output, expected_output)
         success_rate = np.mean(success_during_testing)
-#        self.net.learning_batch_size = self._learning_batch_size
+        self.net.learning_batch_size = self._learning_batch_size
         return success_rate
 
     def run(self):

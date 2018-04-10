@@ -63,10 +63,15 @@ couche1 = {'type': 'C',
 
 couche2 = {'type': 'N',
            'activation_function': Sigmoid(0.1),
-           'input_size': 6400,
+           'input_size': 784,
+           'output_size': 300}
+
+couche3 = {'type': 'N',
+           'activation_function': Sigmoid(0.1),
+           'input_size': 300,
            'output_size': 10}
 
-layers_params = [couche0, couche1, couche2]
+layers_params = [couche2, couche3]
 
 net = Network(layers_params,
               error_function=error_fun,
