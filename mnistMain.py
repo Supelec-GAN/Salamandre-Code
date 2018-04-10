@@ -79,6 +79,7 @@ net = Network(layers_params,
 
 error_graphs = ErrorGraphs('Mnist_debug_graphes', learning_iterations, eta, net, test_period)
 
+momentum = param['momentum']
 
 training_fun = param['training_fun'](training_labels)
 testing_fun = param['testing_fun'](testing_labels)
@@ -101,6 +102,7 @@ engine = Engine(net,
                 testing_images[0:testing_size] / 256,
                 testing_fun,
                 success_fun,
+                momentum,
                 learning_iterations,
                 test_period,
                 learning_set_pass_nb,

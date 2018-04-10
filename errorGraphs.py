@@ -44,6 +44,7 @@ class ErrorGraphs:
         # saves the plot in directory
         save_date = strftime('%Y-%m-%d-%H%M%S', gmtime())
         namefile = str(save_date) + '.png'
+        namefile = self._name + "/" + namefile
         plt.savefig(namefile,)
 
     def plot(self, errors_during_learning):

@@ -1,13 +1,13 @@
 import numpy as np
-from brain.neuronLayer import NeuronLayer, NoisyLayer, ConvolutionalLayer
+from brain.neuronLayer import NeuronLayer, ConvolutionalLayer
 from fonction import Norm2, NonSatHeuristic
 
 
 class Network:
     """Classe permettant de créer un perceptron multicouche"""
 
-    def __init__(self, layers_parameters, error_function=Norm2(), learning_batch_size=1,
-                 error_gen=NonSatHeuristic(), weights_list=()):
+    def __init__(self, layers_parameters, param_desc, error_function=Norm2(), learning_batch_size=1,
+                 error_gen=NonSatHeuristic(), nb_exp=0, weights_list=()):
         """
         Contruit un réseau de neurones avec des poids initialisés uniformément entre 0 et 1
 
@@ -22,8 +22,10 @@ class Network:
 
         self._layers_parameters = layers_parameters  # sauvegarde pour pouvoir réinitialiser
         self._layers_count = len(layers_parameters)
+        self.param_desc = param_desc
         self._error = error_function
         self._error_gen = error_gen
+        self.nb_exp = nb_exp
         self._learning_batch_size = learning_batch_size
         self.layers_list = np.array(self._layers_count * [NeuronLayer()])
         for i in range(0, self._layers_count):
@@ -33,6 +35,8 @@ class Network:
                     NeuronLayer(params['activation_function'],
                                 input_size=params['input_size'],
                                 output_size=params['output_size'],
+                                noise_size=params['noise_size'],
+                                nb_exp=self.nb_exp,
                                 learning_batch_size=self._learning_batch_size
                                 )
             elif params['type'] == 'C':
@@ -46,14 +50,6 @@ class Network:
                                        convolution_mode=params['convolution_mode'],
                                        learning_batch_size=self._learning_batch_size
                                        )
-            elif params['type'] == 'B':
-                self.layers_list[i] = \
-                    NoisyLayer(params['activation_function'],
-                               input_size=params['input_size'],
-                               output_size=params['output_size'],
-                               noise_size=params['noise_size'],
-                               learning_batch_size=self._learning_batch_size
-                               )
             else:
                 raise Exception('Wrong layer type')
         self.output = np.zeros(self.layers_list[-1].output_size)
@@ -77,6 +73,8 @@ class Network:
                     NeuronLayer(params['activation_function'],
                                 input_size=params['input_size'],
                                 output_size=params['output_size'],
+                                noise_size=params['noise_size'],
+                                nb_exp=self.nb_exp,
                                 learning_batch_size=self._learning_batch_size
                                 )
             elif params['type'] == 'C':
@@ -90,14 +88,6 @@ class Network:
                                        convolution_mode=params['convolution_mode'],
                                        learning_batch_size=self._learning_batch_size
                                        )
-            elif params['type'] == 'B':
-                self.layers_list[i] = \
-                    NoisyLayer(params['activation_function'],
-                               input_size=params['input_size'],
-                               output_size=params['output_size'],
-                               noise_size=params['noise_size'],
-                               learning_batch_size=self._learning_batch_size
-                               )
             else:
                 raise Exception('Wrong layer type')
         self.output = np.zeros(self.layers_list[-1].output_size)
