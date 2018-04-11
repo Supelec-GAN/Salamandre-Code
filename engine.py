@@ -50,8 +50,7 @@ class Engine:
                 intervalle = np.arange(debut, fin)  # self._permutation[debut:fin]
                 self.net.compute(self._learning_set[intervalle])
                 expected_output = self._learning_fun.out(intervalle)
-                self.net.backprop(self.eta,
-                                  self._learning_set[intervalle],
+                self.net.backprop(self._learning_set[intervalle],
                                   expected_output)
                 print(pass_nb+batch_nb)
 

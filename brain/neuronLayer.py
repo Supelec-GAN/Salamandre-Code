@@ -135,7 +135,7 @@ class NeuronLayer:
         elif self.algo_utilise == "Adagrad":
             self.weights_gradients_sum = self.weights_gradients_sum + weight_influence**2
             partial = np.sqrt(np.add(self.weights_gradients_sum, self.epsilon))
-            self.update_weights_value = self.momentum*self.update_weights_value - delf.eta*np.divide(weight_influence, partial)
+            self.update_weights_value = self.momentum*self.update_weights_value - self.eta*np.divide(weight_influence, partial)
 
             self.bias_gradients_sum = self.bias_gradients_sum + bias_influence**2
             partial = np.sqrt(np.add(self.bias_gradients_sum, self.epsilon))

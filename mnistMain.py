@@ -35,7 +35,7 @@ eta = param['eta']
 learning_set_pass_nb = param['learning_set_pass_nb']
 batch_size = param['batch_size']
 
-net = Network(param['network_layers'], activation_funs, error_fun, batch_size)
+net = Network(param['network_layers'], activation_funs, error_fun, "Parametres de descente", batch_size)
 
 error_graphs = ErrorGraphs('Mnist_debug_graphes', learning_iterations, eta, net, test_period)
 

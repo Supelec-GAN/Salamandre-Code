@@ -52,11 +52,11 @@ class Network:
                 self.layers_list[i].weights = weights_list[i][0]
                 self.layers_list[i].bias = weights_list[i][1]
 
-    def reset(self):
+    def reset(self, noise_size=0):
         self.layers_list = np.array(
             self._layers_count * [NeuronLayer(
                 self._layers_activation_function[0],
-                self.error
+                self.error, self.param_desc
             )]
         )
         for i in range(0, self._layers_count - 1):
@@ -65,11 +65,13 @@ class Network:
                                               self.param_desc,
                                               self.layers_neuron_count[i],
                                               self.layers_neuron_count[i + 1],
+                                              noise_size,
                                               self._learning_batch_size
                                               )
         self.layers_list[self._layers_count - 1] = OutputLayer(
             self._layers_activation_function[self._layers_count - 1],
             self.error,
+            self.param_desc,
             self.layers_neuron_count[self._layers_count - 1],
             self.layers_neuron_count[self._layers_count],
             self._learning_batch_size
