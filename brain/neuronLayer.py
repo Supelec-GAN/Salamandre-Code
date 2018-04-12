@@ -139,7 +139,7 @@ class NeuronLayer:
 
             self.bias_gradients_sum = self.bias_gradients_sum + bias_influence**2
             partial = np.sqrt(np.add(self.bias_gradients_sum, self.epsilon))
-            self.update_bias_value = self.momentum*self.update_bias_value - self.eta*np.divide(weight_influence, partial)
+            self.update_bias_value = self.momentum*self.update_bias_value - self.eta*np.divide(bias_influence, partial)
 
         elif self.algo_utilise == "RMSProp":
 
