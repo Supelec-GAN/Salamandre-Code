@@ -9,7 +9,7 @@ class NeuronLayer:
     """Classe permettant de créer une couche de neurones"""
 
     def __init__(self, activation_function=Function(), input_size=1, output_size=1, noise_size=0,
-                 learning_batch_size=1, nb_exp=0):
+                 learning_batch_size=1, param_desc='Parametres de descente', nb_exp=0):
         # Matrice de dimension q*p avec le nombre de sortie et p le nombre d'entrée
         self._input_size = input_size
         self._output_size = output_size
@@ -48,8 +48,8 @@ class NeuronLayer:
         self.bias_eta = np.zeros((output_size, 1))                      #need meilleur nom
 
         data_interface = DataInterface()
-        param_liste = data_interface.read_conf('config_algo_descente.ini')  # Lecture du fichier
-        # de config
+        param_liste = data_interface.read_conf('config_algo_descente.ini', param_desc)  # Lecture
+        # du fichier de config
         param_liste = data_interface.extract_param(param_liste, nb_exp)
         self.algo_utilise = param_liste['algo_utilise']
         self.eta = param_liste['eta']
@@ -110,7 +110,7 @@ class NeuronLayer:
 
     def compute(self, inputs):
         self.input = self.flatten_inputs(inputs)
-        if self._noise_size != 0:  # nécessaire car np.zeros( (0,1)) est un objet chelou
+        if self._noise_size != 0:  # nécessaire car np.zeros((0,1)) est un objet chelou
             self.noise_input = np.random.randn(self._noise_size, self._learning_batch_size)
             inputs = np.concatenate([inputs, self.noise_input])
         self.activation_levels = np.dot(self._weights, inputs) - self._bias
@@ -133,7 +133,8 @@ class NeuronLayer:
             self.update_momentum(bias_influence, weight_influence)
             self.update_weights(weight_influence)
             self.update_bias(bias_influence)
-            return self.weights[:, 0:self._input_size]  # On extrait les poids concernant les vrais inputs (le bruit n'a pas besoin d'influer sur les couches d'avant)
+            return self.weights[:, 0:self._input_size]  # On extrait les poids concernant les vrais
+            # inputs (le bruit n'a pas besoin d'influer sur les couches d'avant)
         else:
             return (self.weights - self.eta * weight_influence)[:, 0:self._input_size]
 
@@ -146,7 +147,7 @@ class NeuronLayer:
         elif self.algo_utilise == "Adagrad":
             self.weights_gradients_sum = self.weights_gradients_sum + weight_influence**2
             partial = np.sqrt(np.add(self.weights_gradients_sum, self.epsilon))
-            self.update_weights_value = self.momentum*self.update_weights_value - delf.eta*np.divide(weight_influence, partial)
+            self.update_weights_value = self.momentum*self.update_weights_value - self.eta*np.divide(weight_influence, partial)
 
             self.bias_gradients_sum = self.bias_gradients_sum + bias_influence**2
             partial = np.sqrt(np.add(self.bias_gradients_sum, self.epsilon))

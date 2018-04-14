@@ -6,7 +6,7 @@ from fonction import Norm2, NonSatHeuristic
 class Network:
     """Classe permettant de créer un perceptron multicouche"""
 
-    def __init__(self, layers_parameters, param_desc, error_function=Norm2(), learning_batch_size=1,
+    def __init__(self, layers_parameters, param_desc='', error_function=Norm2(), learning_batch_size=1,
                  error_gen=NonSatHeuristic(), nb_exp=0, weights_list=()):
         """
         Contruit un réseau de neurones avec des poids initialisés uniformément entre 0 et 1
@@ -121,11 +121,10 @@ class Network:
 
     # On considère ici toujours des réseaux avec plusieurs couches !
     # !! Rajouter la non_update_backprop
-    def backprop(self, eta, reference, update=True, gen_backprop=False):
+    def backprop(self, reference, update=True, gen_backprop=False):
         """
         Rétropropagation selon la méthode de la descente du gradient
 
-        :param eta: Coefficient d'apprentissage
         :param reference: Sortie idéale
         :param update: Si vrai, on met à jour les poids/biais, sinon on ne renvoie que l'influence
         de l'erreur sur l'entrée
@@ -141,7 +140,7 @@ class Network:
         n = self._layers_count
         for i in range(n - 1, -1, -1):
             out_influence = self.layers_list[i].derivate_error(in_influence)
-            self.layers_list[i].backprop(out_influence, eta, update)
+            self.layers_list[i].backprop(out_influence, update)
             in_influence = self.layers_list[i].input_error(out_influence)
 
         return in_influence

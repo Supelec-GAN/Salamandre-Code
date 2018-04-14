@@ -64,12 +64,14 @@ couche1 = {'type': 'C',
 couche2 = {'type': 'N',
            'activation_function': Sigmoid(0.1),
            'input_size': 784,
-           'output_size': 300}
+           'output_size': 300,
+           'noise_size': 0}
 
 couche3 = {'type': 'N',
            'activation_function': Sigmoid(0.1),
            'input_size': 300,
-           'output_size': 10}
+           'output_size': 10,
+           'noise_size': 0}
 
 layers_params = [couche2, couche3]
 

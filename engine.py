@@ -5,8 +5,8 @@ class Engine:
     """Classe gérant l'apprentissage d'un réseau, tout en fournissant des données au fur et à mesure
     """
 
-    def __init__(self, net, eta, learning_set, learning_fun, testing_set, testing_fun, success_fun, momentum=0,
-                 learning_iterations=1, test_period=100, learning_set_pass_nb=1,
+    def __init__(self, net, eta, learning_set, learning_fun, testing_set, testing_fun, success_fun,
+                 momentum=0, learning_iterations=1, test_period=100, learning_set_pass_nb=1,
                  randomize_learning_set=True):
         # Réseau utilisé
         self.net = net
@@ -50,7 +50,7 @@ class Engine:
                 intervalle = self._permutation[debut:fin]
                 self.net.compute(self._learning_set[intervalle])
                 expected_output = self._learning_fun.out(intervalle)
-                self.net.backprop(self.eta, expected_output)
+                self.net.backprop(expected_output)
 
                 # Enregistrement périodique de l'erreur sur le set de test
                 if (pass_nb*self._learning_set_size + batch_nb) % self._test_period == 0:
