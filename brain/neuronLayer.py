@@ -10,6 +10,17 @@ class NeuronLayer:
 
     def __init__(self, activation_function=Function(), input_size=1, output_size=1, noise_size=0,
                  learning_batch_size=1, param_desc='Parametres de descente', nb_exp=0):
+        """
+        Creates a fully connected neuron layer
+
+        :param activation_function:
+        :param input_size:
+        :param output_size:
+        :param noise_size:
+        :param learning_batch_size:
+        :param param_desc:
+        :param nb_exp:
+        """
         # Matrice de dimension q*p avec le nombre de sortie et p le nombre d'entrée
         self._input_size = input_size
         self._output_size = output_size
@@ -103,12 +114,13 @@ class NeuronLayer:
     def output_size(self):
         return self._output_size
 
-    ##
-    # @brief      Calcul des sorties de la couche
-    #
-    # @param      inputs  Inputs
-
     def compute(self, inputs):
+        """
+        Calcul de la sortie de la couche
+
+        :param inputs: Nouvelles entrées
+        :return: La sortie de la couche
+        """
         self.input = self.flatten_inputs(inputs)
         if self._noise_size != 0:  # nécessaire car np.zeros((0,1)) est un objet chelou
             self.noise_input = np.random.randn(self._noise_size, self._learning_batch_size)
@@ -122,17 +134,15 @@ class NeuronLayer:
         Rétropropagation au niveau d'une couche
 
         :param out_influence:
-        :param update:
-        :return:
+        :param update: Si Vrai, les poids de la couche sont mis à jour
+        :return: Les nouveaux poids
         """
-        if self._noise_size != 1:
-            input_layer = np.concatenate([self.input, self.noise_input])
         weight_influence = self.calculate_weight_influence(out_influence)
         bias_influence = self.calculate_bias_influence(out_influence)
         if update:
             self.update_momentum(bias_influence, weight_influence)
-            self.update_weights(weight_influence)
-            self.update_bias(bias_influence)
+            self.update_weights()
+            self.update_bias()
             return self.weights[:, 0:self._input_size]  # On extrait les poids concernant les vrais
             # inputs (le bruit n'a pas besoin d'influer sur les couches d'avant)
         else:
@@ -223,12 +233,10 @@ class NeuronLayer:
             partial2 = np.sqrt(np.add(np.divide(self.bias_gradients_sum, (1 - self.gamma_2**self.instant)), self.epsilon))
             self.update_bias_value = self.momentum * self.update_bias_value - self.alpha*np.divide(np.divide(self.bias_moment, partial), partial2)
 
-    def update_weights(self, weight_influence):
-        # self.update_weights_value = momentum*self.update_weights_value - eta * weight_influence
+    def update_weights(self):
         self._weights = self._weights + self.update_weights_value
 
-    def update_bias(self, bias_influence):
-        # self.update_bias_value = momentum * self.update_bias_value + eta * bias_influence
+    def update_bias(self):
         self._bias = self._bias + self.update_bias_value
 
     ##
@@ -254,7 +262,7 @@ class NeuronLayer:
         Calculates the error derivation
 
         :param in_influence: influence of the input of the next layer
-        :return: error used in the recusive formula
+        :return: error used in the recursive formula
         """
         deriv_vector = self._activation_function.derivate(self.activation_levels)
         return deriv_vector * in_influence
