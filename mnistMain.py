@@ -44,7 +44,7 @@ batch_size = param['batch_size']
 
 
 couche0 = {'type': 'C',
-           'activation_function': Sigmoid(0.1),
+           'activation_function': 'Sigmoid(0.1)',
            'input_size': (28, 28),
            'output_size': (24, 24),
            'filter_size': (5, 5),
@@ -53,7 +53,7 @@ couche0 = {'type': 'C',
            'convolution_mode': 'valid'}
 
 couche1 = {'type': 'C',
-           'activation_function': Sigmoid(0.1),
+           'activation_function': 'Sigmoid(0.1)',
            'input_size': (24, 24),
            'output_size': (20, 20),
            'filter_size': (5, 5),
@@ -62,13 +62,13 @@ couche1 = {'type': 'C',
            'convolution_mode': 'valid'}
 
 couche2 = {'type': 'N',
-           'activation_function': Sigmoid(0.1),
+           'activation_function': 'Sigmoid(0.1)',
            'input_size': 784,
            'output_size': 300,
            'noise_size': 0}
 
 couche3 = {'type': 'N',
-           'activation_function': Sigmoid(0.1),
+           'activation_function': 'Sigmoid(0.1)',
            'input_size': 300,
            'output_size': 10,
            'noise_size': 0}

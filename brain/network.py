@@ -6,8 +6,8 @@ from fonction import Norm2, NonSatHeuristic
 class Network:
     """Classe permettant de créer un perceptron multicouche"""
 
-    def __init__(self, layers_parameters, param_desc='', error_function=Norm2(), learning_batch_size=1,
-                 error_gen=NonSatHeuristic(), nb_exp=0, weights_list=()):
+    def __init__(self, layers_parameters, error_function=Norm2(), learning_batch_size=1,
+                 error_gen=NonSatHeuristic(), nb_exp=0):
         """
         Contruit un réseau de neurones avec des poids initialisés uniformément entre 0 et 1
 
@@ -22,7 +22,6 @@ class Network:
 
         self._layers_parameters = layers_parameters  # sauvegarde pour pouvoir réinitialiser
         self._layers_count = len(layers_parameters)
-        self.param_desc = param_desc
         self._error = error_function
         self._error_gen = error_gen
         self.nb_exp = nb_exp
@@ -32,16 +31,21 @@ class Network:
             params = self._layers_parameters[i]
             if params['type'] == 'N':
                 self.layers_list[i] = \
-                    NeuronLayer(params['activation_function'],
+                    NeuronLayer(activation_function=eval(params['activation_function']),
                                 input_size=params['input_size'],
                                 output_size=params['output_size'],
                                 noise_size=params['noise_size'],
+                                param_desc=params['param_desc'],
                                 nb_exp=self.nb_exp,
                                 learning_batch_size=self._learning_batch_size
                                 )
+                try:
+                    weights_list = params['weights_list']
+                except KeyError:
+                    pass
             elif params['type'] == 'C':
                 self.layers_list[i] = \
-                    ConvolutionalLayer(params['activation_function'],
+                    ConvolutionalLayer(activation_function=eval(params['activation_function']),
                                        input_size=params['input_size'],
                                        output_size=params['output_size'],
                                        filter_size=params['filter_size'],
@@ -52,12 +56,12 @@ class Network:
                                        )
             else:
                 raise Exception('Wrong layer type')
+            try:
+                coefs = params['coefs']
+                self.layers_list[i].restore_coefs(coefs)
+            except KeyError:
+                pass
         self.output = np.zeros(self.layers_list[-1].output_size)
-
-        if len(weights_list) != 0:  # si l'on a donné une liste de poids
-            for i in range(0, self._layers_count):
-                self.layers_list[i].weights = weights_list[i][0]
-                self.layers_list[i].bias = weights_list[i][1]
 
     def reset(self):
         """
@@ -70,16 +74,17 @@ class Network:
             params = self._layers_parameters[i]
             if params['type'] == 'N':
                 self.layers_list[i] = \
-                    NeuronLayer(params['activation_function'],
+                    NeuronLayer(activation_function=eval(params['activation_function']),
                                 input_size=params['input_size'],
                                 output_size=params['output_size'],
                                 noise_size=params['noise_size'],
+                                param_desc=params['params_desc'],
                                 nb_exp=self.nb_exp,
                                 learning_batch_size=self._learning_batch_size
                                 )
             elif params['type'] == 'C':
                 self.layers_list[i] = \
-                    ConvolutionalLayer(params['activation_function'],
+                    ConvolutionalLayer(activation_function=eval(params['activation_function']),
                                        input_size=params['input_size'],
                                        output_size=params['output_size'],
                                        filter_size=params['filter_size'],
@@ -155,7 +160,6 @@ class Network:
             layer.learning_batch_size = new_learning_batch_size
         self._learning_batch_size = new_learning_batch_size
 
-# A mettre à jour avec les nouveaux attributs !!
     def save_state(self):
         """
         Permet de sauvegarder l'état du réseau, ainsi que ses paramètres
@@ -165,15 +169,8 @@ class Network:
         biais) correspondant au couche successives.
         """
 
-        saved_activation_functions = []
-        for f in self._layers_activation_function:
-            saved_activation_functions.append(f.save_fun())
-        saved_activation_functions = str(saved_activation_functions).replace("'", "")  # permet
-        # d'avoir "[Sigmoid(mu), ...]", à la place de "['Sigmoid(mu)', ...]"
-        params = [self.layers_neuron_count, saved_activation_functions, self._error.save_fun()]
-        coefs = []
         for i in range(self._layers_count):
-            layer_coefs = (self.layers_list[i].weights, self.layers_list[i].bias)
-            coefs.append(layer_coefs)
-        state = [params, coefs]
+            coefs = self.layers_list[i].save_coefs()
+            self._layers_parameters[i]['coefs'] = coefs
+        state = [self._layers_parameters, self._error.save_fun(), self._error_gen.save_fun()]
         return state

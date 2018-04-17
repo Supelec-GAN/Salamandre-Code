@@ -289,6 +289,15 @@ class NeuronLayer:
         else:
             raise Exception('Wrong inputs dimension : it should be a matrix or a 4D tensor')
 
+    def save_coefs(self):
+        coefs = {'weights': self._weights,
+                 'bias': self._bias}
+        return coefs
+
+    def restore_coefs(self, coefs):
+        self._weights = coefs['weights']
+        self._bias = coefs['bias']
+
 
 class ConvolutionalLayer(NeuronLayer):
 
