@@ -1,7 +1,6 @@
 import numpy as np
 from fonction import Function
 from theano.tensor.nnet import conv2d  # , conv2d_transpose
-from math import sqrt
 from dataInterface import DataInterface
 
 
@@ -124,8 +123,8 @@ class NeuronLayer:
         self.input = self.flatten_inputs(inputs)
         if self._noise_size != 0:  # nécessaire car np.zeros((0,1)) est un objet chelou
             self.noise_input = np.random.randn(self._noise_size, self._learning_batch_size)
-            inputs = np.concatenate([inputs, self.noise_input])
-        self.activation_levels = np.dot(self._weights, inputs) - self._bias
+            self.input = np.concatenate([self.input, self.noise_input])
+        self.activation_levels = np.dot(self._weights, self.input) - self._bias
         self.output = self._activation_function.out(self.activation_levels)
         return self.output
 
@@ -267,14 +266,14 @@ class NeuronLayer:
         deriv_vector = self._activation_function.derivate(self.activation_levels)
         return deriv_vector * in_influence
 
-    def input_error(self, out_influence):
+    def input_error(self, out_influence, new_weights):
         """
         Propagates the error from the activation levels to the inputs
 
         :param out_influence: influence of the activation levels
         :return: influence of the input
         """
-        in_influence = np.dot(np.transpose(self.weights), out_influence)
+        in_influence = np.dot(np.transpose(new_weights), out_influence)
         return in_influence
 
     def flatten_inputs(self, inputs):
@@ -316,7 +315,8 @@ class ConvolutionalLayer(NeuronLayer):
         :param convolution_mode:
         :param step:
         """
-        super(ConvolutionalLayer, self).__init__(activation_function, 1, 1, learning_batch_size)
+        super(ConvolutionalLayer, self).__init__(activation_function, input_size=1, output_size=1,
+                                                 learning_batch_size=learning_batch_size)
         self._filter_size = filter_size
         self._input_feature_maps = input_feature_maps
         self._output_feature_maps = output_feature_maps
@@ -347,12 +347,44 @@ class ConvolutionalLayer(NeuronLayer):
         self.output = np.zeros((self._learning_batch_size, self._output_feature_maps,
                                 self._output_size[0], self._output_size[1]))
 
+    @property
+    def learning_batch_size(self):
+        return self._learning_batch_size
+
+    @learning_batch_size.setter
+    def learning_batch_size(self, new_learning_batch_size):
+        self.activation_levels = np.zeros((self._learning_batch_size, self._output_feature_maps,
+                                           self._output_size[0], self._output_size[1]))
+        self.output = np.zeros((self._learning_batch_size, self._output_feature_maps,
+                                self._output_size[0], self._output_size[1]))
+        self._learning_batch_size = new_learning_batch_size
+
     def compute(self, inputs):
         self.input = self.tensorize_inputs(inputs)
         conv = conv2d(self.input, self._weights, border_mode=self._convolution_mode)
         self.activation_levels = conv.eval() + self._bias[np.newaxis, :, np.newaxis, np.newaxis]
         self.output = self._activation_function.out(self.activation_levels)
         return self.output
+
+    def backprop(self, out_influence, update=True):
+        """
+        Rétropropagation au niveau d'une couche
+
+        :param out_influence:
+        :param update: Si Vrai, les poids de la couche sont mis à jour
+        :return: Les nouveaux poids
+        """
+        weight_influence = self.calculate_weight_influence(out_influence)
+        bias_influence = self.calculate_bias_influence(out_influence)
+        self.update_weights_value = weight_influence
+        self.update_bias_value = bias_influence
+        if update:
+            # self.update_momentum(bias_influence, weight_influence)
+            self.update_weights()
+            self.update_bias()
+            return self.weights
+        else:
+            return self.weights - self.eta * weight_influence
 
     def calculate_weight_influence(self, out_influence):
         # output_shape = (self._output_feature_maps, self._input_feature_maps,
@@ -370,11 +402,11 @@ class ConvolutionalLayer(NeuronLayer):
         deriv_vector = self._activation_function.derivate(self.activation_levels)
         return deriv_vector * self.tensorize_outputs(in_influence)
 
-    def input_error(self, out_influence):
+    def input_error(self, out_influence, new_weights):
         # output_shape = (self._learning_batch_size, self._input_feature_maps,
         #                 self._input_size[0], self._input_size[1])
         conv = conv2d(out_influence,
-                      np.transpose(self._weights, axes=(1, 0, 2, 3)),
+                      np.transpose(new_weights, axes=(1, 0, 2, 3)),
                       border_mode=self._reverse_convolution_mode,
                       filter_flip=False)
         return conv.eval()

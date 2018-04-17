@@ -1,13 +1,12 @@
-import numpy as np
 from brain.neuronLayer import NeuronLayer, ConvolutionalLayer
-from fonction import Norm2, NonSatHeuristic
+from fonction import *
 
 
 class Network:
     """Classe permettant de créer un perceptron multicouche"""
 
     def __init__(self, layers_parameters, error_function=Norm2(), learning_batch_size=1,
-                 error_gen=NonSatHeuristic(), nb_exp=0):
+                 error_gen=NonSatHeuristic(), param_desc='Parametres de descente', nb_exp=0):
         """
         Contruit un réseau de neurones avec des poids initialisés uniformément entre 0 et 1
 
@@ -16,14 +15,13 @@ class Network:
         :param learning_batch_size: Taille des batchs
         :param error_gen: Fonction d'erreur utilisée par le GAN pendant la rétropropagation sans
         mise à jour dans le discriminateur lors de l'appprentissage du générateur
-        :param weights_list: Liste de poids/biais à renseigner si l'on veut restaurer un ancien
-        réseau
         """
 
         self._layers_parameters = layers_parameters  # sauvegarde pour pouvoir réinitialiser
         self._layers_count = len(layers_parameters)
         self._error = error_function
         self._error_gen = error_gen
+        self._param_desc = param_desc
         self.nb_exp = nb_exp
         self._learning_batch_size = learning_batch_size
         self.layers_list = np.array(self._layers_count * [NeuronLayer()])
@@ -35,14 +33,10 @@ class Network:
                                 input_size=params['input_size'],
                                 output_size=params['output_size'],
                                 noise_size=params['noise_size'],
-                                param_desc=params['param_desc'],
+                                param_desc=self._param_desc,
                                 nb_exp=self.nb_exp,
                                 learning_batch_size=self._learning_batch_size
                                 )
-                try:
-                    weights_list = params['weights_list']
-                except KeyError:
-                    pass
             elif params['type'] == 'C':
                 self.layers_list[i] = \
                     ConvolutionalLayer(activation_function=eval(params['activation_function']),
@@ -78,7 +72,7 @@ class Network:
                                 input_size=params['input_size'],
                                 output_size=params['output_size'],
                                 noise_size=params['noise_size'],
-                                param_desc=params['params_desc'],
+                                param_desc=self._param_desc,
                                 nb_exp=self.nb_exp,
                                 learning_batch_size=self._learning_batch_size
                                 )
@@ -125,7 +119,6 @@ class Network:
         return self.output
 
     # On considère ici toujours des réseaux avec plusieurs couches !
-    # !! Rajouter la non_update_backprop
     def backprop(self, reference, update=True, gen_backprop=False):
         """
         Rétropropagation selon la méthode de la descente du gradient
@@ -145,9 +138,8 @@ class Network:
         n = self._layers_count
         for i in range(n - 1, -1, -1):
             out_influence = self.layers_list[i].derivate_error(in_influence)
-            self.layers_list[i].backprop(out_influence, update)
-            in_influence = self.layers_list[i].input_error(out_influence)
-
+            new_weights = self.layers_list[i].backprop(out_influence, update)
+            in_influence = self.layers_list[i].input_error(out_influence, new_weights)
         return in_influence
 
     @property

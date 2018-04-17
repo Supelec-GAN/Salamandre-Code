@@ -46,19 +46,19 @@ batch_size = param['batch_size']
 couche0 = {'type': 'C',
            'activation_function': 'Sigmoid(0.1)',
            'input_size': (28, 28),
-           'output_size': (24, 24),
-           'filter_size': (5, 5),
+           'output_size': (19, 19),
+           'filter_size': (10, 10),
            'input_feature_maps': 1,
-           'output_feature_maps': 6,
+           'output_feature_maps': 4,
            'convolution_mode': 'valid'}
 
 couche1 = {'type': 'C',
            'activation_function': 'Sigmoid(0.1)',
-           'input_size': (24, 24),
-           'output_size': (20, 20),
-           'filter_size': (5, 5),
-           'input_feature_maps': 6,
-           'output_feature_maps': 16,
+           'input_size': (19, 19),
+           'output_size': (10, 10),
+           'filter_size': (10, 10),
+           'input_feature_maps': 4,
+           'output_feature_maps': 6,
            'convolution_mode': 'valid'}
 
 couche2 = {'type': 'N',
