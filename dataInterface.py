@@ -1,47 +1,55 @@
 from time import gmtime, strftime
-import numpy as np
 import matplotlib.pyplot as plt
 import os
 from configparser import ConfigParser
 from fonction import *
 
 
-# @brief      Class for data interface.
-#
-# @param      name Name of folder used to save the date
-#
 class DataInterface:
     def __init__(self, name='Mnist'):
+        """
+        Class for data interface
+
+        :param name: Name of the folder used to save the data
+        """
         self._name = "ReleveExp/" + name
 
-    ##
-    # @brief      save numpy array data into the folder self._name
-    #
-    # @param      data_name   descricption of the data(error, weights matrix, )
-    # @param      data_param  Parameters of network and run of the dataset
-    #
-    # @return     No return, filename is name\YYYY-MM-DD-HHmmSS_data_name.csv
     def save(self, data, data_name, data_param='dictionnary of parameters'):
+        """
+        Save numpy array data into the folder self._name. Filename is
+        name\YYYY-MM-DD-HHmmSS_data_name.csv
+
+        :param data: Data to save
+        :param data_name: Description of the data (error, weights matrix, ...)
+        :param data_param: Parameters of network and run of the dataset
+        :return: None
+        """
         save_date = strftime('%Y-%m-%d-%H%M%S', gmtime())
 
         # create directory if it doesn't exist
         if not os.path.exists(self._name):
             os.makedirs(self._name)
 
-        return np.savetxt(self._name + '/' + save_date + '_' + data_name + '.csv', data, delimiter=",", header=data_param)
+        return np.savetxt(self._name + '/' + save_date + '_' + data_name + '.csv', data,
+                          delimiter=",", header=data_param)
 
-    ##
-    # @brief      transform np.array into string to save param
-    def save_param(self, data_param):
+    @staticmethod
+    def save_param(data_param):
+        """
+        Transform an np.array into a string to save params
+
+        :param data_param: An array of params
+        :return: A string of params
+        """
         return np.array_str(data_param).split('[')[1].split(']')[0]
 
-    ##
-    # @brief      load data from a file
-    # @param      filename  The filename
-    #
-    # @return     an np.array with parameters of acquisition and a dataset
-    #
     def load(self, filename):
+        """
+        Load data from a file
+
+        :param filename: File containing the data
+        :return: An np.array with parameters of acquisition and a dataset
+        """
         params = self.load_param(filename)
         data = np.loadtxt(self._name + '/' + filename, delimiter=',')
         return params, data
@@ -83,8 +91,9 @@ class DataInterface:
         for opt in params:
             param_dict[opt] = eval(params[opt])
         return param_dict
-        
-    def read_conf(self, filename='config.ini', param='Mnist'):
+
+    @staticmethod
+    def read_conf(filename='config.ini', param='Mnist'):
         cfg = ConfigParser()
         cfg.read(filename)
         options = cfg.options(param)
@@ -95,7 +104,8 @@ class DataInterface:
 
         return param_dict
 
-    def save_conf(self, filename='config.ini', param='Mnist'):
+    @staticmethod
+    def save_conf(filename='config.ini', param='Mnist'):
         cfg = ConfigParser()
         cfg.read(filename)
         options = cfg.options(param)
@@ -105,7 +115,8 @@ class DataInterface:
             param_dict_str[opt] = cfg[param][opt]
         return str(param_dict_str)
 
-    def load_conf(self, param_dict):
+    @staticmethod
+    def load_conf(param_dict):
         for key in param_dict.keys():
             param_dict[key] = eval(param_dict[key])
 
@@ -122,9 +133,11 @@ class DataInterface:
 
         image = np.reshape(image, [x_size, y_size])
         plt.imshow(image, cmap='Greys',  interpolation='nearest')
-        plt.savefig(self._name + '/Images/' + save_date + '_imagede_' + img_name + '.png')  # sauvgarde de l'image
+        plt.savefig(self._name + '/Images/' + save_date + '_imagede_' + img_name + '.png')
+        # sauvegarde de l'image
 
-    def extract_param(self, param_liste, i):
+    @staticmethod
+    def extract_param(param_liste, i):
         param = dict()
         for key, value in param_liste.items():
             n = len(value)

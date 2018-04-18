@@ -1,6 +1,6 @@
 import numpy as np
 from brain.network import Network
-from fonction import Function, Sigmoid, MnistTest, Norm2
+from fonction import Function, Sigmoid, MnistTest, Norm2, NonSatHeuristic
 from mnist import MNIST
 from dataInterface import DataInterface
 from ganGame import GanGame
@@ -22,7 +22,8 @@ param_desc_gen_liste = data_interface.read_conf('config_algo_descente.ini', 'Par
 """
     Initialisation des données de Mnist
 """
-mndata = MNIST(param_liste['file'][0])  # Import des fichier de Mnist (le paramètre indique l'emplacement)
+mndata = MNIST(param_liste['file'][0])  # Import des fichier de Mnist (le paramètre indique
+# l'emplacement)
 
 training_images, training_labels = mndata.load_training()  
 training_images = np.array(training_images)/256  # Normalisation de l'image (pixel entre 0 et 1)
@@ -46,8 +47,8 @@ for exp in range(number_exp):
     for i in range(len(training_images)):
         if training_labels[i] not in numbers_to_draw:
             not_right_nb += [i]
-    training_images_exp = np.delete(training_images, not_right_nb, axis=0)  # A proprifier plus tard,
-    # c'est pas opti le delete
+    training_images_exp = np.delete(training_images, not_right_nb, axis=0)  # A proprifier plus
+    # tard, c'est pas opti le delete
 
     batch_size = param["batch_size"]
     """
@@ -64,45 +65,63 @@ for exp in range(number_exp):
     """
     Initialisation du discriminator
     """
-    disc_learning_ratio = param['disc_learning_ratio']  # Pour chaque partie, nombre d'apprentissage
-    # du discriminant sur image réelle
-    disc_fake_learning_ratio = param['disc_fake_learning_ratio']  # Pour chaque partie,
-    # nombre d'apprentissage du discriminant sur image fausse, !!!  sans apprentissage du génerateur !!!
 
-    disc_activation_funs = np.array(param['disc_activation_funs'])
-    map(Function.vectorize, disc_activation_funs)
     disc_error_fun = param['disc_error_fun']
     disc_error_fun.vectorize()
 
-    discriminator = Network(param['disc_network_layers'],
-                            disc_activation_funs,
-                            disc_error_fun,
-                            'Param de desc du disc',
-                            batch_size,
-                            exp
+    gen_error_fun = param['gen_error_fun']
+    gen_error_fun.vectorize()
+
+    couche0 = {'type': 'N',
+               'activation_function': 'Sigmoid(0.1)',
+               'input_size': 784,
+               'output_size': 20,
+               'noise_size': 0}
+
+    couche1 = {'type': 'N',
+               'activation_function': 'Sigmoid(0.1)',
+               'input_size': 20,
+               'output_size': 1,
+               'noise_size': 0}
+
+    disc_layers_params = [couche0, couche1]
+
+    discriminator = Network(layers_parameters=disc_layers_params,
+                            error_function=disc_error_fun,
+                            error_gen=gen_error_fun,
+                            param_desc='Param de desc du disc',
+                            learning_batch_size=batch_size,
+                            nb_exp=exp
                             )
 
-    training_fun = param['training_fun']()  # Function donnant la réponse à une vrai image attendu (1
-    # par défaut)
-    training_fun.vectorize()
+    disc_learning_ratio = param['disc_learning_ratio']  # Pour chaque partie, nombre d'apprentissage
+    # du discriminant sur image réelle
+    disc_fake_learning_ratio = param['disc_fake_learning_ratio']  # Pour chaque partie,
+    # nombre d'apprentissage du discriminant sur image fausse, !!!  sans apprentissage du
+    # génerateur !!!
 
     """
     Initialisation du generator
-
     """
-    generator_layers_neuron_count = param['generator_network_layers']
-    noise_layers_size = param['noise_layers_size']
-    generator_layers_activation_function = np.array(param['generator_activation_funs'])
-    map(Function.vectorize, generator_layers_activation_function)
-    # generator_error_function = param['generator_error_fun']
 
-    generator = Network(generator_layers_neuron_count,
-                        generator_layers_activation_function,
-                        disc_error_fun,
-                        noise_layers_size,
-                        'Param de desc du gen',
-                        batch_size,
-                        exp
+    coucheg0 = {'type': 'N',
+                'activation_function': 'Sigmoid(0.1)',
+                'input_size': 100,
+                'output_size': 300,
+                'noise_size': 0}
+
+    coucheg1 = {'type': 'N',
+                'activation_function': 'Sigmoid(0.1)',
+                'input_size': 300,
+                'output_size': 784,
+                'noise_size': 0}
+
+    gen_layers_params = [coucheg0, coucheg1]
+
+    generator = Network(layers_parameters=gen_layers_params,
+                        param_desc='Param de desc du gen',
+                        learning_batch_size=batch_size,
+                        nb_exp=exp
                         )
 
     gen_learning_ratio = param['gen_learning_ratio']  # Pour chaque partie, nombre d'apprentissage
@@ -110,17 +129,22 @@ for exp in range(number_exp):
     gen_learning_ratio_alone = param['gen_learning_ratio_alone']
 
     """
-    initialisation de la partie
+    Initialisation de la partie
     """
-    ganGame = GanGame(discriminator,
-                      training_images_exp,
-                      training_fun,
-                      generator,
-                      disc_learning_ratio,
-                      gen_learning_ratio,
-                      disc_fake_learning_ratio,
-                      gen_learning_ratio_alone,
-                      batch_size)
+
+    training_fun = param['training_fun']()  # Function donnant la réponse à une vrai image attendu
+    # (1 par défaut)
+    training_fun.vectorize()
+
+    ganGame = GanGame(discriminator=discriminator,
+                      learning_set=training_images_exp,
+                      learning_fun=training_fun,
+                      generator=generator,
+                      disc_learning_ratio=disc_learning_ratio,
+                      gen_learning_ratio=gen_learning_ratio,
+                      disc_fake_learning_ratio=disc_fake_learning_ratio,
+                      gen_learning_ratio_alone=gen_learning_ratio_alone,
+                      batch_size=batch_size)
 
     play_number = param['play_number']  # Nombre de partie  (Une partie = i fois apprentissage
     # discriminateur sur vrai image, j fois apprentissage génerateur+ discriminateur et
