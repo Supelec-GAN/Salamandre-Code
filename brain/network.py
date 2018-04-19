@@ -3,12 +3,12 @@ from fonction import *
 
 
 class Network:
-    """Classe permettant de créer un perceptron multicouche"""
 
     def __init__(self, layers_parameters, error_function=Norm2(), learning_batch_size=1,
                  error_gen=NonSatHeuristic(), param_desc='Parametres de descente', nb_exp=0):
         """
-        Contruit un réseau de neurones avec des poids initialisés uniformément entre 0 et 1
+        Contruit un réseau de neurones multicouches avec des poids initialisés uniformément entre
+        0 et 1
 
         :param layers_parameters: Liste des paramètres de couches
         :param error_function: Fonction d'erreur du réseau
@@ -55,7 +55,10 @@ class Network:
                 self.layers_list[i].restore_coefs(coefs)
             except KeyError:
                 pass
-        self.output = np.zeros(self.layers_list[-1].output_size)
+        self.input_size = self.layers_list[0].input_size
+        self.input = np.zeros((self.input_size, self._learning_batch_size))
+        self.output_size = self.layers_list[-1].output_size
+        self.output = np.zeros((self.output_size, self._learning_batch_size))
 
     def reset(self):
         """

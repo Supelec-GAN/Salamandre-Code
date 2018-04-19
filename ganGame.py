@@ -114,7 +114,7 @@ class GanGame:
         return images, noises
 
     def generate_noise(self):
-        n = self.generator.layers_neuron_count[0]
+        n = self.generator.input_size
         noises = 2*np.random.random((n, self.batch_size))-1
         return noises
 

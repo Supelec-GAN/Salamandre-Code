@@ -5,7 +5,6 @@ from dataInterface import DataInterface
 
 
 class NeuronLayer:
-    """Classe permettant de créer une couche de neurones"""
 
     def __init__(self, activation_function=Function(), input_size=1, output_size=1, noise_size=0,
                  learning_batch_size=1, param_desc='Parametres de descente', nb_exp=0):
@@ -54,8 +53,8 @@ class NeuronLayer:
         # self.weights_moment = np.zeros((output_size, input_size))
         self.bias_moment = np.zeros((output_size, 1))
         self.weights_eta = np.zeros((output_size, input_size + noise_size))
-        # self.weights_eta = np.zeros((output_size, input_size))          #need meilleur nom
-        self.bias_eta = np.zeros((output_size, 1))                      #need meilleur nom
+        # self.weights_eta = np.zeros((output_size, input_size))            # need meilleur nom
+        self.bias_eta = np.zeros((output_size, 1))                          # need meilleur nom
 
         data_interface = DataInterface()
         param_liste = data_interface.read_conf('config_algo_descente.ini', param_desc)  # Lecture
@@ -110,6 +109,10 @@ class NeuronLayer:
         self._learning_batch_size = new_learning_batch_size
 
     @property
+    def input_size(self):
+        return self._input_size
+
+    @property
     def output_size(self):
         return self._output_size
 
@@ -148,6 +151,12 @@ class NeuronLayer:
             return (self.weights - self.eta * weight_influence)[:, 0:self._input_size]
 
     def update_momentum(self, bias_influence, weight_influence):
+        """
+
+        :param bias_influence:
+        :param weight_influence:
+        :return:
+        """
 
         if self.algo_utilise == "Gradient":
             self.update_weights_value = self.momentum*self.update_weights_value - self.eta*weight_influence
@@ -233,26 +242,37 @@ class NeuronLayer:
             self.update_bias_value = self.momentum * self.update_bias_value - self.alpha*np.divide(np.divide(self.bias_moment, partial), partial2)
 
     def update_weights(self):
+        """
+        Updates weights according to update_weights_value that was calculated previously
+
+        :return: None
+        """
         self._weights = self._weights + self.update_weights_value
 
     def update_bias(self):
+        """
+        Updates weights according to update_weights_value that was calculated previously
+
+        :return: None
+        """
         self._bias = self._bias + self.update_bias_value
 
-    ##
-    # @brief      Calculates the weight influence.
-    #
-    # @param      input_layer    input of the last compute
-    # @param      out_influence  influence of output on the error
-    #
-    # @return     vecteur of same dimension than weights.
-    #
     def calculate_weight_influence(self, out_influence):
+        """
+        Calculates the weights influence
+
+        :param out_influence: influence of output on rhe error
+        :return: matrix of the same dimension than weights
+        """
         return np.dot(out_influence, np.transpose(self.input)) / self._learning_batch_size
 
-    ##
-    # @brief      Calculates the bias influence (which is out_influence)
-    ##
     def calculate_bias_influence(self, out_influence):
+        """
+        Calculates the bias influence (which is out_influence)
+
+        :param out_influence: influence of output on the error
+        :return: vector of the same dimension than bias
+        """
         mean_out_influence = np.mean(out_influence, axis=1, keepdims=True)
         return mean_out_influence
 
@@ -271,12 +291,19 @@ class NeuronLayer:
         Propagates the error from the activation levels to the inputs
 
         :param out_influence: influence of the activation levels
+        :param new_weights: the updated weights
         :return: influence of the input
         """
         in_influence = np.dot(np.transpose(new_weights), out_influence)
         return in_influence
 
     def flatten_inputs(self, inputs):
+        """
+        Creates a input matrix from a 4D tensor of a convolutional layer
+
+        :param inputs: A 4D tensor or a matrix
+        :return: A matrix as a batch of flattened input vectors
+        """
         ndim = inputs.ndim
         if ndim == 2:
             return inputs
@@ -289,11 +316,22 @@ class NeuronLayer:
             raise Exception('Wrong inputs dimension : it should be a matrix or a 4D tensor')
 
     def save_coefs(self):
+        """
+        Creates a dictionary with the current state of the layer
+
+        :return: A dictionary of weights and bias
+        """
         coefs = {'weights': self._weights,
                  'bias': self._bias}
         return coefs
 
     def restore_coefs(self, coefs):
+        """
+        Can restore a layer from a dictionary created by save_coefs
+
+        :param coefs: A dictionary with weights and bias
+        :return: None
+        """
         self._weights = coefs['weights']
         self._bias = coefs['bias']
 
@@ -304,6 +342,7 @@ class ConvolutionalLayer(NeuronLayer):
                  learning_batch_size=1, filter_size=(1, 1), input_feature_maps=1,
                  output_feature_maps=1, convolution_mode='valid', step=1):
         """
+        Creates a convolutional layer for a neural network
 
         :param activation_function:
         :param input_size:
