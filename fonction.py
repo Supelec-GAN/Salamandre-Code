@@ -8,6 +8,8 @@ class Function:
 
     def __init__(self, delta=0.05, *args):
         self.delta = delta
+        self.out = np.vectorize(self.out)
+        self.derivate = np.vectorize(self.derivate)
 
     ##
     # @brief      retourne la fonction
@@ -134,7 +136,6 @@ class MnistTest(Function):
             for i in range(n):
                 r[self._set_labels[x[i]]][i] = 1
         return r
-
 
     def save_fun(self):
         return 'MnistTest({})'.format(self._set_labels)
