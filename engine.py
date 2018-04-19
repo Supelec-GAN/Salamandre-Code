@@ -51,6 +51,7 @@ class Engine:
                 self.net.compute(self._learning_set[intervalle])
                 expected_output = self._learning_fun.out(intervalle)
                 self.net.backprop(expected_output)
+                print(pass_nb+batch_nb)
 
                 # Enregistrement périodique de l'erreur sur le set de test
                 if (pass_nb*self._learning_set_size + batch_nb) % self._test_period == 0:
@@ -97,6 +98,4 @@ class Engine:
             if self._randomize_learning_set:
                 self._permutation = np.random.permutation(self._learning_set_size)
             self._error_during_learning[i] = self.learn()
-            if i % self._test_period == 0:
-                print(i)
         return self._error_during_learning
