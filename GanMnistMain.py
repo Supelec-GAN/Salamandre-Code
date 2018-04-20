@@ -1,12 +1,11 @@
 import numpy as np
 from brain.network import Network
-from fonction import Function, Sigmoid, MnistTest, Norm2, NonSatHeuristic
-from mnist import MNIST
+import dataLoader
 from dataInterface import DataInterface
 from ganGame import GanGame
-import matplotlib.pyplot as plt
 from ganPlot import GanPlot
-import os
+#import matplotlib.pyplot as plt
+#import os
 
 """
 Récupération des paramètres du config.ini
@@ -22,13 +21,11 @@ param_desc_gen_liste = data_interface.read_conf('config_algo_descente.ini',
                                                 'Param de desc du gen')
 
 """
-Initialisation des données de Mnist
+Initialisation des données pour l'apprentissage
 """
-mndata = MNIST(param_liste['file'][0])  # Import des fichier de Mnist (le paramètre indique
-# l'emplacement)
 
-training_images, training_labels = mndata.load_training()  
-training_images = np.array(training_images)/256  # Normalisation de l'image (pixel entre 0 et 1)
+training_images, training_labels, _, _ = dataLoader.load_data(param_liste['file'][0],
+                                                              param_liste['dataset'][0])
 
 number_exp = param_liste['number_exp'][0]
 

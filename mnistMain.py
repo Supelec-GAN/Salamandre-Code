@@ -1,7 +1,6 @@
 import numpy as np
 from brain.network import Network
-from fonction import Sigmoid, MnistTest, Norm2
-from mnist import MNIST
+import dataLoader
 from engine import Engine
 from dataInterface import DataInterface
 from errorGraphs import ErrorGraphs
@@ -12,19 +11,14 @@ data_interface = DataInterface('Mnist_debug')
 param = data_interface.read_conf()
 
 
-# Chargement des données de MNIST
-mndata = MNIST(param['file'])
-training_images, training_labels = mndata.load_training()
-testing_images, testing_labels = mndata.load_testing()
+# Chargement des données pour l'apprentissage
+training_images, training_labels, testing_images, testing_labels = \
+    dataLoader.load_data(param['file'], param['dataset'])
 
 # Configuration des images d'entrainement
-training_images = np.array(training_images)
-training_labels = np.array(training_labels)
 training_size = param['training_size']
 
 # Configuration des images de test
-testing_images = np.array(testing_images)
-testing_labels = np.array(testing_labels)
 testing_size = param['testing_size']
 
 
@@ -49,15 +43,6 @@ couche0 = {'type': 'C',
            'filter_size': (10, 10),
            'input_feature_maps': 1,
            'output_feature_maps': 4,
-           'convolution_mode': 'valid'}
-
-couche1 = {'type': 'C',
-           'activation_function': 'Sigmoid(0.1)',
-           'input_size': (19, 19),
-           'output_size': (10, 10),
-           'filter_size': (10, 10),
-           'input_feature_maps': 4,
-           'output_feature_maps': 6,
            'convolution_mode': 'valid'}
 
 layers_params = param['network']
