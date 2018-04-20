@@ -9,7 +9,7 @@ from ganPlot import GanPlot
 import os
 
 """
-récuperation des paramètres du config.ini
+Récupération des paramètres du config.ini
 """
 
 data_interface = DataInterface()
@@ -20,7 +20,7 @@ param_desc_gen_liste = data_interface.read_conf('config_algo_descente.ini', 'Par
 # dans la session [GanMnist]
 
 """
-    Initialisation des données de Mnist
+Initialisation des données de Mnist
 """
 mndata = MNIST(param_liste['file'][0])  # Import des fichier de Mnist (le paramètre indique
 # l'emplacement)
@@ -119,6 +119,7 @@ for exp in range(number_exp):
     gen_layers_params = [coucheg0, coucheg1]
 
     generator = Network(layers_parameters=gen_layers_params,
+                        error_function=disc_error_fun,
                         param_desc='Param de desc du gen',
                         learning_batch_size=batch_size,
                         nb_exp=exp
@@ -134,7 +135,6 @@ for exp in range(number_exp):
 
     training_fun = param['training_fun']()  # Function donnant la réponse à une vrai image attendu
     # (1 par défaut)
-    training_fun.vectorize()
 
     ganGame = GanGame(discriminator=discriminator,
                       learning_set=training_images_exp,
@@ -175,25 +175,29 @@ for exp in range(number_exp):
 
     image_evolution_number = play_number//nb_images_during_learning
 
-    for i in range(play_number):
-        ganGame.play_and_learn()
-        if i % test_period == 0:
-            print("i", i)
-            a, b, c, d = ganGame.test_discriminator_learning(lissage_test)  # effectue n test et
-            # renvoie la moyenne des scores
-            discriminator_real_score.append(a)
-            discriminator_fake_score.append(b)
-            real_std.append(c)
-            fake_std.append(d)
-        if i % image_evolution_number == 0:
-            a, b, c, d = ganGame.test_discriminator_learning(lissage_test)
-            images_evolution = [[]]*nb_images_par_sortie_during_learning
-            for j in range(nb_images_par_sortie_during_learning):
-                image, associate_noise = ganGame.generate_image()  # Generation d'une image à
-                # la fin de l'apprentissage
-                images_evolution[j] = image
-            if nb_images_par_sortie_during_learning > 0:
-                gan_plot.save_multiple_output(images_evolution, str(numbers_to_draw) + "_au_rang_" + str(i), str(i), a, b)
+    try:
+        for i in range(play_number):
+            learn = ganGame.play_and_learn()
+            if i % test_period == 0:
+                print("i", i)
+                a, b, c, d = ganGame.test_discriminator_learning(lissage_test)  # effectue n test et
+                # renvoie la moyenne des scores
+                discriminator_real_score.append(a)
+                discriminator_fake_score.append(b)
+                real_std.append(c)
+                fake_std.append(d)
+            if i % image_evolution_number == 0:
+                a, b, c, d = ganGame.test_discriminator_learning(lissage_test)
+                images_evolution = [[]]*nb_images_par_sortie_during_learning
+                for j in range(nb_images_par_sortie_during_learning):
+                    image, associate_noise = ganGame.generate_image()  # Generation d'une image à
+                    # la fin de l'apprentissage
+                    images_evolution[j] = image
+                if nb_images_par_sortie_during_learning > 0:
+                    gan_plot.save_multiple_output(images_evolution, str(numbers_to_draw) +
+                                                  "_au_rang_" + str(i), str(i), a, b)
+    except KeyboardInterrupt:
+        pass
 
     images_finales = [[]]*final_images
     for i in range(final_images):
@@ -201,17 +205,20 @@ for exp in range(number_exp):
         # l'apprentissage
         images_finales[i] = image_test
     if final_images > 0:
-        gan_plot.save_multiple_output(images_finales, str(numbers_to_draw) + str(play_number), str(play_number), discriminator_real_score[-1], discriminator_fake_score[-1])
+        gan_plot.save_multiple_output(images_finales, str(numbers_to_draw) + str(play_number),
+                                      str(play_number), discriminator_real_score[-1],
+                                      discriminator_fake_score[-1])
 
-    conf = data_interface.save_conf('multi_config.ini', 'GanMnist')  # récupération de la configuration
-    # pour la sauvegarde dans les fichiers
-    data_interface.save(discriminator_real_score, 'discriminator_real_score', conf)  # Sauvegarde des
-    # courbes de score
+    conf = data_interface.save_conf('multi_config.ini', 'GanMnist')  # récupération de la
+    # configuration pour la sauvegarde dans les fichiers
+    data_interface.save(discriminator_real_score, 'discriminator_real_score', conf)  # Sauvegarde
+    # des courbes de score
     data_interface.save(discriminator_fake_score, 'discriminator_fake_score', conf)
     data_interface.save(real_std, 'real_std', conf)  # Sauvegarde des courbes de score
     data_interface.save(fake_std, 'fake_std', conf)
 
-    gan_plot.save_courbes(param, param_desc_gen, param_desc_disc, discriminator_real_score, discriminator_fake_score)
+    gan_plot.save_courbes(param, param_desc_gen, param_desc_disc,
+                          discriminator_real_score, discriminator_fake_score)
 
     state = generator.save_state()
     gan_plot.save_plot_network_state(state)

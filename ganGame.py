@@ -74,7 +74,7 @@ class GanGame:
         # generate a random item from the set
         # expected_output = self.learning_fun.out(real_item)
         self.discriminator.compute(real_items)
-        self.discriminator.backprop(real_items, np.ones((self.batch_size, 1)))
+        self.discriminator.backprop(np.ones((self.batch_size, 1)))
         # expected output = 1 pour le moment
         return 0
 
@@ -84,7 +84,7 @@ class GanGame:
     def discriminator_learning_virt(self, fake_images, alone=False):
         if alone:
             self.discriminator.compute(fake_images)
-        self.discriminator.backprop(fake_images, np.zeros((self.batch_size, 1)))
+        self.discriminator.backprop(np.zeros((self.batch_size, 1)))
 
         return 0
 
