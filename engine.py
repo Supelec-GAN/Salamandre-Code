@@ -6,7 +6,7 @@ class Engine:
     """
 
     def __init__(self, net, eta, learning_set, learning_fun, testing_set, testing_fun, success_fun,
-                 momentum=0, learning_iterations=1, test_period=100, learning_set_pass_nb=1,
+                 momentum=0, nb_exp=1, test_period=100, learning_set_pass_nb=1,
                  randomize_learning_set=True):
         # Réseau utilisé
         self.net = net
@@ -30,13 +30,13 @@ class Engine:
         self._learning_batch_size = net.learning_batch_size
 
         # Nombre d'apprentissage successifs
-        self._learning_iterations = learning_iterations
+        self._nb_exp = nb_exp
 
         # Données recueillies pendant les apprentissages et paramètres
         self._test_period = test_period
         self._test_count = (self._learning_set_size*self._learning_set_pass_nb) \
             // self._learning_batch_size // self._test_period
-        self._error_during_learning = np.zeros((self._learning_iterations, self._test_count))
+        self._error_during_learning = np.zeros((self._nb_exp, self._test_count))
         self._success_fun = success_fun
 
     def learn(self):
@@ -94,7 +94,7 @@ class Engine:
         :return: The error of the network during each learning cycle
         """
 
-        for i in range(self._learning_iterations):
+        for i in range(self._nb_exp):
             if self._randomize_learning_set:
                 self._permutation = np.random.permutation(self._learning_set_size)
             self._error_during_learning[i] = self.learn()

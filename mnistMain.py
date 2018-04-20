@@ -29,12 +29,11 @@ testing_size = param['testing_size']
 
 
 # Chargement des paramètres de gestion de l'apprentissage
-learning_iterations = param['learning_iterations']
+nb_exp = param['nb_exp']
 test_period = param['test_period']
-randomize_learning_set = param['learning_iterations']
+randomize_learning_set = param['randomize_learning_set']
 
 # Chargement des fonctions utilisées
-activation_funs = np.array(param['activation_funs'])
 error_fun = param['error_fun']
 
 # Chargement des paramètres d'apprentissage
@@ -61,25 +60,13 @@ couche1 = {'type': 'C',
            'output_feature_maps': 6,
            'convolution_mode': 'valid'}
 
-couche2 = {'type': 'N',
-           'activation_function': 'Sigmoid(0.1)',
-           'input_size': 784,
-           'output_size': 300,
-           'noise_size': 0}
-
-couche3 = {'type': 'N',
-           'activation_function': 'Sigmoid(0.1)',
-           'input_size': 300,
-           'output_size': 10,
-           'noise_size': 0}
-
-layers_params = [couche2, couche3]
+layers_params = param['network']
 
 net = Network(layers_params,
               error_function=error_fun,
               learning_batch_size=batch_size)
 
-error_graphs = ErrorGraphs('Mnist_debug_graphes', learning_iterations, eta, net, test_period)
+error_graphs = ErrorGraphs('Mnist_debug_graphes', nb_exp, eta, net, test_period)
 
 momentum = param['momentum']
 
@@ -97,18 +84,18 @@ def success_fun(o, eo):
 #    return 0
 
 
-engine = Engine(net,
-                eta,
-                training_images[0:training_size] / 256,
-                training_fun,
-                testing_images[0:testing_size] / 256,
-                testing_fun,
-                success_fun,
-                momentum,
-                learning_iterations,
-                test_period,
-                learning_set_pass_nb,
-                randomize_learning_set)
+engine = Engine(net=net,
+                eta=eta,
+                learning_set=training_images[0:training_size] / 256,
+                learning_fun=training_fun,
+                testing_set=testing_images[0:testing_size] / 256,
+                testing_fun=testing_fun,
+                success_fun=success_fun,
+                momentum=momentum,
+                nb_exp=nb_exp,
+                test_period=test_period,
+                learning_set_pass_nb= learning_set_pass_nb,
+                randomize_learning_set=randomize_learning_set)
 
 error_during_learning = engine.run()
 

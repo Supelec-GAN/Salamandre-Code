@@ -13,11 +13,13 @@ Récupération des paramètres du config.ini
 """
 
 data_interface = DataInterface()
-
-param_liste = data_interface.read_conf('config.ini', 'GanMnist')  # Lecture du fichier de config,
-param_desc_disc_liste = data_interface.read_conf('config_algo_descente.ini', 'Param de desc du disc')
-param_desc_gen_liste = data_interface.read_conf('config_algo_descente.ini', 'Param de desc du gen')
-# dans la session [GanMnist]
+# Lecture du fichier de config dans la session [GanMnist]
+param_liste = data_interface.read_conf('config.ini',
+                                       'GanMnist')
+param_desc_disc_liste = data_interface.read_conf('config_algo_descente.ini',
+                                                 'Param de desc du disc')
+param_desc_gen_liste = data_interface.read_conf('config_algo_descente.ini',
+                                                'Param de desc du gen')
 
 """
 Initialisation des données de Mnist
@@ -41,7 +43,7 @@ for exp in range(number_exp):
     numbers_to_draw = param['numbers_to_draw']
 
     """
-        On ne conserve dans le set que les 'numbers_to_draw' du config
+    On ne conserve dans le set que les 'numbers_to_draw' du config
     """
     not_right_nb = []
     for i in range(len(training_images)):
@@ -66,25 +68,11 @@ for exp in range(number_exp):
     Initialisation du discriminator
     """
 
+    disc_layers_params = param['disc_network_layers']
     disc_error_fun = param['disc_error_fun']
     disc_error_fun.vectorize()
-
     gen_error_fun = param['gen_error_fun']
     gen_error_fun.vectorize()
-
-    couche0 = {'type': 'N',
-               'activation_function': 'Sigmoid(0.1)',
-               'input_size': 784,
-               'output_size': 20,
-               'noise_size': 0}
-
-    couche1 = {'type': 'N',
-               'activation_function': 'Sigmoid(0.1)',
-               'input_size': 20,
-               'output_size': 1,
-               'noise_size': 0}
-
-    disc_layers_params = [couche0, couche1]
 
     discriminator = Network(layers_parameters=disc_layers_params,
                             error_function=disc_error_fun,
@@ -94,8 +82,8 @@ for exp in range(number_exp):
                             nb_exp=exp
                             )
 
-    disc_learning_ratio = param['disc_learning_ratio']  # Pour chaque partie, nombre d'apprentissage
-    # du discriminant sur image réelle
+    disc_learning_ratio = param['disc_learning_ratio']  # Pour chaque partie, nombre
+    # d'apprentissage du discriminant sur image réelle
     disc_fake_learning_ratio = param['disc_fake_learning_ratio']  # Pour chaque partie,
     # nombre d'apprentissage du discriminant sur image fausse, !!!  sans apprentissage du
     # génerateur !!!
@@ -104,19 +92,7 @@ for exp in range(number_exp):
     Initialisation du generator
     """
 
-    coucheg0 = {'type': 'N',
-                'activation_function': 'Sigmoid(0.1)',
-                'input_size': 100,
-                'output_size': 300,
-                'noise_size': 0}
-
-    coucheg1 = {'type': 'N',
-                'activation_function': 'Sigmoid(0.1)',
-                'input_size': 300,
-                'output_size': 784,
-                'noise_size': 0}
-
-    gen_layers_params = [coucheg0, coucheg1]
+    gen_layers_params = param['generator_network_layers']
 
     generator = Network(layers_parameters=gen_layers_params,
                         error_function=disc_error_fun,
@@ -133,7 +109,7 @@ for exp in range(number_exp):
     Initialisation de la partie
     """
 
-    training_fun = param['training_fun']()  # Function donnant la réponse à une vrai image attendu
+    training_fun = param['training_fun']  # Function donnant la réponse à une vrai image attendu
     # (1 par défaut)
 
     ganGame = GanGame(discriminator=discriminator,
