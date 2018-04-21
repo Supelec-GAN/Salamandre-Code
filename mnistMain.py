@@ -79,7 +79,7 @@ engine = Engine(net=net,
                 momentum=momentum,
                 nb_exp=nb_exp,
                 test_period=test_period,
-                learning_set_pass_nb= learning_set_pass_nb,
+                learning_set_pass_nb=learning_set_pass_nb,
                 randomize_learning_set=randomize_learning_set)
 
 error_during_learning = engine.run()

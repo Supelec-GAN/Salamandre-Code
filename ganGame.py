@@ -52,6 +52,7 @@ class GanGame:
         real_trust = []
         fake_trust = []
         for i in range(n):
+            # quand les pbs seront réglés, changer ça, ya pas besoin de faire une liste
             real_item = np.transpose([self.learning_set[np.random.randint(self.set_size)]
                                       for i in range(self.batch_size)])
             real_score = self.test_truth(real_item)
@@ -59,7 +60,7 @@ class GanGame:
 
         for j in range(n):
             fake_images, noise = self.generate_image()
-            noises = [noise]*self.batch_size
+            noises = [noise]*self.batch_size  # tjs nécessaires ?
             fake_score = self.test_truth(np.transpose(fake_images))
             fake_trust.append(fake_score)
 
@@ -69,6 +70,7 @@ class GanGame:
     # @brief      discriminator learning what is real image
     ##
     def discriminator_learning_real(self):
+        # idem que plus haut
         real_items = np.transpose([self.learning_set[np.random.randint(self.set_size)]
                                    for i in range(self.batch_size)])
         # generate a random item from the set

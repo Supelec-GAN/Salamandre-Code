@@ -4,8 +4,8 @@ import dataLoader
 from dataInterface import DataInterface
 from ganGame import GanGame
 from ganPlot import GanPlot
-#import matplotlib.pyplot as plt
-#import os
+# import matplotlib.pyplot as plt
+# import os
 
 """
 Récupération des paramètres du config.ini
