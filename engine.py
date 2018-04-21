@@ -2,12 +2,27 @@ import numpy as np
 
 
 class Engine:
-    """Classe gérant l'apprentissage d'un réseau, tout en fournissant des données au fur et à mesure
-    """
 
     def __init__(self, net, eta, learning_set, learning_fun, testing_set, testing_fun, success_fun,
                  momentum=0, nb_exp=1, test_period=100, learning_set_pass_nb=1,
                  randomize_learning_set=True):
+        """
+        Classe gérant l'apprentissage d'un réseau, tout en fournissant des données au fur et à
+        mesure
+
+        :param net:
+        :param eta:
+        :param learning_set:
+        :param learning_fun:
+        :param testing_set:
+        :param testing_fun:
+        :param success_fun:
+        :param momentum:
+        :param nb_exp:
+        :param test_period:
+        :param learning_set_pass_nb:
+        :param randomize_learning_set:
+        """
         # Réseau utilisé
         self.net = net
 
