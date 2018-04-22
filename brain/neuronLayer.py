@@ -1,5 +1,5 @@
 import numpy as np
-from fonction import Function
+from function import Function
 from theano.tensor.nnet import conv2d  # , conv2d_transpose
 from dataInterface import DataInterface
 
@@ -19,13 +19,12 @@ class NeuronLayer:
         :param param_desc:
         :param nb_exp:
         """
-        # Matrice de dimension q*p avec le nombre de sortie et p le nombre d'entrée
         self._input_size = input_size
         self._output_size = output_size
         self._learning_batch_size = learning_batch_size
-        # self._weights = np.transpose(np.random.randn(input_size, output_size))
         self._noise_size = noise_size
-        self._weights = np.transpose(np.random.randn(input_size+noise_size, output_size))
+        # self._weights = np.transpose(np.random.randn(input_size, output_size))
+        self._weights = np.random.randn(output_size, input_size+noise_size)
         self._bias = np.zeros((output_size, 1))                                # Vecteur colonne
         # On peut laisser le biais comme un vecteur colonne, car en faire une matrice contenant
         # learning_batch_size fois la même colonne. Lorsque l'on aura besoin du biais dans les

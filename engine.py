@@ -64,7 +64,7 @@ class Engine:
                 fin = (batch_nb+1) * self._learning_batch_size
                 intervalle = self._permutation[debut:fin]
                 self.net.compute(self._learning_set[intervalle])
-                expected_output = self._learning_fun.out(intervalle)
+                expected_output = self._learning_fun.label(intervalle)
                 self.net.backprop(expected_output)
                 print(pass_nb+batch_nb)
 
@@ -84,7 +84,7 @@ class Engine:
 
         self.net.learning_batch_size = self._testing_set_size
         output = self.net.compute(self._testing_set)
-        expected_output = self._testing_fun.out(np.arange(self._testing_set_size))
+        expected_output = self._testing_fun.label(np.arange(self._testing_set_size))
         error_during_testing = self.net.error.out(output, expected_output)
         mean_error = np.mean(error_during_testing)
         self.net.learning_batch_size = self._learning_batch_size
@@ -97,7 +97,7 @@ class Engine:
         """
         self.net.learning_batch_size = self._testing_set_size
         output = self.net.compute(self._testing_set)
-        expected_output = self._testing_fun.out(np.arange(self._testing_set_size))
+        expected_output = self._testing_fun.label(np.arange(self._testing_set_size))
         success_during_testing = self._success_fun(output, expected_output)
         success_rate = np.mean(success_during_testing)
         self.net.learning_batch_size = self._learning_batch_size

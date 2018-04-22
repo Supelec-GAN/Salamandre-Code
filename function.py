@@ -8,8 +8,6 @@ class Function:
 
     def __init__(self, delta=0.05, *args):
         self.delta = delta
-        self.out = np.vectorize(self.out)
-        self.derivate = np.vectorize(self.derivate)
 
     ##
     # @brief      retourne la fonction
@@ -92,68 +90,6 @@ class Tanh(Function):
 
     def save_fun(self):
         return 'Tanh({},{})'.format(self.k, self.alpha)
-
-
-##
-# @brief      Class for exclusive-or test.
-#
-class XorTest(Function):
-
-    ##
-    # @brief      Constructs the object.
-    #
-    # @param      self  The object
-    # @param      mini  Valeur retournée pour Xor Faux
-    # @param      maxi  Valeur retournée pour Xor Vrai
-    #
-    def __init__(self, mini=0, maxi=1):
-        self.mini = mini
-        self.maxi = maxi
-
-    def out(self, x, y):
-        return self.maxi*((x > 0) ^ (y > 0)) - self.mini*(1-(x > 0) ^ (y > 0))
-
-    def save_fun(self):
-        return 'XorTest({], {})'.format(self.mini, self.maxi)
-
-
-##
-# @brief      Class for mnist test.
-##
-class MnistTest(Function):
-
-    def __init__(self, set_labels):
-        self._set_labels = set_labels
-
-    def out(self, x):
-        if type(x) in [int, np.int32, np.int64]:
-            r = np.zeros(10)
-            r[self._set_labels[x]] = 1
-            r = np.reshape(r, (10, 1))
-        else:
-            n = len(x)
-            r = np.zeros((10, n))
-            for i in range(n):
-                r[self._set_labels[x[i]]][i] = 1
-        return r
-
-    def save_fun(self):
-        return 'MnistTest({})'.format(self._set_labels)
-
-
-##
-# @brief      Class for mnist gan test.
-##
-class MnistGanTest(Function):
-
-    def __init__(self):
-        pass
-
-    def out(self, x):
-        return 1
-
-    def save_fun(self):
-        return 'MnistGanTest()'
 
 
 ##
