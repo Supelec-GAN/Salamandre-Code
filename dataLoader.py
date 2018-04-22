@@ -11,7 +11,7 @@ def load_mnist(path):
     testing_images, testing_labels = mndata.load_testing()
     testing_images = np.array(testing_images)
 
-    return training_images, training_labels, testing_images, testing_labels
+    return training_images/256, training_labels, testing_images/256, testing_labels
 
 
 def load_cifar10(path):
@@ -29,7 +29,7 @@ def load_cifar10(path):
     testing_images = batch[b'data']
     testing_labels = batch[b'labels']
 
-    return training_images, training_labels, testing_images, testing_labels
+    return training_images/256, training_labels, testing_images/256, testing_labels
 
 
 def load_data(path, dataset):

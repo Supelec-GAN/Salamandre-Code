@@ -71,9 +71,9 @@ def success_fun(o, eo):
 
 engine = Engine(net=net,
                 eta=eta,
-                learning_set=training_images[0:training_size] / 256,
+                learning_set=training_images[0:training_size],
                 learning_fun=training_fun,
-                testing_set=testing_images[0:testing_size] / 256,
+                testing_set=testing_images[0:testing_size],
                 testing_fun=testing_fun,
                 success_fun=success_fun,
                 momentum=momentum,
