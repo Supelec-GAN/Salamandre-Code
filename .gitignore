@@ -21,6 +21,7 @@ __pycache__
 database/
 # doxygen file
 .idea/vcs.xml
+.idea/
 
 # Config file
 *.ini
@@ -30,3 +31,6 @@ database/
 
 # Matplotlib config file
 matplotlibrc
+
+# tests cache
+tests/.cache
