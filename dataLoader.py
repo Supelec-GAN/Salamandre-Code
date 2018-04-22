@@ -6,10 +6,10 @@ import pickle
 def load_mnist(path):
     mndata = MNIST(path)
     training_images, training_labels = mndata.load_training()
-    training_images = np.array(training_images)/256  # Normalisation de l'image (pixel entre 0 et 1)
+    training_images = np.array(training_images)
 
     testing_images, testing_labels = mndata.load_testing()
-    testing_images = np.array(testing_images)/256  # Normalisation de l'image (pixel entre 0 et 1)
+    testing_images = np.array(testing_images)
 
     return training_images, training_labels, testing_images, testing_labels
 
