@@ -18,7 +18,7 @@ class ErrorGraphs:
         if not os.path.exists(self._name):
             os.mkdir(self._name)
         # plots the mean error as a function of time
-        if (np.shape(errors_during_learning) == (len(errors_during_learning),)):
+        if np.shape(errors_during_learning) == (len(errors_during_learning),):
             data = errors_during_learning
             errorbar = np.zeros(len(errors_during_learning))
         else:
@@ -34,12 +34,14 @@ class ErrorGraphs:
                                ),
                      data,
                      yerr=errorbar,
-                     capthick = 1,
-                     ecolor = 'k',
+                     capthick=1,
+                     ecolor='k',
                      )
-        plt.ylabel("Erreur moyenne sur le batch de test pour les " + str(self.learning_iterations) + " runs")
+        plt.ylabel("Erreur moyenne sur le batch de test pour les " + str(self.learning_iterations)
+                   + " runs")
         plt.xlabel("Apprentissages")
-        plt.title("Evolution de l'erreur, test effectué tous les " + str(self.test_period) + " apprentissages")
+        plt.title("Evolution de l'erreur, test effectué tous les " + str(self.test_period)
+                  + " apprentissages")
         plt.suptitle("eta =" + str(self.eta) + ";" + "Réseau en " + str(self.net))
         # saves the plot in directory
         save_date = strftime('%Y-%m-%d-%H%M%S', gmtime())
@@ -49,7 +51,7 @@ class ErrorGraphs:
 
     def plot(self, errors_during_learning):
         # plots the mean error as a function of time
-        if (np.shape(errors_during_learning) == (len(errors_during_learning),)):
+        if np.shape(errors_during_learning) == (len(errors_during_learning),):
             data = errors_during_learning
             errorbar = np.zeros(len(errors_during_learning))
         else:
@@ -63,12 +65,14 @@ class ErrorGraphs:
                                ),
                      data,
                      yerr=errorbar,
-                     capthick = 1,
-                     ecolor = 'k',
+                     capthick=1,
+                     ecolor='k',
                      )
-        plt.ylabel("Erreur moyenne sur le batch de test pour les " + str(self.learning_iterations) + " runs")
+        plt.ylabel("Erreur moyenne sur le batch de test pour les " + str(self.learning_iterations)
+                   + " runs")
         plt.xlabel("Apprentissages")
-        plt.title("Evolution de l'erreur, test effectué tous les " + str(self.test_period) + " apprentissages")
+        plt.title("Evolution de l'erreur, test effectué tous les " + str(self.test_period)
+                  + " apprentissages")
         plt.suptitle("eta =" + str(self.eta) + "\n" + "Réseau en " + str(self.net))
         # saves the plot in directory
         plt.show()

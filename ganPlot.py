@@ -78,7 +78,7 @@ class GanPlot:
             # valeur 'réelle'
         fig.suptitle('Tentative du GAN de générer un ' + str(self.numbers_to_draw) + ' après '+ str(step_number)+' parties')
         plt.plot()
-        plt.close
+        plt.close()
 
     def plot_noise(self, out_vector, step_number, D_x, D_G_z):
         image = np.reshape(out_vector, [int(np.sqrt(len(out_vector))), int(np.sqrt(len(out_vector)))])
@@ -107,7 +107,7 @@ class GanPlot:
 
             max_b = np.max(coefs[i-1][1])
             min_b = np.min(coefs[i-1][1])
-            ax = plt.subplot(gs[L-1,i-1])
+            ax = plt.subplot(gs[L-1, i-1])
             self.plot_bias(coefs[i-1][1])
             ax.set_title('Biais Max : ' + str(max_b) + "Min :" + str(min_b))
         plt.show()
