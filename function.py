@@ -1,48 +1,61 @@
 import numpy as np
 
-
 class Function:
-    """
-    @brief      classe abstraite de fonction formelle
-    """
 
-    def __init__(self, delta=0.05, *args):
+    def __init__(self, delta=0.05):
+        """
+        Classe abstraire de fonction formelle
+
+        :param delta: delta utilisé pour approximer la dérivée
+        """
         self.delta = delta
 
-    ##
-    # @brief      retourne la fonction
-    #
-    # @param      self
-    #
-    # @return     une fonction de type lambda x:
-    #
-    def out(self, x, *args):
+    def out(self, x):
+        """
+        Renvoie l'évaluation de la fonction au point demandé
+
+        :param x: Point de l'évaluation
+        :return: La valeur de la fonction
+        """
         return x
 
-    ##
-    # @brief      retourne la fonction dérivée
-    #
-    # @param      self  The object
-    #
-    # @return     la dérivée formelle ou avec le delta
-    #
-    def derivate(self, x, *args):
+    def derivate(self, x):
+        """
+        Renvoie la valeur approchée ou exacte de la dérivée en un point
+
+        :param x: Point de l'évaluation
+        :return: la dérivée formelle ou avec le delta
+        """
         return (self.out(x+self.delta)-self.out(x))/self.delta
 
     def save_fun(self):
+        """
+        Created a string that can be evaluated to recreate the same function later
+
+        :return: A string
+        """
         return 'Function()'
 
     def vectorize(self):
+        """
+        Vectorize the methods of a Function
+
+        :return: None
+        """
         self.out = np.vectorize(self.out)
         self.derivate = np.vectorize(self.derivate)
 
 
 class Sigmoid(Function):
-    """
-    @brief      Classe définissant une sigmoïde formelle
-    """
 
     def __init__(self, mu=1):
+        """
+        Classe définissant une sigmoïde formelle (sortie dans ]0,1[)
+
+        y = 1 / (1 + exp(-mu * x))
+
+        :param mu: Paramètre de la sigmoïde
+        """
         self.mu = mu
 
     def out(self, x):
@@ -56,11 +69,15 @@ class Sigmoid(Function):
 
 
 class SigmoidCentered(Function):
-    """
-    @brief      Classe définissant une sigmoïde formelle
-    """
 
     def __init__(self, mu=1):
+        """
+        Classe définissant une sigmoïde formelle centrée en 0 (sortie dans ]-1,-[)
+
+        y = -1 + 2/(1 + exp(-mu*x))
+
+        :param mu: Paramètre de la sigmoïde
+        """
         self.mu = mu
 
     def out(self, x):
@@ -79,6 +96,14 @@ class Tanh(Function):
     """
 
     def __init__(self, k=1, alpha=1):
+        """
+        Classe définissant une tangente hyberbolique formelle
+
+        y = k * tanh(alpha*x)
+
+        :param k: Paramètre de la tangente
+        :param alpha: Paramètre de la tangente
+        """
         self.k = k
         self.alpha = alpha
 
@@ -98,6 +123,9 @@ class Tanh(Function):
 class Norm2(Function):
 
     def __init__(self):
+        """
+        Classe calculant la norme 2
+        """
         pass
 
     def out(self, reference, x):
@@ -110,20 +138,19 @@ class Norm2(Function):
         return 'Norm2()'
 
 
-##
-# @brief      Class for non saturant heuritic for GAN. 
 # Parameter x is useless, only for matching the neuronLayer class
-# (cf init_derivate_error function)
-##
 class NonSatHeuristic(Function):
 
     def __init__(self):
+        """
+        Class for non saturant heuristic for GAN
+        """
         pass
 
-    def out(self, output, useless):
+    def out(self, output):
         return -0.5*np.log(output)
 
-    def derivate(self, output, useless):
+    def derivate(self, output):
         return -0.5/output
 
     def save_fun(self):

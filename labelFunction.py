@@ -4,10 +4,21 @@ import numpy as np
 class LabelFunction:
 
     def __init__(self, *args):
-        pass
+        """
+        General class for label functions
+
+        :param args: The dataset labels informations
+        """
+        raise NotImplementedError
 
     def label(self, *args):
-        pass
+        """
+        Method that returns the appropriate label
+
+        :param args: The label wanted
+        :return: The label associated to args
+        """
+        raise NotImplementedError
 
 
 class XorTest(LabelFunction):

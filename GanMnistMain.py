@@ -7,23 +7,20 @@ from ganPlot import GanPlot
 # import matplotlib.pyplot as plt
 # import os
 
-"""
-Récupération des paramètres du config.ini
-"""
 
+# Récupération des paramètres du config.ini
 data_interface = DataInterface()
-# Lecture du fichier de config dans la session [GanMnist]
+
 param_liste = data_interface.read_conf('config.ini',
-                                       'GanMnist')
+                                       'GanMnist')  # Lecture du fichier de config dans la
+# session [GanMnist]
 param_desc_disc_liste = data_interface.read_conf('config_algo_descente.ini',
                                                  'Param de desc du disc')
 param_desc_gen_liste = data_interface.read_conf('config_algo_descente.ini',
                                                 'Param de desc du gen')
 
-"""
-Initialisation des données pour l'apprentissage
-"""
 
+# Initialisation des données pour l'apprentissage
 training_images, training_labels, _, _ = dataLoader.load_data(param_liste['file'][0],
                                                               param_liste['dataset'][0])
 
@@ -39,9 +36,7 @@ for exp in range(number_exp):
     param_desc_gen = data_interface.extract_param(param_desc_gen_liste, exp)
     numbers_to_draw = param['numbers_to_draw']
 
-    """
-    On ne conserve dans le set que les 'numbers_to_draw' du config
-    """
+# On ne conserve dans le set que les 'numbers_to_draw' du config
     not_right_nb = []
     for i in range(len(training_images)):
         if training_labels[i] not in numbers_to_draw:
@@ -50,21 +45,15 @@ for exp in range(number_exp):
     # tard, c'est pas opti le delete
 
     batch_size = param["batch_size"]
-    """
-    Initialisation du dossier de sauvegarde
-    """
-    save_folder = param['save_folder']
 
+# Initialisation du dossier de sauvegarde
+    save_folder = param['save_folder']
     data_interface = DataInterface(save_folder)
-    """
-    Initialisation de l'interface d'affichage et de sauvegarde des données des résultat du GAN
-    """
+
+# Initialisation de l'interface d'affichage et de sauvegarde des données des résultat du GAN
     gan_plot = GanPlot(save_folder, numbers_to_draw)
 
-    """
-    Initialisation du discriminator
-    """
-
+# Initialisation du discriminator
     disc_layers_params = param['disc_network_layers']
     disc_error_fun = param['disc_error_fun']
     disc_error_fun.vectorize()
@@ -85,10 +74,7 @@ for exp in range(number_exp):
     # nombre d'apprentissage du discriminant sur image fausse, !!!  sans apprentissage du
     # génerateur !!!
 
-    """
-    Initialisation du generator
-    """
-
+# Initialisation du generator
     gen_layers_params = param['generator_network_layers']
 
     generator = Network(layers_parameters=gen_layers_params,
@@ -102,10 +88,7 @@ for exp in range(number_exp):
     # du discriminant sur image réelle
     gen_learning_ratio_alone = param['gen_learning_ratio_alone']
 
-    """
-    Initialisation de la partie
-    """
-
+# Initialisation de la partie
     training_fun = param['training_fun']  # Function donnant la réponse à une vrai image attendu
     # (1 par défaut)
 
@@ -123,18 +106,14 @@ for exp in range(number_exp):
     # discriminateur sur vrai image, j fois apprentissage génerateur+ discriminateur et
     # potentiellement k fois discriminateur avec fausse image
 
-    """
-    Préparation de la sauvegarde des scores du discriminateur pour des vrais images et des images de
-    synthèses
-    """
+# Préparation de la sauvegarde des scores du discriminateur pour des vrais images et des images de
+# synthèses
     discriminator_real_score = []
     discriminator_fake_score = []
     real_std = []
     fake_std = []
 
-    """
-    Initialisation des paramètres
-    """
+# Initialisation des paramètres
     nb_images_during_learning = param['nb_images_during_learning']
     nb_images_par_sortie_during_learning = param['nb_images_par_sortie_during_learning']
     test_period = param['test_period']
