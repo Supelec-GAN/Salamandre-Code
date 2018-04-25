@@ -25,6 +25,7 @@ database/
 
 # Config file
 *.ini
+!*-example.ini
 
 # Image
 *.png
