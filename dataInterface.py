@@ -2,10 +2,12 @@ from time import gmtime, strftime
 import matplotlib.pyplot as plt
 import os
 from configparser import ConfigParser
-from fonction import *
+from function import *
+from labelFunction import *
 
 
 class DataInterface:
+
     def __init__(self, name='Mnist'):
         """
         Class for data interface
@@ -55,13 +57,23 @@ class DataInterface:
         return params, data
 
     def load_old(self, filename):
+        """
+        Load data from a file (deprecated)
+
+        :param filename: File containing the data
+        :return: Two np.array with parameters of acquisition and a dataset
+        """
         param1, param2 = self.load_param_old(filename)
         data = np.loadtxt(self._name + '/' + filename, delimiter=',')
         return param1, param2, data
 
-    ##
-    # @brief      Read the parameters line of csv file
     def load_param_old(self, filename):
+        """
+        Read the parameters line of csv file (deprecated)
+
+        :param filename: The file to read
+        :return: Two np.array of parameters
+        """
         file = open(self._name + '/' + filename)
 
         first = file.readline()
@@ -82,6 +94,12 @@ class DataInterface:
         return params1, params2
 
     def load_param(self, filename):
+        """
+        Read the parameters from a file
+
+        :param filename: The file to read
+        :return: A dictionary of parameters
+        """
         file = open(self._name + '/' + filename)
         first = file.readline()
         param_str = first.split('# ')[1].split('\n')[0]
@@ -131,8 +149,8 @@ class DataInterface:
 
         image = np.reshape(image, [x_size, y_size])
         plt.imshow(image, cmap='Greys',  interpolation='nearest')
-        plt.savefig(self._name + '/Images/' + save_date + '_imagede_' + img_name + '.png')
         # sauvegarde de l'image
+        plt.savefig(self._name + '/Images/' + save_date + '_imagede_' + img_name + '.png')
 
     @staticmethod
     def extract_param(param_liste, i):

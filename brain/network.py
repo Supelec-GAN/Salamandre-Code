@@ -1,5 +1,5 @@
 from brain.neuronLayer import NeuronLayer, ConvolutionalLayer
-from fonction import *
+from function import *
 
 
 class Network:
@@ -134,10 +134,9 @@ class Network:
         """
         # On initialise avec une valeur particulière pour la couche de sortie
         if gen_backprop:
-            in_influence = self._error_gen.derivate(reference, self.output)
+            in_influence = self._error_gen.derivate(reference)  # reference = self.output ici
         else:
             in_influence = self._error.derivate(reference, self.output)
-
         n = self._layers_count
         for i in range(n - 1, -1, -1):
             out_influence = self.layers_list[i].derivate_error(in_influence)
