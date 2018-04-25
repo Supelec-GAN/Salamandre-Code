@@ -117,9 +117,6 @@ class Tanh(Function):
         return 'Tanh({},{})'.format(self.k, self.alpha)
 
 
-##
-# @brief      Class for normalize 2.
-##
 class Norm2(Function):
 
     def __init__(self):
@@ -138,7 +135,6 @@ class Norm2(Function):
         return 'Norm2()'
 
 
-# Parameter x is useless, only for matching the neuronLayer class
 class NonSatHeuristic(Function):
 
     def __init__(self):
