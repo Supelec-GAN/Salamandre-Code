@@ -159,7 +159,7 @@ class NeuronLayer:
 
         if self.algo_utilise == "Gradient":
             self.update_weights_value = self.momentum*self.update_weights_value - self.eta*weight_influence
-            self.update_bias_value = self.momentum*self.update_bias_value - self.eta * bias_influence
+            self.update_bias_value = self.momentum*self.update_bias_value + self.eta * bias_influence
 
         elif self.algo_utilise == "Adagrad":
             self.weights_gradients_sum = self.weights_gradients_sum + weight_influence**2
