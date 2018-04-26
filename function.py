@@ -52,7 +52,7 @@ class Sigmoid(Function):
         """
         Classe définissant une sigmoïde formelle (sortie dans ]0,1[)
 
-        y = 1 / (1 + exp(-mu * x))
+        f(x) = 1 / (1 + exp(-mu * x))
 
         :param mu: Paramètre de la sigmoïde
         """
@@ -74,7 +74,7 @@ class SigmoidCentered(Function):
         """
         Classe définissant une sigmoïde formelle centrée en 0 (sortie dans ]-1,-[)
 
-        y = -1 + 2/(1 + exp(-mu*x))
+        f(x) = -1 + 2/(1 + exp(-mu*x))
 
         :param mu: Paramètre de la sigmoïde
         """
@@ -91,15 +91,12 @@ class SigmoidCentered(Function):
 
 
 class Tanh(Function):
-    """
-    @brief      Classe définissant une tangeante hyperbolique formelle
-    """
 
     def __init__(self, k=1, alpha=1):
         """
         Classe définissant une tangente hyberbolique formelle
 
-        y = k * tanh(alpha*x)
+        f(x) = k * tanh(alpha*x)
 
         :param k: Paramètre de la tangente
         :param alpha: Paramètre de la tangente
@@ -115,6 +112,52 @@ class Tanh(Function):
 
     def save_fun(self):
         return 'Tanh({},{})'.format(self.k, self.alpha)
+
+
+class Relu(Function):
+
+    def __init__(self):
+        """
+        Classe définissant la fonction relu formelle
+
+        f(x) = max(0,x)
+        """
+        pass
+
+    def out(self, x):
+        if x >= 0:
+            return x
+        else:
+            return 0
+
+    def derivate(self, x):
+        if x >= 0:
+            return 1
+        else:
+            return 0
+
+    def save_fun(self):
+        return 'Relu()'
+
+
+class SoftPlus(Function):
+
+    def __init__(self):
+        """
+        Classe définissant la fonction softplus formelle
+
+        f(x) = log(1+exp(x))
+        """
+        pass
+
+    def out(self, x):
+        return np.log(1 + np.exp(x))
+
+    def derivate(self, x):
+        return 1 / (1 + np.exp(-x))
+
+    def save_fun(self):
+        return 'SoftPlus()'
 
 
 class Norm2(Function):
