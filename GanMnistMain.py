@@ -161,7 +161,7 @@ for exp in range(number_exp):
                                       str(play_number), discriminator_real_score[-1],
                                       discriminator_fake_score[-1])
 
-    conf = data_interface.save_conf('multi_config.ini', 'GanMnist')  # récupération de la
+    conf = data_interface.save_conf('config.ini', 'GanMnist')  # récupération de la
     # configuration pour la sauvegarde dans les fichiers
     data_interface.save(discriminator_real_score, 'discriminator_real_score', conf)  # Sauvegarde
     # des courbes de score
