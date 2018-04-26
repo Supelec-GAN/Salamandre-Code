@@ -250,7 +250,7 @@ class NeuronLayer:
 
     def update_bias(self):
         """
-        Updates weights according to update_weights_value that was calculated previously
+        Updates bias according to update_bias_value that was calculated previously
 
         :return: None
         """
@@ -260,7 +260,7 @@ class NeuronLayer:
         """
         Calculates the weights influence
 
-        :param out_influence: influence of output on rhe error
+        :param out_influence: influence of output on the error
         :return: matrix of the same dimension than weights
         """
         return np.dot(out_influence, np.transpose(self.input)) / self._learning_batch_size
