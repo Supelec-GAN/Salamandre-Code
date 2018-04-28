@@ -1,6 +1,6 @@
 import numpy as np
 from function import Function
-from theano.tensor.nnet import conv2d  # , conv2d_transpose
+from scipy.signal import convolve2d
 from dataInterface import DataInterface
 
 
@@ -102,6 +102,7 @@ class NeuronLayer:
 
     @learning_batch_size.setter
     def learning_batch_size(self, new_learning_batch_size):
+        self.input = np.zeros((self._input_size, new_learning_batch_size))
         self.activation_levels = np.zeros((self._output_size, new_learning_batch_size))
         self.output = np.zeros((self._output_size, new_learning_batch_size))
         self.noise_input = np.zeros((self._noise_size, new_learning_batch_size))
@@ -391,16 +392,17 @@ class ConvolutionalLayer(NeuronLayer):
 
     @learning_batch_size.setter
     def learning_batch_size(self, new_learning_batch_size):
-        self.activation_levels = np.zeros((self._learning_batch_size, self._output_feature_maps,
+        self.input = np.zeros((new_learning_batch_size, self._input_feature_maps,
+                               self._input_size[0], self._input_size[0]))
+        self.activation_levels = np.zeros((new_learning_batch_size, self._output_feature_maps,
                                            self._output_size[0], self._output_size[1]))
-        self.output = np.zeros((self._learning_batch_size, self._output_feature_maps,
+        self.output = np.zeros((new_learning_batch_size, self._output_feature_maps,
                                 self._output_size[0], self._output_size[1]))
         self._learning_batch_size = new_learning_batch_size
 
     def compute(self, inputs):
         self.input = self.tensorize_inputs(inputs)
-        conv = conv2d(self.input, self._weights, border_mode=self._convolution_mode)
-        self.activation_levels = conv.eval() + self._bias[np.newaxis, :, np.newaxis, np.newaxis]
+        self.activation_levels = self.conv2d() + self._bias[np.newaxis, :, np.newaxis, np.newaxis]
         self.output = self._activation_function.out(self.activation_levels)
         return self.output
 
@@ -425,13 +427,7 @@ class ConvolutionalLayer(NeuronLayer):
             return self.weights - self.eta * weight_influence
 
     def calculate_weight_influence(self, out_influence):
-        # output_shape = (self._output_feature_maps, self._input_feature_maps,
-        #                 self._filter_size[0], self._filter_size[1])
-        weight_influence = conv2d(np.transpose(self.input, axes=(1, 0, 2, 3)),
-                                  np.transpose(out_influence, axes=(1, 0, 2, 3)),
-                                  border_mode=self._convolution_mode,
-                                  filter_flip=False)
-        return np.transpose(weight_influence.eval(), axes=(1, 0, 2, 3)) / self._learning_batch_size
+        return self.weights_conv2d(out_influence) / self._learning_batch_size
 
     def calculate_bias_influence(self, out_influence):
         return np.mean(out_influence, axis=(0, 2, 3))
@@ -441,13 +437,7 @@ class ConvolutionalLayer(NeuronLayer):
         return deriv_vector * self.tensorize_outputs(in_influence)
 
     def input_error(self, out_influence, new_weights):
-        # output_shape = (self._learning_batch_size, self._input_feature_maps,
-        #                 self._input_size[0], self._input_size[1])
-        conv = conv2d(out_influence,
-                      np.transpose(new_weights, axes=(1, 0, 2, 3)),
-                      border_mode=self._reverse_convolution_mode,
-                      filter_flip=False)
-        return conv.eval()
+        return self.reverse_conv2d(out_influence, new_weights)
 
     def tensorize_inputs(self, inputs):
         """
@@ -503,3 +493,33 @@ class ConvolutionalLayer(NeuronLayer):
             raise Exception('Wrong inputs dimension, inputs should be a 4D tensor with '
                             'shape : (batch_size, inputs_channel, img_h, img_w), or a matrix of'
                             'flattened inputs')
+
+    def conv2d(self):
+        out = np.zeros_like(self.output)
+        for b in range(self._learning_batch_size):
+            for o in range(self._output_feature_maps):
+                for i in range(self._input_feature_maps):
+                    out[b][o] += convolve2d(self.input[b][i],
+                                            self._weights[o][i],
+                                            mode=self._convolution_mode)
+        return out
+
+    def reverse_conv2d(self, out_influence, new_weights):
+        in_influence = np.zeros_like(self.input)
+        for b in range(self._learning_batch_size):
+            for i in range(self._input_feature_maps):
+                for o in range(self._output_feature_maps):
+                    in_influence[b][i] += convolve2d(out_influence[b][o],
+                                                     np.rot90(new_weights[o][i], k=2),
+                                                     mode=self._reverse_convolution_mode)
+        return in_influence
+
+    def weights_conv2d(self, out_influence):
+        weight_influence = np.zeros_like(self._weights)
+        for o in range(self._output_feature_maps):
+            for i in range(self._input_feature_maps):
+                for b in range(self._learning_batch_size):
+                    weight_influence[o][i] += convolve2d(self.input[b][i],
+                                                         np.rot90(out_influence[b][o], k=2),
+                                                         mode=self._convolution_mode)
+        return weight_influence
