@@ -66,7 +66,7 @@ class Engine:
                 self.net.compute(self._learning_set[intervalle])
                 expected_output = self._learning_fun.label(intervalle)
                 self.net.backprop(expected_output)
-                print(pass_nb+batch_nb)
+                print(pass_nb, batch_nb)
 
                 # Enregistrement périodique de l'erreur sur le set de test
                 if (pass_nb*self._learning_set_size + batch_nb) % self._test_period == 0:

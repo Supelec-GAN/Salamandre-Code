@@ -219,6 +219,20 @@ class CostFunction(Function):
     def save_fun(self):
         return 'CostFunction()'      
 
+class CrossEntropy(Function):
+
+    def __init__(self):
+        pass
+
+    def out(self, reference, output):
+        return  -(reference*np.log(output) + (1-reference)*np.log(1-output))
+
+    def derivate(self, reference, output):
+        return -(reference/output - (1-reference)/(1-output))
+
+    def save_fun(self):
+        return 'CrossEntropy()'
+
 # class GeneratorError(Function):
 
 #     def __init__(self):
