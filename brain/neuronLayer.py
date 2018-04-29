@@ -1,4 +1,5 @@
 import numpy as np
+
 from fonction import Sigmoid, MnistTest, Norm2, NonSatHeuristic
 
 
@@ -144,24 +145,42 @@ class OutputLayer(NeuronLayer):
 ##
 # @brief      Class for layer with noisy input added to inputs.
 ##
-class NoisyLayer(NeuronLayer):
+class NoisyMinibatchLayer(NeuronLayer):
     def __init__(self, activation_function, error_function, input_size=1, output_size=1,
-                 learning_batch_size=1, noise_size=0, error_function_gen=NonSatHeuristic()):
+                 learning_batch_size=1, noise_size=0, minibatch_size=1, matrix_rows_number=1, error_function_gen=NonSatHeuristic()):
         super(NoisyLayer, self).__init__(activation_function, error_function, input_size,
                                          output_size, learning_batch_size, error_function_gen)
         # Matrice de dimension q*p avec le nombre de sortie et p le nombre d'entrée
         self._noise_size = noise_size
         self.weights = np.transpose(np.random.randn(input_size+noise_size, output_size))
         self.noise_input = np.zeros((noise_size, learning_batch_size))
+        self.minibatch_size = minibatch_size
+        self.matrix_rows_number  = matrix_rows_number
 
     ##
     # Compute très légèrement différent, on concatene un vecteur de bruits à l'input si nécéssaire
     ##
     def compute(self, inputs):
+        #inputs est la liste des f(xi) pour xi dans le minibatch
+        #matrices est la liste des outputs f(xi) reformés en matrice
+        matrices = np.zeros((self.minibatch_size,
+                             self.matrix_rows_number,
+                             len(self.activation_levels[0]//self.matrix_rows_number)))
+        #o est le vecteur qu'on concatène à la sortie pour avoir la sortie finale
+        o = np.zeros((len(matrices), self.matrix_rows_number))
         if self._noise_size != 0:  # nécessaire car np.zeros( (0,1)) est un objet chelou
             self.noise_input = np.random.randn(self._noise_size, self._learning_batch_size)
             inputs = np.concatenate([inputs, self.noise_input])
-        self.activation_levels = np.dot(self.weights, inputs) - self._bias
+        for i in range (self.minibatch_size) :
+            self.activation_levels[i] = np.dot(self.weights, inputs) - self._bias
+            matrices[i] += np.reshape (self._activation_function.out(self.activation_levels[i]),
+                                      (self.matrix_rows_number, -1))
+        for i in range (len(matrices)) :
+            for rows in range(self.matrix_rows_number) :
+                o[i][rows] += np.exp(-np.linalg.norm(
+                    [matrices[i][rows]-matrices[j][rows] for j in range(len(matrices)) if i!=j],
+                    1,0))
+
         self.output = self._activation_function.out(self.activation_levels)
         return self.output
 
@@ -192,3 +211,5 @@ class NoisyLayer(NeuronLayer):
         self.output = np.zeros((self._output_size, new_learning_batch_size))
         self.noise_input = np.zeros((self._noise_size, new_learning_batch_size))
         self._learning_batch_size = new_learning_batch_size
+
+
