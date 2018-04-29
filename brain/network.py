@@ -1,5 +1,6 @@
 from brain.neuronLayer import NeuronLayer, ConvolutionalLayer
-from function import *
+from function.activationFunction import *
+from function.errorFunction import *
 
 
 class Network:

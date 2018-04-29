@@ -1,5 +1,6 @@
 import numpy as np
 
+
 class Function:
 
     def __init__(self, delta=0.05):
@@ -28,14 +29,6 @@ class Function:
         """
         return (self.out(x+self.delta)-self.out(x))/self.delta
 
-    def save_fun(self):
-        """
-        Created a string that can be evaluated to recreate the same function later
-
-        :return: A string
-        """
-        return 'Function()'
-
     def vectorize(self):
         """
         Vectorize the methods of a Function
@@ -44,6 +37,17 @@ class Function:
         """
         self.out = np.vectorize(self.out)
         self.derivate = np.vectorize(self.derivate)
+
+    def save_fun(self):
+        """
+        Created a string that can be evaluated to recreate the same function later
+
+        :return: A string
+        """
+        return str(self) + '()'
+
+    def __repr__(self):
+        return 'Function'
 
 
 class Sigmoid(Function):
@@ -56,6 +60,7 @@ class Sigmoid(Function):
 
         :param mu: Paramètre de la sigmoïde
         """
+        super(Sigmoid, self).__init__()
         self.mu = mu
 
     def out(self, x):
@@ -65,7 +70,10 @@ class Sigmoid(Function):
         return self.mu*np.exp(self.mu*x)/(np.power(1+np.exp(self.mu*x), 2))
 
     def save_fun(self):
-        return 'Sigmoid({})'.format(self.mu)
+        return str(self) + '({})'.format(self.mu)
+
+    def __repr__(self):
+        return 'Sigmoid'
 
 
 class SigmoidCentered(Function):
@@ -78,6 +86,7 @@ class SigmoidCentered(Function):
 
         :param mu: Paramètre de la sigmoïde
         """
+        super(SigmoidCentered, self).__init__()
         self.mu = mu
 
     def out(self, x):
@@ -87,7 +96,10 @@ class SigmoidCentered(Function):
         return 2*self.mu*np.exp(self.mu*x)/(np.power(1+np.exp(self.mu*x), 2))
 
     def save_fun(self):
-        return 'SigmoidCentered({})'.format(self.mu)
+        return str(self) + '({})'.format(self.mu)
+
+    def __repr__(self):
+        return 'SigmoidCentered'
 
 
 class Tanh(Function):
@@ -101,6 +113,7 @@ class Tanh(Function):
         :param k: Paramètre de la tangente
         :param alpha: Paramètre de la tangente
         """
+        super(Tanh, self).__init__()
         self.k = k
         self.alpha = alpha
 
@@ -111,7 +124,10 @@ class Tanh(Function):
         return self.k*self.alpha/(np.power(np.cosh(self.alpha*x), 2))
 
     def save_fun(self):
-        return 'Tanh({},{})'.format(self.k, self.alpha)
+        return str(self) + '({},{})'.format(self.k, self.alpha)
+
+    def __repr__(self):
+        return 'Tanh'
 
 
 class Relu(Function):
@@ -122,7 +138,7 @@ class Relu(Function):
 
         f(x) = max(0,x)
         """
-        pass
+        super(Relu, self).__init__()
 
     def out(self, x):
         if x >= 0:
@@ -136,8 +152,8 @@ class Relu(Function):
         else:
             return 0
 
-    def save_fun(self):
-        return 'Relu()'
+    def __repr__(self):
+        return 'Relu'
 
 
 class SoftPlus(Function):
@@ -148,7 +164,7 @@ class SoftPlus(Function):
 
         f(x) = log(1+exp(x))
         """
-        pass
+        super(SoftPlus, self).__init__()
 
     def out(self, x):
         return np.log(1 + np.exp(x))
@@ -156,95 +172,5 @@ class SoftPlus(Function):
     def derivate(self, x):
         return 1 / (1 + np.exp(-x))
 
-    def save_fun(self):
-        return 'SoftPlus()'
-
-
-class Norm2(Function):
-
-    def __init__(self):
-        """
-        Classe calculant la norme 2
-        """
-        pass
-
-    def out(self, reference, x):
-        return np.linalg.norm(x - reference, axis=0)
-
-    def derivate(self, reference, x):
-        return -2 * (reference - x)
-
-    def save_fun(self):
-        return 'Norm2()'
-
-
-class NonSatHeuristic(Function):
-
-    def __init__(self):
-        """
-        Class for non saturant heuristic for GAN
-        """
-        pass
-
-    def out(self, output):
-        return -0.5*np.log(output)
-
-    def derivate(self, output):
-        return -0.5/output
-
-    def save_fun(self):
-        return 'NonSatHeuritic()'
-
-
-class CostFunction(Function):
-
-    def __init__(self):
-        pass
-
-    def out(self, reference, output):
-        if reference == 1:
-            return -0.5*np.log(output)
-        else:
-            return -0.5*np.log(1 - output)
-
-    ##
-    # Reference est 1 si on donne une vrai image, 0 si c'est une image virtuelle
-    ##
-    def derivate(self, reference, output):
-        if reference == 1:
-            return -0.5/output
-        else:
-            return +0.5/(1-output)
-
-    def save_fun(self):
-        return 'CostFunction()'      
-
-class CrossEntropy(Function):
-
-    def __init__(self):
-        pass
-
-    def out(self, reference, output):
-        return  -(reference*np.log(output) + (1-reference)*np.log(1-output))
-
-    def derivate(self, reference, output):
-        return -(reference/output - (1-reference)/(1-output))
-
-    def save_fun(self):
-        return 'CrossEntropy()'
-
-# class GeneratorError(Function):
-
-#     def __init__(self):
-#         pass
-
-#     def out(self, reference, output):
-#         return 0
-
-#     def derivate(self, reference, output):
-#         out_influence = reference[0]
-#         next_weights = reference[1]
-#         return np.dot(np.transpose(next_weights), out_influence)
-
-#     def save_fun(self):
-#         return 'generatorError()'
+    def __repr__(self):
+        return 'SoftPlus'

@@ -2,8 +2,9 @@ from time import gmtime, strftime
 import matplotlib.pyplot as plt
 import os
 from configparser import ConfigParser
-from function import *
-from labelFunction import *
+from function.labelFunction import *
+from function.errorFunction import *
+from function.activationFunction import *
 
 
 class DataInterface:

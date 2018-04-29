@@ -1,5 +1,5 @@
 import numpy as np
-from function import Function
+from function.activationFunction import Function
 from scipy.signal import convolve2d
 from dataInterface import DataInterface
 

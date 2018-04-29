@@ -9,7 +9,7 @@ class LabelFunction:
 
         :param args: The dataset labels informations
         """
-        raise NotImplementedError
+        pass
 
     def label(self, *args):
         """
@@ -19,6 +19,9 @@ class LabelFunction:
         :return: The label associated to args
         """
         raise NotImplementedError
+
+    def vectorize(self):
+        self.label = np.vectorize(self.label)
 
 
 class XorTest(LabelFunction):
