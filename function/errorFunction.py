@@ -44,10 +44,10 @@ class ErrorFunction:
 
         :return: A string
         """
-        return str(self) + '()'
+        return str(self)
 
     def __repr__(self):
-        return 'ErrorFunction'
+        return 'ErrorFunction()'
 
 
 class Norm2(ErrorFunction):
@@ -65,7 +65,7 @@ class Norm2(ErrorFunction):
         return -2 * (reference - x)
 
     def __repr__(self):
-        return 'Norm2'
+        return 'Norm2()'
 
 
 class NonSatHeuristic(ErrorFunction):
@@ -83,7 +83,7 @@ class NonSatHeuristic(ErrorFunction):
         return -0.5/output
 
     def __repr__(self):
-        return 'NonSatHeuristic'
+        return 'NonSatHeuristic()'
 
 
 class CostFunction(ErrorFunction):
@@ -107,7 +107,7 @@ class CostFunction(ErrorFunction):
             return +0.5/(1-output)
 
     def __repr__(self):
-        return 'CostFunction'
+        return 'CostFunction()'
 
 
 class CrossEntropy(ErrorFunction):
@@ -122,7 +122,7 @@ class CrossEntropy(ErrorFunction):
         return -(reference/output - (1-reference)/(1-output))
 
     def __repr__(self):
-        return 'CrossEntropy'
+        return 'CrossEntropy()'
 
 # class GeneratorError(ErrorFunction):
 

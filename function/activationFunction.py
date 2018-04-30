@@ -44,10 +44,10 @@ class Function:
 
         :return: A string
         """
-        return str(self) + '()'
+        return str(self)
 
     def __repr__(self):
-        return 'Function'
+        return 'Function' + '()'
 
 
 class Sigmoid(Function):
@@ -69,11 +69,8 @@ class Sigmoid(Function):
     def derivate(self, x):
         return self.mu*np.exp(self.mu*x)/(np.power(1+np.exp(self.mu*x), 2))
 
-    def save_fun(self):
-        return str(self) + '({})'.format(self.mu)
-
     def __repr__(self):
-        return 'Sigmoid'
+        return 'Sigmoid' + '({})'.format(self.mu)
 
 
 class SigmoidCentered(Function):
@@ -94,9 +91,6 @@ class SigmoidCentered(Function):
 
     def derivate(self, x):
         return 2*self.mu*np.exp(self.mu*x)/(np.power(1+np.exp(self.mu*x), 2))
-
-    def save_fun(self):
-        return str(self) + '({})'.format(self.mu)
 
     def __repr__(self):
         return 'SigmoidCentered'
@@ -123,11 +117,8 @@ class Tanh(Function):
     def derivate(self, x):
         return self.k*self.alpha/(np.power(np.cosh(self.alpha*x), 2))
 
-    def save_fun(self):
-        return str(self) + '({},{})'.format(self.k, self.alpha)
-
     def __repr__(self):
-        return 'Tanh'
+        return 'Tanh' + '({},{})'.format(self.k, self.alpha)
 
 
 class Relu(Function):
@@ -153,7 +144,7 @@ class Relu(Function):
             return 0
 
     def __repr__(self):
-        return 'Relu'
+        return 'Relu' + '()'
 
 
 class SoftPlus(Function):
@@ -173,4 +164,4 @@ class SoftPlus(Function):
         return 1 / (1 + np.exp(-x))
 
     def __repr__(self):
-        return 'SoftPlus'
+        return 'SoftPlus' + '()'
