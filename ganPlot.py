@@ -192,8 +192,8 @@ class GanPlot:
         info.text(0.01, 0.87, 'Formes des réseau', fontsize=12)
         info.text(0.01, 0.83, 'Forme du générateur : ' + str(param['generator_network_layers']),
                   fontsize=8)
-        info.text(0.01, 0.79, 'Bruit du générateur : ' + str(param['noise_layers_size']),
-                  fontsize=8)
+        # info.text(0.01, 0.79, 'Bruit du générateur : ' + str(param['noise_layers_size']),
+        #           fontsize=8)
         info.text(0.01, 0.75, 'Forme du discriminateur : ' + str(param['disc_network_layers']),
                   fontsize=8)
 
@@ -206,7 +206,11 @@ class GanPlot:
                   str(param['disc_fake_learning_ratio']), fontsize=8)
         info.text(0.01, 0.49, 'Ratio G image de synthèse : ' +
                   str(param['gen_learning_ratio_alone']), fontsize=8)
-             
+        info.text(0.01, 0.45, 'Eta générateur : ' +
+                  str(param_desc_gen['eta']), fontsize=8)
+        info.text(0.01, 0.41, 'Eta discriminateur : ' +
+                  str(param_desc_disc['eta']), fontsize=8)
+
         info.text(0.01, 0.39, "Infos courbe", fontsize=12)
         info.text(0.01, 0.35, 'Nombre de partie : ' + str(param['play_number']),
                   fontsize=8)
@@ -254,8 +258,8 @@ class GanPlot:
         info.text(0.01, 0.87, 'Formes des réseau', fontsize=12)
         info.text(0.01, 0.83, 'Forme du générateur : ' + str(param['generator_network_layers']),
                   fontsize=8)
-        info.text(0.01, 0.79, 'Bruit du générateur : ' + str(param['noise_layers_size']),
-                  fontsize=8)
+        # info.text(0.01, 0.79, 'Bruit du générateur : ' + str(param['noise_layers_size']),
+        #           fontsize=8)
         info.text(0.01, 0.75, 'Forme du discriminateur : ' + str(param['disc_network_layers']),
                   fontsize=8)
 
@@ -268,9 +272,9 @@ class GanPlot:
         info.text(0.01, 0.49, 'Ratio G image de synthèse : ' +
                   str(param['gen_learning_ratio_alone']), fontsize=8)
         info.text(0.01, 0.45, 'Eta générateur : ' +
-                  str(param_desc_gen['eta_gen']), fontsize=8)
+                  str(param_desc_gen['eta']), fontsize=8)
         info.text(0.01, 0.41, 'Eta discriminateur : ' +
-                  str(param_desc_disc['eta_disc']), fontsize=8)
+                  str(param_desc_disc['eta']), fontsize=8)
 
         info.text(0.01, 0.31, "Infos courbe", fontsize=12)
         info.text(0.01, 0.27, 'Nombre de partie : ' + str(param['play_number']),
