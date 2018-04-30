@@ -56,9 +56,9 @@ class Network:
                 self.layers_list[i].restore_coefs(coefs)
             except KeyError:
                 pass
-        self.input_size = 784  # self.layers_list[0].input_size
+        self.input_size = np.prod(self.layers_list[0].input_size)
         self.input = np.zeros((self.input_size, self._learning_batch_size))
-        self.output_size = self.layers_list[-1].output_size
+        self.output_size = np.prod(self.layers_list[-1].output_size)
         self.output = np.zeros((self.output_size, self._learning_batch_size))
 
     def reset(self):
