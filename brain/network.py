@@ -159,9 +159,8 @@ class Network:
         """
         Permet de sauvegarder l'état du réseau, ainsi que ses paramètres
 
-        :return: A tuple (paramètres, poids/biais). Les paramètres sont dans le même ordre que
-        pour la création d'un Network. Les poids/biais sont une liste de tuple (poids,
-        biais) correspondant au couche successives.
+        :return: Un triplet (layer_params, error_fun, gen_error_fun) avec layer_params contenznt
+        les coéfficients de chaque couche..
         """
 
         for i in range(self._layers_count):
