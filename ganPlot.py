@@ -113,10 +113,8 @@ class GanPlot:
         plt.show()
 
     def save_plot_network_state(self, state):
-        if not os.path.exists(self._name):
-            os.mkdir(self._name)
         if not os.path.exists(self._name + '/Images'):
-            os.mkdir(self._name + '/Images')
+            os.makedirs(self._name + '/Images')
 
         plt.close()
         params, coefs = state
