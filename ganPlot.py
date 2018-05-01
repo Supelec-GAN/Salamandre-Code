@@ -92,24 +92,31 @@ class GanPlot:
 
     def plot_network_state(self, state):
         plt.close()
-        params, coefs = state
-        layers_size = params[0]
+        params, _, _ = state
+        weights = [layer['coefs']['weights'] for layer in params]
+        bias = [layer['coefs']['bias'] for layer in params]
+        layers_size = [layer['input_size'] for layer in params] + [params[-1]['output_size']]
         n = len(layers_size)
-        fig = plt.figure()
+        plt.figure()
         L = 20
-        gs = GridSpec(L, n-1)
+        gs = GridSpec(L, n)
         for i in range(1, n):
-            max_w = np.max(coefs[i-1][0])
-            min_w = np.min(coefs[i-1][0])
-            ax = plt.subplot(gs[0:L-2, i-1])
-            self.plot_weight(coefs[i-1][0], layers_size[i-1], layers_size[i])
-            ax.set_title('Matrice de poids : ' + str(layers_size[i-1]) + ',' + str(layers_size[i]) + ' Max : ' + str(max_w) + " Min :" + str(min_w))
+            max_w = np.max(weights[i-1])
+            min_w = np.min(weights[i-1])
+            ax = plt.subplot(gs[0:L-3, i-1])
+            self.plot_weight(weights[i-1], layers_size[i-1], layers_size[i])
+            ax.set_title('Matrice de poids : [' + str(layers_size[i-1]) + ',' + str(layers_size[i]) + '] \n Max : ' + str(max_w)[:4] + " | Min :" + str(min_w)[:4],fontsize=8)
+            ax.set_xticks([])
+            ax.set_yticks([])
 
-            max_b = np.max(coefs[i-1][1])
-            min_b = np.min(coefs[i-1][1])
+            max_b = np.max(bias[i-1])
+            min_b = np.min(bias[i-1])
             ax = plt.subplot(gs[L-1, i-1])
-            self.plot_bias(coefs[i-1][1])
-            ax.set_title('Biais Max : ' + str(max_b) + "Min :" + str(min_b))
+            self.plot_bias(bias[i-1])
+            ax.set_title('Biais Max : ' + str(max_b)[:4] + "\n Biais Min :" + str(min_b)[:4],
+                         fontsize=8)
+            ax.set_xticks([])
+            ax.set_yticks([])
         plt.show()
 
     def save_plot_network_state(self, state):
@@ -117,32 +124,34 @@ class GanPlot:
             os.makedirs(self._name + '/Images')
 
         plt.close()
-        params, coefs = state
-        layers_size = params[0]
+        params, _, _ = state
+        weights = [layer['coefs']['weights'] for layer in params]
+        bias = [layer['coefs']['bias'] for layer in params]
+        layers_size = [layer['input_size'] for layer in params] + [params[-1]['output_size']]
         n = len(layers_size)
-        fig = plt.figure()
+        plt.figure()
         L = 20
         gs = GridSpec(L, n)
         for i in range(1, n):
-            max_w = np.max(coefs[i-1][0])
-            min_w = np.min(coefs[i-1][0])
+            max_w = np.max(weights[i-1])
+            min_w = np.min(weights[i-1])
             ax = plt.subplot(gs[0:L-3, i-1])
-            self.plot_weight(coefs[i-1][0], layers_size[i-1], layers_size[i])
+            self.plot_weight(weights[i-1], layers_size[i-1], layers_size[i])
             ax.set_title('Matrice de poids : [' + str(layers_size[i-1]) + ',' + str(layers_size[i]) + '] \n Max : ' + str(max_w)[:4] + " | Min :" + str(min_w)[:4],fontsize=8)
             ax.set_xticks([])
             ax.set_yticks([])
 
-            max_b = np.max(coefs[i-1][1])
-            min_b = np.min(coefs[i-1][1])
+            max_b = np.max(bias[i-1])
+            min_b = np.min(bias[i-1])
             ax = plt.subplot(gs[L-1, i-1])
-            self.plot_bias(coefs[i-1][1])
+            self.plot_bias(bias[i-1])
             ax.set_title('Biais Max : ' + str(max_b)[:4] + "\n Biais Min :" + str(min_b)[:4],
                          fontsize=8)
             ax.set_xticks([])
             ax.set_yticks([])
 
         ax = plt.subplot(gs[:, -1])
-        final_bias = np.reshape(coefs[-1][1], [28, 28])
+        final_bias = np.reshape(bias[-1], [28, 28])
         ax.imshow(final_bias, cmap='Greys')    
         ax.set_title('Dernier Biais')
         ax.set_xticks([])
