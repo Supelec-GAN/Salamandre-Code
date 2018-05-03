@@ -120,7 +120,7 @@ class GanGame:
         fooled = self.test_truth(fake_images)
 
         disc_error_influence = self.discriminator.backprop(fooled, False, True)
-        self.generator.backprop(disc_error_influence)
+        self.generator.backprop(disc_error_influence, calculate_error=False)
 
         return fake_images
 

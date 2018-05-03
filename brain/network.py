@@ -123,7 +123,7 @@ class Network:
         return self.output
 
     # On considère ici toujours des réseaux avec plusieurs couches !
-    def backprop(self, reference, update=True, gen_backprop=False):
+    def backprop(self, reference, update=True, gen_backprop=False, calculate_error=True):
         """
         Rétropropagation selon la méthode de la descente du gradient
 
@@ -134,10 +134,13 @@ class Network:
         :return: Influence de l'erreur sur l'entrée
         """
         # On initialise avec une valeur particulière pour la couche de sortie
-        if gen_backprop:
-            in_influence = self._error_gen.derivate(reference)  # reference = self.output ici
+        if  calculate_error:
+            if gen_backprop:
+                in_influence = self._error_gen.derivate(reference)  # reference = self.output ici
+            else:
+                in_influence = self._error.derivate(reference, self.output)
         else:
-            in_influence = self._error.derivate(reference, self.output)
+            in_influence = reference
         n = self._layers_count
         for i in range(n - 1, -1, -1):
             out_influence = self.layers_list[i].derivate_error(in_influence)
