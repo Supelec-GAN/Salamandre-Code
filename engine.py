@@ -2,12 +2,27 @@ import numpy as np
 
 
 class Engine:
-    """Classe gérant l'apprentissage d'un réseau, tout en fournissant des données au fur et à mesure
-    """
 
-    def __init__(self, net, eta, learning_set, learning_fun, testing_set, testing_fun, success_fun, momentum=0,
-                 learning_iterations=1, test_period=100, learning_set_pass_nb=1,
+    def __init__(self, net, eta, learning_set, learning_fun, testing_set, testing_fun, success_fun,
+                 momentum=0, nb_exp=1, test_period=100, learning_set_pass_nb=1,
                  randomize_learning_set=True):
+        """
+        Classe gérant l'apprentissage d'un réseau, tout en fournissant des données au fur et à
+        mesure
+
+        :param net:
+        :param eta:
+        :param learning_set:
+        :param learning_fun:
+        :param testing_set:
+        :param testing_fun:
+        :param success_fun:
+        :param momentum:
+        :param nb_exp:
+        :param test_period:
+        :param learning_set_pass_nb:
+        :param randomize_learning_set:
+        """
         # Réseau utilisé
         self.net = net
 
@@ -30,13 +45,13 @@ class Engine:
         self._learning_batch_size = net.learning_batch_size
 
         # Nombre d'apprentissage successifs
-        self._learning_iterations = learning_iterations
+        self._nb_exp = nb_exp
 
         # Données recueillies pendant les apprentissages et paramètres
         self._test_period = test_period
         self._test_count = (self._learning_set_size*self._learning_set_pass_nb) \
             // self._learning_batch_size // self._test_period
-        self._error_during_learning = np.zeros((self._learning_iterations, self._test_count))
+        self._error_during_learning = np.zeros((self._nb_exp, self._test_count))
         self._success_fun = success_fun
 
     def learn(self):
@@ -47,16 +62,16 @@ class Engine:
             for batch_nb in range(self._learning_set_size // self._learning_batch_size):
                 debut = batch_nb * self._learning_batch_size
                 fin = (batch_nb+1) * self._learning_batch_size
-                intervalle = np.arange(debut, fin)  # self._permutation[debut:fin]
+                intervalle = self._permutation[debut:fin]
                 self.net.compute(self._learning_set[intervalle])
-                expected_output = self._learning_fun.out(intervalle)
-                self.net.backprop(self.eta,
-                                  self._learning_set[intervalle],
-                                  expected_output)
-                print(pass_nb+batch_nb)
+                expected_output = self._learning_fun.label(intervalle)
+                self.net.backprop(expected_output)
+                print(pass_nb, batch_nb)
+
                 # Enregistrement périodique de l'erreur sur le set de test
                 if (pass_nb*self._learning_set_size + batch_nb) % self._test_period == 0:
-                    test_number = (pass_nb*self._learning_set_size // self._learning_batch_size + batch_nb) // self._test_period
+                    test_number = (pass_nb*self._learning_set_size // self._learning_batch_size
+                                   + batch_nb) // self._test_period
                     testing_success_rate[test_number] = self.get_current_success_rate()
 
         return testing_success_rate
@@ -69,25 +84,23 @@ class Engine:
 
         self.net.learning_batch_size = self._testing_set_size
         output = self.net.compute(self._testing_set)
-        expected_output = self._testing_fun.out(np.arange(self._testing_set_size))
+        expected_output = self._testing_fun.label(np.arange(self._testing_set_size))
         error_during_testing = self.net.error.out(output, expected_output)
         mean_error = np.mean(error_during_testing)
         self.net.learning_batch_size = self._learning_batch_size
         return mean_error
 
     def get_current_success_rate(self):
-        """Calcule le taux de succès courant du réseau sur le set de test"""
-#        self.net.learning_batch_size = self._testing_set_size
-#        output = self.net.compute(self._testing_set)
-#        expected_output = self._testing_fun.out(np.arange(self._testing_set_size))
-#        success_during_testing = self._success_fun(output, expected_output)
-        success_during_testing = np.zeros(self._testing_set_size)
-        for test_nb in range(self._testing_set_size):
-            output = self.net.compute(self._testing_set[test_nb])
-            expected_output = self._testing_fun.out(test_nb)
-            success_during_testing[test_nb] = self._success_fun(output, expected_output)
+        """Calcule le taux de succès courant du réseau sur le set de test
+
+        :return: The success rate of the network for the testing set
+        """
+        self.net.learning_batch_size = self._testing_set_size
+        output = self.net.compute(self._testing_set)
+        expected_output = self._testing_fun.label(np.arange(self._testing_set_size))
+        success_during_testing = self._success_fun(output, expected_output)
         success_rate = np.mean(success_during_testing)
- #       self.net.learning_batch_size = self._learning_batch_size
+        self.net.learning_batch_size = self._learning_batch_size
         return success_rate
 
     def run(self):
@@ -96,10 +109,8 @@ class Engine:
         :return: The error of the network during each learning cycle
         """
 
-        for i in range(self._learning_iterations):
+        for i in range(self._nb_exp):
             if self._randomize_learning_set:
                 self._permutation = np.random.permutation(self._learning_set_size)
             self._error_during_learning[i] = self.learn()
-            if i % self._test_period == 0:
-                print(i)
         return self._error_during_learning

@@ -1,7 +1,6 @@
 import numpy as np
 from brain.network import Network
-from fonction import Sigmoid, MnistTest, Norm2
-from mnist import MNIST
+import dataLoader
 from engine import Engine
 from dataInterface import DataInterface
 from errorGraphs import ErrorGraphs
@@ -11,33 +10,48 @@ data_interface = DataInterface('Mnist_debug')
 
 param = data_interface.read_conf()
 
-mndata = MNIST(param['file'])
-training_images, training_labels = mndata.load_training()
-testing_images, testing_labels = mndata.load_testing()
 
-training_images = np.array(training_images)
-training_labels = np.array(training_labels)
+# Chargement des données pour l'apprentissage
+training_images, training_labels, testing_images, testing_labels = \
+    dataLoader.load_data(param['file'], param['dataset'])
+
+# Configuration des images d'entrainement
 training_size = param['training_size']
 
-testing_images = np.array(testing_images)
-testing_labels = np.array(testing_labels)
+# Configuration des images de test
 testing_size = param['testing_size']
 
-learning_iterations = param['learning_iterations']
+
+# Chargement des paramètres de gestion de l'apprentissage
+nb_exp = param['nb_exp']
 test_period = param['test_period']
-randomize_learning_set = param['learning_iterations']
+randomize_learning_set = param['randomize_learning_set']
 
-
-activation_funs = np.array(param['activation_funs'])
+# Chargement des fonctions utilisées
 error_fun = param['error_fun']
 
+# Chargement des paramètres d'apprentissage
 eta = param['eta']
 learning_set_pass_nb = param['learning_set_pass_nb']
 batch_size = param['batch_size']
 
-net = Network(param['network_layers'], activation_funs, error_fun, batch_size)
 
-error_graphs = ErrorGraphs('Mnist_debug_graphes', learning_iterations, eta, net, test_period)
+couche0 = {'type': 'C',
+           'activation_function': 'Sigmoid(0.1)',
+           'input_size': (28, 28),
+           'output_size': (19, 19),
+           'filter_size': (10, 10),
+           'input_feature_maps': 1,
+           'output_feature_maps': 4,
+           'convolution_mode': 'valid'}
+
+layers_params = param['network']
+
+net = Network(layers_params,
+              error_function=error_fun,
+              learning_batch_size=batch_size)
+
+error_graphs = ErrorGraphs('Mnist_debug_graphes', nb_exp, eta, net, test_period)
 
 momentum = param['momentum']
 
@@ -55,18 +69,18 @@ def success_fun(o, eo):
 #    return 0
 
 
-engine = Engine(net,
-                eta,
-                training_images[0:training_size] / 256,
-                training_fun,
-                testing_images[0:testing_size] / 256,
-                testing_fun,
-                success_fun,
-                momentum,
-                learning_iterations,
-                test_period,
-                learning_set_pass_nb,
-                randomize_learning_set)
+engine = Engine(net=net,
+                eta=eta,
+                learning_set=training_images[0:training_size],
+                learning_fun=training_fun,
+                testing_set=testing_images[0:testing_size],
+                testing_fun=testing_fun,
+                success_fun=success_fun,
+                momentum=momentum,
+                nb_exp=nb_exp,
+                test_period=test_period,
+                learning_set_pass_nb=learning_set_pass_nb,
+                randomize_learning_set=randomize_learning_set)
 
 error_during_learning = engine.run()
 
