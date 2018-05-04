@@ -28,7 +28,7 @@ class Network:
         self.layers_list = np.array(self._layers_count * [NeuronLayer()])
         for i in range(0, self._layers_count):
             params = self._layers_parameters[i]
-            if params['type'] == 'N':
+            if params['type'] == 'FC':
                 self.layers_list[i] = \
                     NeuronLayer(activation_function=eval(params['activation_function']),
                                 input_size=params['input_size'],
@@ -38,7 +38,7 @@ class Network:
                                 nb_exp=self.nb_exp,
                                 learning_batch_size=self._learning_batch_size
                                 )
-            elif params['type'] == 'C':
+            elif params['type'] == 'Conv':
                 self.layers_list[i] = \
                     ConvolutionalLayer(activation_function=eval(params['activation_function']),
                                        input_size=params['input_size'],
@@ -70,7 +70,7 @@ class Network:
 
         for i in range(0, self._layers_count):
             params = self._layers_parameters[i]
-            if params['type'] == 'N':
+            if params['type'] == 'FC':
                 self.layers_list[i] = \
                     NeuronLayer(activation_function=eval(params['activation_function']),
                                 input_size=params['input_size'],
@@ -80,7 +80,7 @@ class Network:
                                 nb_exp=self.nb_exp,
                                 learning_batch_size=self._learning_batch_size
                                 )
-            elif params['type'] == 'C':
+            elif params['type'] == 'Conv':
                 self.layers_list[i] = \
                     ConvolutionalLayer(activation_function=eval(params['activation_function']),
                                        input_size=params['input_size'],
