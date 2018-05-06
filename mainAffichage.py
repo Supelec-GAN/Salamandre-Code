@@ -23,7 +23,8 @@ error_fun = param['error_fun']
 # net = Network(param['network_layers'], activation_funs, error_fun)
 
 eta = param['eta']
-error_graphs = ErrorGraphs('Mnist_debug_graphes',learning_iterations, eta, param['network_layers'], test_period)
+error_graphs = ErrorGraphs('Mnist_debug_graphes',learning_iterations, eta, param['network_layers'],
+                           test_period)
 
 print(type(test_period))
 # error_graphs.save(data)
