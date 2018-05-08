@@ -14,7 +14,7 @@ class ErrorGraphs:
         self.net = net
         self.test_period = test_period
 
-    def save(self, errors_during_learning, param):
+    def save(self, errors_during_learning, param, param_algo_descente):
         # create directory if it doesn't exist
         if not os.path.exists(self._name):
             os.mkdir(self._name)
@@ -61,8 +61,50 @@ class ErrorGraphs:
             network_layers += ", " + str(network[i]["output_size"])
         info.text(0.01, 0.83, 'Forme du réseau : ' + network_layers,
                   fontsize=8)
-        info.text(0.01, 0.45, 'Eta : ' +
-                  str(param['eta']), fontsize=8)
+
+
+        algo_utilise = param_algo_descente['algo_utilise'][0]
+        info.text(0.01, 0.77, 'Algorithme : ' +
+                  str(algo_utilise), fontsize=8)
+        if algo_utilise == 'Gradient':
+            info.text(0.01, 0.73, 'Momentum : ' +
+                  str(param_algo_descente['momentum']), fontsize=8)
+            info.text(0.01, 0.69, 'Eta : ' +
+                  str(param_algo_descente['eta']), fontsize=8)
+        elif algo_utilise == 'Adagrad':
+            info.text(0.01, 0.73, 'Momentum : ' +
+                      str(param_algo_descente['momentum']), fontsize=8)
+            info.text(0.01, 0.69, 'Eta : ' +
+                     str(param_algo_descente['eta']), fontsize=8)
+            info.text(0.01, 0.65, 'Epsilon : ' +
+                      str(param_algo_descente['epsilon']), fontsize=8)
+        elif algo_utilise == 'RMSProp':
+            info.text(0.01, 0.73, 'Momentum : ' +
+                      str(param_algo_descente['momentum']), fontsize=8)
+            info.text(0.01, 0.69, 'Eta : ' +
+                      str(param_algo_descente['eta']), fontsize=8)
+            info.text(0.01, 0.65, 'Gamma : ' + str(param_algo_descente['gamma']), fontsize=8)
+            info.text(0.01, 0.61, 'Epsilon : ' +
+                      str(param_algo_descente['epsilon']), fontsize=8)
+            info.text(0.01, 0.57, "Moment d'ordre " + str(param_algo_descente['moment']), fontsize=8)
+        elif algo_utilise == 'Adadelta':
+            info.text(0.01, 0.73, 'Momentum : ' +
+                      str(param_algo_descente['momentum']), fontsize=8)
+            info.text(0.01, 0.69, 'Gamma : ' + str(param_algo_descente['gamma']), fontsize=8)
+            info.text(0.01, 0.65, 'Epsilon :' + str(param_algo_descente['epsilon']), fontsize=8)
+            info.text(0.01, 0.61, "Moment d'ordre " + str(param_algo_descente['moment']), fontsize=8)
+        elif algo_utilise== 'Adam':
+            info.text(0.01, 0.73, 'Momentum : ' +
+                      str(param_algo_descente['momentum']), fontsize=8)
+            info.text(0.01, 0.69, 'Gamma : ' + str(param_algo_descente['gamma']), fontsize=8)
+            info.text(0.01, 0.65, 'Gamma 1 : ' + str(param_algo_descente['gamma_1']), fontsize=8)
+            info.text(0.01, 0.61, 'Gamma 2 : ' + str(param_algo_descente['gamma_2']), fontsize=8)
+            info.text(0.01, 0.57, 'Epsilon :' + str(param_algo_descente['epsilon']), fontsize=8)
+            info.text(0.01, 0.53, "Alpha" + str(param_algo_descente['alpha']), fontsize=8)
+
+
+
+
 
         info.text(0.01, 0.31, "Infos courbe", fontsize=12)
         info.text(0.01, 0.27, 'Nombre de partie : ' + str(param['learning_set_pass_nb']),
@@ -86,7 +128,7 @@ class ErrorGraphs:
         plt.savefig(namefile,)
         plt.close()
 
-    def plot(self, errors_during_learning, param):
+    def plot(self, errors_during_learning, param, param_algo_descente):
         # plots the mean error as a function of time
         fig = plt.figure()
 
@@ -127,8 +169,46 @@ class ErrorGraphs:
             network_layers += ", " + str(network[i]["output_size"])
         info.text(0.01, 0.83, 'Forme du réseau : ' + network_layers,
                   fontsize=8)
-        info.text(0.01, 0.45, 'Eta : ' +
-                  str(param['eta']), fontsize=8)
+
+
+        algo_utilise = param_algo_descente['algo_utilise']
+        info.text(0.01, 0.31, 'Algorithme : ' +
+                  str(algo_utilise), fontsize=8)
+        if algo_utilise == 'Gradient':
+            info.text(0.01, 0.35, 'Momentum : ' +
+                      str(param_algo_descente['momentum']), fontsize=8)
+            info.text(0.01, 0.39, 'Eta : ' +
+                      str(param_algo_descente['eta']), fontsize=8)
+        elif algo_utilise == 'Adagrad':
+            info.text(0.01, 0.35, 'Momentum : ' +
+                      str(param_algo_descente['momentum']), fontsize=8)
+            info.text(0.01, 0.39, 'Eta : ' +
+                      str(param_algo_descente['eta']), fontsize=8)
+            info.text(0.01, 0.43, 'Epsilon : ' +
+                      str(param_algo_descente['epsilon']), fontsize=8)
+        elif algo_utilise == 'RMSProp':
+            info.text(0.01, 0.35, 'Momentum : ' +
+                      str(param_algo_descente['momentum']), fontsize=8)
+            info.text(0.01, 0.39, 'Eta : ' +
+                      str(param_algo_descente['eta']), fontsize=8)
+            info.text(0.01, 0.43, 'Gamma : ' + str(param_algo_descente['gamma']), fontsize=8)
+            info.text(0.01, 0.47, 'Epsilon : ' +
+                      str(param_algo_descente['epsilon']), fontsize=8)
+            info.text(0.01, 0.51, "Moment d'ordre " + str(param_algo_descente['moment']), fontsize=8)
+        elif algo_utilise == 'Adadelta':
+            info.text(0.01, 0.35, 'Momentum : ' +
+                      str(param_algo_descente['momentum']), fontsize=8)
+            info.text(0.01, 0.39, 'Gamma : ' + str(param_algo_descente['gamma']), fontsize=8)
+            info.text(0.01, 0.43, 'Epsilon :' + str(param_algo_descente['epsilon']), fontsize=8)
+            info.text(0.01, 0.47, "Moment d'ordre " + str(param_algo_descente['moment']), fontsize=8)
+        elif algo_utilise == 'Adam':
+            info.text(0.01, 0.35, 'Momentum : ' +
+                      str(param_algo_descente['momentum']), fontsize=8)
+            info.text(0.01, 0.39, 'Gamma : ' + str(param_algo_descente['gamma']), fontsize=8)
+            info.text(0.01, 0.43, 'Gamma 1 : ' + str(param_algo_descente['gamma_1']), fontsize=8)
+            info.text(0.01, 0.47, 'Gamma 2 : ' + str(param_algo_descente['gamma_2']), fontsize=8)
+            info.text(0.01, 0.51, 'Epsilon :' + str(param_algo_descente['epsilon']), fontsize=8)
+            info.text(0.01, 0.55, "Alpha" + str(param_algo_descente['alpha']), fontsize=8)
 
         info.text(0.01, 0.31, "Infos courbe", fontsize=12)
         info.text(0.01, 0.27, 'Nombre de partie : ' + str(param['learning_set_pass_nb']),
