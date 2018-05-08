@@ -545,6 +545,27 @@ class ClippedNeuronLayer(NeuronLayer):
         :param clipping
         """
 
+        def backprop(self, out_influence, update=True):
+        """
+        Rétropropagation au niveau d'une couche
+
+        :param out_influence:
+        :param update: Si Vrai, les poids de la couche sont mis à jour
+        :return: Les nouveaux poids
+        """
+        weight_influence = self.calculate_weight_influence(out_influence)
+        bias_influence = self.calculate_bias_influence(out_influence)
+        if update:
+            self.update_momentum(bias_influence, weight_influence)
+            self.update_weights()
+            self.update_bias()
+            return self.weights[:, 0:self._input_size]  # On extrait les poids concernant les vrais
+            # inputs (le bruit n'a pas besoin d'influer sur les couches d'avant)
+        else:
+            return (self.weights + self.eta * weight_influence)[:, 0:self._input_size]
+            
+            # on fait + self.eta, avec l'hypothèse que le clipping ne sert que pour WGAN pour le moment !!!
+
     def update_weights(self):
         """
         Updates weights according to update_weights_value that was calculated previously
