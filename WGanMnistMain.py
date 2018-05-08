@@ -2,7 +2,7 @@ import numpy as np
 from brain.network import Network
 import dataLoader
 from dataInterface import DataInterface
-from ganGame import GanGame
+from ganGame import GanGame, WGanGame
 from ganPlot import GanPlot
 # import matplotlib.pyplot as plt
 # import os
@@ -59,8 +59,9 @@ for exp in range(number_exp):
     disc_error_fun.vectorize()
     gen_error_fun = param['gen_error_fun']
     gen_error_fun.vectorize()
+    
 
-    discriminator = Network(layers_parameters=disc_layers_params,
+    critic = Network(layers_parameters=disc_layers_params,
                             error_function=disc_error_fun,
                             error_gen=gen_error_fun,
                             param_desc='Param de desc du disc',
@@ -68,7 +69,7 @@ for exp in range(number_exp):
                             nb_exp=exp
                             )
 
-    disc_learning_ratio = param['disc_learning_ratio']  # Pour chaque partie, nombre
+    critic_learning_ratio = param['disc_learning_ratio']  # Pour chaque partie, nombre
     # d'apprentissage du discriminant sur image réelle
     disc_fake_learning_ratio = param['disc_fake_learning_ratio']  # Pour chaque partie,
     # nombre d'apprentissage du discriminant sur image fausse, !!!  sans apprentissage du
@@ -92,14 +93,12 @@ for exp in range(number_exp):
     training_fun = param['training_fun']  # Function donnant la réponse à une vrai image attendu
     # (1 par défaut)
 
-    ganGame = WGanGame(discriminator=discriminator,
+    ganGame = WGanGame(critic=critic,
                        learning_set=training_images_exp,
                        learning_fun=training_fun,
                        generator=generator,
-                       disc_learning_ratio=disc_learning_ratio,
+                       critic_learning_ratio=critic_learning_ratio,
                        gen_learning_ratio=gen_learning_ratio,
-                       disc_fake_learning_ratio=disc_fake_learning_ratio,
-                       gen_learning_ratio_alone=gen_learning_ratio_alone,
                        batch_size=batch_size)
 
     play_number = param['play_number']  # Nombre de partie  (Une partie = i fois apprentissage
@@ -128,11 +127,14 @@ for exp in range(number_exp):
     try:
         for i in range(play_number):
             learn = ganGame.play_and_learn()
+            if i % 10 == 0:
+                print("Progress : ", i)
             if i % test_period == 0:
                 print("i", i)
                 a, b = ganGame.test_critic_learning(lissage_test)  # effectue n test et
                 # renvoie la moyenne des scores
                 score.append(a)
+                print("Score : ", a)
                 score_std.append(b)
             if i % image_evolution_number == 0:
                 a, b = ganGame.test_critic_learning(lissage_test)

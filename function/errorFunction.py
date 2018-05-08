@@ -139,6 +139,21 @@ class WGanError(ErrorFunction):
     def __repr__(self):
         return 'WGanError()'
 
+
+class WGanErrorGen(ErrorFunction):
+
+    def __init__(self):
+        super(WGanErrorGen, self).__init__()
+
+    def out(self, output):
+        return -output
+
+    def derivate(self, output):
+        return -1
+
+    def __repr__(self):
+        return 'WGanErrorGen()'
+
 # class GeneratorError(ErrorFunction):
 
 #     def __init__(self):

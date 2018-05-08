@@ -160,10 +160,10 @@ class WGanGame(GanGame):
                  critic_learning_ratio=1, gen_learning_ratio=1,
                  batch_size=0):
 
-        super(WGanGame, self).__init__(self, discriminator=critic,
-                                       learning_set,
-                                       learning_fun,
-                                       generator,
+        super(WGanGame, self).__init__(discriminator=critic,
+                                       learning_set=learning_set,
+                                       learning_fun=learning_fun,
+                                       generator=generator,
                                        disc_learning_ratio=critic_learning_ratio,
                                        gen_learning_ratio=gen_learning_ratio,
                                        disc_fake_learning_ratio=0,
@@ -191,6 +191,7 @@ class WGanGame(GanGame):
         :return: (real_score, fake_score, real_std, fake_std)
         """
         scores = []
+        self.discriminator.learning_batch_size = self.batch_size*2 
         for i in range(n):
             real_items = np.transpose(self.learning_set[np.random.randint(self.set_size,
                                                                       size=self.batch_size)])
@@ -198,11 +199,12 @@ class WGanGame(GanGame):
 
             fake_items, noises = self.generate_image()
             # generate samples from the generator
-            batch = np.concatenate((real_items, fake_items), axis=0)
+            batch = np.concatenate((real_items, fake_items), axis=1)
+
             score = self.discriminator.compute(batch)
             scores.append(score)
-
-        return np.mean(sores), np.std(score)
+        self.discriminator.learning_batch_size = self.batch_size
+        return np.mean(scores), np.std(score)
 
     def critic_learning(self):
         """
@@ -210,17 +212,22 @@ class WGanGame(GanGame):
 
         :return:
         """
+
+        self.discriminator.learning_batch_size = self.batch_size*2
         real_items = np.transpose(self.learning_set[np.random.randint(self.set_size,
                                                                       size=self.batch_size)])
         # generate a random item from the set
 
         fake_items, noises = self.generate_image()
         # generate samples from the generator
-        batch = np.concatenate((real_items, fake_items), axis=0)
+        batch = np.concatenate((real_items, fake_items), axis=1)
+        
         self.discriminator.compute(batch)
         expected = np.concatenate((np.ones((self.batch_size, 1)), np.zeros((self.batch_size, 1))), axis=0)
         self.discriminator.backprop(expected)
         # expected output = 1 pour le moment
+
+        self.discriminator.learning_batch_size = self.batch_size
         return 0
 
     def generator_learning(self):

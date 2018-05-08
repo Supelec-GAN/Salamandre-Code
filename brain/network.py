@@ -1,4 +1,4 @@
-from brain.neuronLayer import NeuronLayer, ConvolutionalLayer
+from brain.neuronLayer import NeuronLayer, ConvolutionalLayer, ClippedNeuronLayer
 from function.activationFunction import *
 from function.errorFunction import *
 
@@ -10,7 +10,7 @@ class Network:
         """
         Contruit un réseau de neurones multicouches avec des poids initialisés uniformément entre
         0 et 1
-
+s
         :param layers_parameters: Liste des paramètres de couches
         :param error_function: Fonction d'erreur du réseau
         :param learning_batch_size: Taille des batchs

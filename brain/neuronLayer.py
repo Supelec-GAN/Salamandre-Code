@@ -530,7 +530,7 @@ class ClippedNeuronLayer(NeuronLayer):
     def __init__(self, activation_function=Function(), input_size=1, output_size=1, noise_size=0,
                  learning_batch_size=1, param_desc='Parametres de descente', nb_exp=0, clipping=0):
 
-        super(ClippedNeuronLayer, self).__init__(activation_function, input_size=1, output_size=1,
+        super(ClippedNeuronLayer, self).__init__(activation_function, input_size=input_size, output_size=output_size,
                                                  learning_batch_size=learning_batch_size,
                                                  param_desc=param_desc, nb_exp=nb_exp)
 
@@ -546,25 +546,25 @@ class ClippedNeuronLayer(NeuronLayer):
         """
 
         def backprop(self, out_influence, update=True):
-        """
-        Rétropropagation au niveau d'une couche
+            """
+            Rétropropagation au niveau d'une couche
 
-        :param out_influence:
-        :param update: Si Vrai, les poids de la couche sont mis à jour
-        :return: Les nouveaux poids
-        """
-        weight_influence = self.calculate_weight_influence(out_influence)
-        bias_influence = self.calculate_bias_influence(out_influence)
-        if update:
-            self.update_momentum(bias_influence, weight_influence)
-            self.update_weights()
-            self.update_bias()
-            return self.weights[:, 0:self._input_size]  # On extrait les poids concernant les vrais
-            # inputs (le bruit n'a pas besoin d'influer sur les couches d'avant)
-        else:
-            return (self.weights + self.eta * weight_influence)[:, 0:self._input_size]
-            
-            # on fait + self.eta, avec l'hypothèse que le clipping ne sert que pour WGAN pour le moment !!!
+            :param out_influence:
+            :param update: Si Vrai, les poids de la couche sont mis à jour
+            :return: Les nouveaux poids
+            """
+            weight_influence = self.calculate_weight_influence(out_influence)
+            bias_influence = self.calculate_bias_influence(out_influence)
+            if update:
+                self.update_momentum(bias_influence, weight_influence)
+                self.update_weights()
+                self.update_bias()
+                return self.weights[:, 0:self._input_size]  # On extrait les poids concernant les vrais
+                # inputs (le bruit n'a pas besoin d'influer sur les couches d'avant)
+            else:
+                return (self.weights + self.eta * weight_influence)[:, 0:self._input_size]
+
+                # on fait + self.eta, avec l'hypothèse que le clipping ne sert que pour WGAN pour le moment !!!
 
     def update_weights(self):
         """
