@@ -262,7 +262,7 @@ class GanPlot:
         info.axis('off')
         info.text(0.01, 0.95, 'Tentative pour ' + str(param['numbers_to_draw']), fontsize=16)
 
-        info.text(0.01, 0.87, 'Formes des réseau', fontsize=12)
+        info.text(0.01, 0.87, 'Formes des réseaux', fontsize=12)
         info.text(0.01, 0.83, 'Forme du générateur : ' + str(param['generator_network_layers']),
                   fontsize=8)
         # info.text(0.01, 0.79, 'Bruit du générateur : ' + str(param['noise_layers_size']),
@@ -284,7 +284,7 @@ class GanPlot:
                   str(param_desc_disc['eta']), fontsize=8)
 
         info.text(0.01, 0.31, "Infos courbe", fontsize=12)
-        info.text(0.01, 0.27, 'Nombre de partie : ' + str(param['play_number']),
+        info.text(0.01, 0.27, 'Nombre de parties : ' + str(param['play_number']),
                   fontsize=8)
         info.text(0.01, 0.23, 'Test toutes les ' + str(param['test_period']) + ' parties',
                   fontsize=8)
@@ -293,7 +293,7 @@ class GanPlot:
         info.text(0.01, 0.15, "Echantillons d'images toutes les  " +
                   str(param['play_number']//param['nb_images_during_learning']) + " parties",
                   fontsize=8)
-        
+
         save_date = strftime('%Y-%m-%d-%H%M%S', gmtime())
         plt.savefig(self._name + '/Images/' + save_date + 'Courbes' + '.png',
                     bbox_inches='tight', dpi=300)  # sauvegarde de l'image

@@ -86,4 +86,4 @@ error_during_learning = engine.run()
 
 data_interface.save(error_during_learning, 'error_during_learning', data_interface.save_conf())
 
-error_graphs.save(error_during_learning)
+error_graphs.save(error_during_learning, param)
