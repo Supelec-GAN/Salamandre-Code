@@ -5,7 +5,7 @@ class GanGame:
 
     def __init__(self, discriminator, learning_set, learning_fun, generator,
                  disc_learning_ratio=1, gen_learning_ratio=1, disc_fake_learning_ratio=0,
-                 gen_learning_ratio_alone=0, batch_size=0):
+                 gen_learning_ratio_alone=0, batch_size=0, switch_odd_fake=0.05, switch_odd_real=0.05):
         """
         Class of en GAN game, i.e two network learning together with the GAN theory
 
@@ -29,6 +29,8 @@ class GanGame:
         self.disc_fake_learning_ratio = disc_fake_learning_ratio
         self.gen_learning_ratio_alone = gen_learning_ratio_alone
         self.batch_size = batch_size
+        self.switch_odd_fake = switch_odd_fake
+        self.switch_odd_real = switch_odd_real
 
     def play_and_learn(self):
         """
@@ -36,7 +38,7 @@ class GanGame:
 
         :return: None
         """
-        for i in range(self.disc_learning_ratio):
+        for i in range(self.disc_learning_ratio, self.switch_odd_real):
             self.discriminator_learning_real()
 
         for j in range(self.gen_learning_ratio):
@@ -45,7 +47,7 @@ class GanGame:
 
         for k in range(self.disc_fake_learning_ratio):
             fake_image, noise = self.generate_image()
-            self.discriminator_learning_virt(fake_image, True)
+            self.discriminator_learning_virt(fake_image, True, self.switch_odd_fake)
 
         for j in range(self.gen_learning_ratio_alone):
             self.generator_learning()
@@ -86,7 +88,10 @@ class GanGame:
         # generate a random item from the set
         # expected_output = self.learning_fun.out(real_item)
         self.discriminator.compute(real_items)
-        self.discriminator.backprop(np.ones((self.batch_size, 1)))
+        if np.random.random() < self.switch_odd_fake:
+            self.discriminator.backprop(np.zeros((self.batch_size, 1)))
+        else:
+            self.discriminator.backprop(np.ones((self.batch_size, 1)))
         # expected output = 1 pour le moment
         return 0
 
@@ -102,7 +107,10 @@ class GanGame:
         """
         if alone:
             self.discriminator.compute(fake_images)
-        self.discriminator.backprop(np.zeros((self.batch_size, 1)))
+        if np.random.random() < self.switch_odd_fake:
+            self.discriminator.backprop(np.ones((self.batch_size, 1)))
+        else :
+            self.discriminator.backprop(np.zeros((self.batch_size, 1)))
 
         return 0
 
