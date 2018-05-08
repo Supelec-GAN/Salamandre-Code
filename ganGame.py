@@ -91,8 +91,8 @@ class GanGame:
         if np.random.random() < self.switch_odd_fake:
             self.discriminator.backprop(np.zeros((self.batch_size, 1)))
         else:
-            self.discriminator.backprop(np.ones((self.batch_size, 1)))
-        # expected output = 1 pour le moment
+            self.discriminator.backprop(0.7+0.3*np.random.random((self.batch_size, 1)))
+        # expected output = entre 0.7 et 1 pour le moment
         return 0
 
     def discriminator_learning_virt(self, fake_images, alone=False):
@@ -109,7 +109,7 @@ class GanGame:
             self.discriminator.compute(fake_images)
         if np.random.random() < self.switch_odd_fake:
             self.discriminator.backprop(np.ones((self.batch_size, 1)))
-        else :
+        else:
             self.discriminator.backprop(np.zeros((self.batch_size, 1)))
 
         return 0
