@@ -38,7 +38,7 @@ class GanGame:
 
         :return: None
         """
-        for i in range(self.disc_learning_ratio, self.switch_odd_real):
+        for i in range(self.disc_learning_ratio):
             self.discriminator_learning_real()
 
         for j in range(self.gen_learning_ratio):
@@ -47,7 +47,7 @@ class GanGame:
 
         for k in range(self.disc_fake_learning_ratio):
             fake_image, noise = self.generate_image()
-            self.discriminator_learning_virt(fake_image, True, self.switch_odd_fake)
+            self.discriminator_learning_virt(fake_image, True)
 
         for j in range(self.gen_learning_ratio_alone):
             self.generator_learning()
