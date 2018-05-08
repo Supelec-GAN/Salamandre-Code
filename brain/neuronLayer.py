@@ -530,7 +530,7 @@ class ClippedNeuronLayer(NeuronLayer):
     def __init__(self, activation_function=Function(), input_size=1, output_size=1, noise_size=0,
                  learning_batch_size=1, param_desc='Parametres de descente', nb_exp=0, clipping=0):
 
-        super(ConvolutionalLayer, self).__init__(activation_function, input_size=1, output_size=1,
+        super(ClippedNeuronLayer, self).__init__(activation_function, input_size=1, output_size=1,
                                                  learning_batch_size=learning_batch_size,
                                                  param_desc=param_desc, nb_exp=nb_exp)
 
