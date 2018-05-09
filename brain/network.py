@@ -15,7 +15,7 @@ class Network:
         :param error_function: Fonction d'erreur du réseau
         :param learning_batch_size: Taille des batchs
         :param error_gen: Fonction d'erreur utilisée par le GAN pendant la rétropropagation sans
-        mise à jour dans le discriminateur lors de l'appprentissage du générateur
+                          mise à jour dans le discriminateur lors de l'appprentissage du générateur
         """
 
         self._layers_parameters = layers_parameters  # sauvegarde pour pouvoir réinitialiser
@@ -143,7 +143,7 @@ class Network:
 
         :param reference: Sortie idéale
         :param update: Si vrai, on met à jour les poids/biais, sinon on ne renvoie que l'influence
-        de l'erreur sur l'entrée
+                       de l'erreur sur l'entrée
         :param gen_backprop: Dans le cas du GAN, indique d'utiliser _error_gen à la place de _error
         :return: Influence de l'erreur sur l'entrée
         """
@@ -177,7 +177,7 @@ class Network:
         Permet de sauvegarder l'état du réseau, ainsi que ses paramètres
 
         :return: Un triplet (layer_params, error_fun, gen_error_fun) avec layer_params contenznt
-        les coéfficients de chaque couche..
+                 les coéfficients de chaque couche..
         """
 
         for i in range(self._layers_count):
