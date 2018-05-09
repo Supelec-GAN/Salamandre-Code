@@ -95,9 +95,9 @@ class GanGame:
         Discriminator learning what is fake image
 
         :param fake_images: The fake images created by the generator that will be given to the
-        discriminator
+                            discriminator
         :param alone: If True, compute first. If False, the compute has already been done for the
-        generator learning
+                      generator learning
         :return: None
         """
         if alone:
