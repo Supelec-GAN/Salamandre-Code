@@ -9,7 +9,7 @@ from errorGraphs import ErrorGraphs
 data_interface = DataInterface('Mnist_debug')
 
 param = data_interface.read_conf()
-
+param_algo_descente = data_interface.read_conf('config_algo_descente.ini', 'Parametres de descente')
 
 # Chargement des données pour l'apprentissage
 training_images, training_labels, testing_images, testing_labels = \
@@ -86,4 +86,4 @@ error_during_learning = engine.run()
 
 data_interface.save(error_during_learning, 'error_during_learning', data_interface.save_conf())
 
-error_graphs.save(error_during_learning, param)
+error_graphs.save(error_during_learning, param, param_algo_descente)
