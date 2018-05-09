@@ -541,10 +541,10 @@ class MaxPoolingLayer(NeuronLayer):
         super(MaxPoolingLayer, self).__init__(learning_batch_size=learning_batch_size)
         self._input_size = input_size
         self._output_size = output_size
-        self._weights = np.ones((self._feature_maps, self._input_size[0], self._input_size[1]))
-        self.bias = 0
         self._pooling_size = pooling_size
         self._feature_maps = feature_maps
+        self._weights = np.ones((self._feature_maps, self._input_size[0], self._input_size[1]))
+        self.bias = 0
         self.input = np.zeros((self._learning_batch_size, self._feature_maps,
                                self._input_size[0], self._input_size[1]))
         self.output = np.zeros((self._learning_batch_size, self._feature_maps,
@@ -580,7 +580,7 @@ class MaxPoolingLayer(NeuronLayer):
                         maxi = np.amax(part)
                         part[part < maxi] = 0
                         part /= maxi
-                        self.output[b][f][h/self._pooling_size[0]][w/self._pooling_size[1]] = maxi
+                        self.output[b][f][h//self._pooling_size[0]][w//self._pooling_size[1]] = maxi
                         self._weights[f][h:h+self._pooling_size[0], w:w+self._pooling_size[1]] = \
                             part
 
@@ -596,12 +596,13 @@ class MaxPoolingLayer(NeuronLayer):
 
     def derivate_error(self, in_influence):
         """
-        There is no activation levels here, so no error to derivate. It does nothing
+        There is no activation levels here, so no error to derivate. This method just tensorize the
+        influence of the next layer
 
         :param in_influence: The error of the next layer
         :return: The error of the next layer
         """
-        return in_influence
+        return self.tensorize_outputs(in_influence)
 
     def input_error(self, out_influence, new_weights):
         """
