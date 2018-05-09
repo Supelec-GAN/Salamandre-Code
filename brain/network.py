@@ -1,4 +1,4 @@
-from brain.neuronLayer import NeuronLayer, ConvolutionalLayer
+from brain.neuronLayer import *
 from function.activationFunction import *
 from function.errorFunction import *
 
@@ -49,6 +49,13 @@ class Network:
                                        convolution_mode=params['convolution_mode'],
                                        learning_batch_size=self._learning_batch_size
                                        )
+            elif params['type'] == 'MaxPool':
+                self.layers_list[i] = \
+                    MaxPoolingLayer(input_size=params['input_size'],
+                                    output_size=params['output_size'],
+                                    pooling_size=params['pooling_size'],
+                                    feature_maps=params['feature_maps'],
+                                    learning_batch_size=self._learning_batch_size)
             else:
                 raise Exception('Wrong layer type')
             try:
@@ -91,6 +98,13 @@ class Network:
                                        convolution_mode=params['convolution_mode'],
                                        learning_batch_size=self._learning_batch_size
                                        )
+            elif params['type'] == 'MaxPool':
+                self.layers_list[i] = \
+                    MaxPoolingLayer(input_size=params['input_size'],
+                                    output_size=params['output_size'],
+                                    pooling_size=params['pooling_size'],
+                                    feature_maps=params['feature_maps'],
+                                    learning_batch_size=self._learning_batch_size)
             else:
                 raise Exception('Wrong layer type')
         self.output = np.zeros(self.layers_list[-1].output_size)
