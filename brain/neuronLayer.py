@@ -491,7 +491,7 @@ class ConvolutionalLayer(NeuronLayer):
             return outputs_reshaped
         else:
             raise Exception('Wrong inputs dimension, inputs should be a 4D tensor with '
-                            'shape : (batch_size, inputs_channel, img_h, img_w), or a matrix of'
+                            'shape : (batch_size, outputs_channel, img_h, img_w), or a matrix of'
                             'flattened inputs')
 
     def conv2d(self):
