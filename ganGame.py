@@ -5,7 +5,7 @@ class GanGame:
 
     def __init__(self, discriminator, learning_set, learning_fun, generator,
                  disc_learning_ratio=1, gen_learning_ratio=1, disc_fake_learning_ratio=0,
-                 gen_learning_ratio_alone=0, batch_size=0):
+                 gen_learning_ratio_alone=0, batch_size=0, image_number=20):
         """
         Class of en GAN game, i.e two network learning together with the GAN theory
 
@@ -29,6 +29,9 @@ class GanGame:
         self.disc_fake_learning_ratio = disc_fake_learning_ratio
         self.gen_learning_ratio_alone = gen_learning_ratio_alone
         self.batch_size = batch_size
+
+        n = self.generator.input_size
+        self.noises_test = [2*np.random.random((n, self.batch_size))-1 for i in range(image_number)]
 
     def play_and_learn(self):
         """
@@ -133,6 +136,17 @@ class GanGame:
         noises = self.generate_noise()
         images = self.generator.compute(noises)
         return images, noises
+
+    def generate_image_test(self):
+        """
+        Generates an image by inputting noise in the generator
+
+        :return: The generated image and the noise used
+        """
+
+        images = [self.generator.compute(noise) for noise in self.noises_test]
+        return images
+
 
     def generate_noise(self):
         """
