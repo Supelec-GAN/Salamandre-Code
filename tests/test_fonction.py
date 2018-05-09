@@ -1,5 +1,5 @@
 import unittest
-from function import *
+from function.activationFunction import *
 import numpy as np
 
 

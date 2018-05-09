@@ -1,6 +1,6 @@
 import unittest
 from brain.neuronLayer import NeuronLayer
-from function import Sigmoid
+from function.activationFunction import Sigmoid
 import numpy as np
 
 
@@ -16,7 +16,10 @@ class NeuronLayerTest(unittest.TestCase):
         coefs = {'weights': weights,
                  'bias': bias}
 
-        self.simple_nl = NeuronLayer(activation_function=Sigmoid(0.1),
+        fun = Sigmoid(0.1)
+        fun.vectorize()
+
+        self.simple_nl = NeuronLayer(activation_function=fun,
                                      input_size=10,
                                      output_size=3,
                                      noise_size=0,
@@ -25,16 +28,7 @@ class NeuronLayerTest(unittest.TestCase):
                                      nb_exp=0)
         self.simple_nl.restore_coefs(coefs)
 
-        self.noisy_nl = NeuronLayer(activation_function=Sigmoid(0.1),
-                                    input_size=10,
-                                    output_size=3,
-                                    noise_size=5,
-                                    learning_batch_size=1,
-                                    param_desc='Parametres de descente',
-                                    nb_exp=0)
-        self.noisy_nl.restore_coefs(coefs)
-
-        self.batch_nl = NeuronLayer(activation_function=Sigmoid(0.1),
+        self.batch_nl = NeuronLayer(activation_function=fun,
                                     input_size=10,
                                     output_size=3,
                                     noise_size=0,
