@@ -1,3 +1,4 @@
+
 import numpy as np
 from function.activationFunction import Function
 from scipy.signal import convolve2d
@@ -33,6 +34,7 @@ class NeuronLayer:
         # colonnes de la matrice (broadcast)
         self.input = np.zeros((input_size, learning_batch_size))
         self._activation_function = activation_function
+        self._activation_function.vectorize()
         self.activation_levels = np.zeros((output_size, learning_batch_size))  # Chaque colonne
         # correspond à une entrée du batch
         self.output = np.zeros((output_size, learning_batch_size))             # Chaque colonne

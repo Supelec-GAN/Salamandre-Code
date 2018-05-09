@@ -126,7 +126,6 @@ for exp in range(number_exp):
 
     try:
         for i in range(play_number):
-            learn = ganGame.play_and_learn()
             if i % 10 == 0:
                 print("Progress : ", i)
             if i % test_period == 0:
@@ -146,6 +145,7 @@ for exp in range(number_exp):
                 if nb_images_par_sortie_during_learning > 0:
                     gan_plot.save_multiple_output(images_evolution, str(numbers_to_draw) +
                                                   "_au_rang_" + str(i), str(i), a, b)
+            learn = ganGame.play_and_learn()
     except KeyboardInterrupt:
         pass
 

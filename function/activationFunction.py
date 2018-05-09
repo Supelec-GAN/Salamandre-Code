@@ -132,13 +132,13 @@ class Relu(Function):
         super(Relu, self).__init__()
 
     def out(self, x):
-        if x.all() >= 0:
+        if x >= 0:
             return x
         else:
             return 0
 
     def derivate(self, x):
-        if x.all() >= 0:
+        if x >= 0:
             return 1
         else:
             return 0
