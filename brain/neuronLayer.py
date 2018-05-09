@@ -523,3 +523,111 @@ class ConvolutionalLayer(NeuronLayer):
                                                          np.rot90(out_influence[b][o], k=2),
                                                          mode=self._convolution_mode)
         return weight_influence
+
+
+class MaxPoolingLayer(NeuronLayer):
+
+    def __init__(self, input_size=(1, 1), output_size=(1, 1), pooling_size=(1, 1), feature_maps=1,
+                 learning_batch_size=1):
+        super(MaxPoolingLayer, self).__init__(learning_batch_size=learning_batch_size)
+        self._input_size = input_size
+        self._output_size = output_size
+        self._weights = np.ones((self._feature_maps, self._input_size[0], self._input_size[1]))
+        self.bias = 0
+        self._pooling_size = pooling_size
+        self._feature_maps = feature_maps
+        self.input = np.zeros((self._learning_batch_size, self._feature_maps,
+                               self._input_size[0], self._input_size[1]))
+        self.output = np.zeros((self._learning_batch_size, self._feature_maps,
+                                self._output_size[0], self._output_size[1]))
+
+    @property
+    def learning_batch_size(self):
+        return self._learning_batch_size
+
+    @learning_batch_size.setter
+    def learning_batch_size(self, new_learning_batch_size):
+        self.input = np.zeros((new_learning_batch_size, self._feature_maps,
+                               self._input_size[0], self._input_size[0]))
+        self.output = np.zeros((new_learning_batch_size, self._feature_maps,
+                                self._output_size[0], self._output_size[1]))
+        self._learning_batch_size = new_learning_batch_size
+
+    def compute(self, inputs):
+        self.input = self.tensorize_inputs(inputs)
+        for b in range(self._learning_batch_size):
+            for f in range(self._feature_maps):
+                for h in range(0, self._input_size[0], self._pooling_size[0]):
+                    for w in range(0, self._input_size[1], self._pooling_size[1]):
+                        part = self.input[b][f][h:h + self._pooling_size[0],
+                                                w:w + self._pooling_size[1]]
+                        maxi = np.amax(part)
+                        part[part < maxi] = 0
+                        part /= maxi
+                        self.output[b][f][h/self._pooling_size[0]][w/self._pooling_size[1]] = maxi
+                        self._weights[f][h:h+self._pooling_size[0], w:w+self._pooling_size[1]] = \
+                            part
+
+    def backprop(self, out_influence, update=True):
+        return self.weights
+
+    def derivate_error(self, in_influence):
+        return in_influence
+
+    def input_error(self, out_influence, new_weights):
+        return np.kron(out_influence, np.ones(self._pooling_size)) * new_weights
+
+    def tensorize_inputs(self, inputs):
+        """
+        Create a tensor for convolutional layers from a batch of flattened inputs
+
+        This method should be called during each compute or backprop of the layer. Return a reshaped
+        input with shape (learning_batch_size, input_feature_maps, input_size[0], input_size[1])
+
+        :param inputs: A 4D tensor as a batch of 3D input tensors, or a matrix as a batch
+        of flattened inputs
+        :return: A 4D tensor as a batch 3D input tensors
+        """
+        ndim = inputs.ndim
+        shape = inputs.shape
+        if ndim == 4:
+            return inputs
+        elif ndim == 2:
+            # check with self dimension (input_shape, input_channels), then reshape
+            if self._input_size[0]*self._input_size[1]*self._feature_maps != shape[0]:
+                raise Exception('Wrong dimensions : cannot reshape')
+            inputs_reshaped = inputs.ravel('F').reshape((self._learning_batch_size,
+                                                         self._feature_maps,
+                                                         self._input_size[0],
+                                                         self._input_size[1]))
+            return inputs_reshaped
+        else:
+            raise Exception('Wrong inputs dimension, inputs should be a 4D tensor with '
+                            'shape : (batch_size, inputs_channel, img_h, img_w), or a matrix of'
+                            'flattened inputs')
+
+    def tensorize_outputs(self, outputs):
+        """
+        Create a tensor for convolutional layers from a batch of flattened outputs
+
+        This method should be called during each backprop of the layer. Return a reshaped
+        output with shape (learning_batch_size, output_feature_maps, output_size[0], output_size[1])
+
+        :param outputs: A 4D tensor as a batch of 3D output tensors, or a matrix as a batch
+        of flattened outputs
+        :return: A 4D tensor as a batch 3D output tensors
+        """
+        ndim = outputs.ndim
+        # shape = outputs.shape
+        if ndim == 4:
+            return outputs
+        elif ndim == 2:
+            outputs_reshaped = outputs.ravel('F').reshape((self._learning_batch_size,
+                                                           self._feature_maps,
+                                                           self._output_size[0],
+                                                           self._output_size[1]))
+            return outputs_reshaped
+        else:
+            raise Exception('Wrong inputs dimension, inputs should be a 4D tensor with '
+                            'shape : (batch_size, inputs_channel, img_h, img_w), or a matrix of'
+                            'flattened inputs')
