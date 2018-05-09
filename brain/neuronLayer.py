@@ -447,7 +447,7 @@ class ConvolutionalLayer(NeuronLayer):
         input with shape (learning_batch_size, input_feature_maps, input_size[0], input_size[1])
 
         :param inputs: A 4D tensor as a batch of 3D input tensors, or a matrix as a batch
-        of flattened inputs
+                       of flattened inputs
         :return: A 4D tensor as a batch 3D input tensors
         """
         ndim = inputs.ndim
@@ -476,7 +476,7 @@ class ConvolutionalLayer(NeuronLayer):
         output with shape (learning_batch_size, output_feature_maps, output_size[0], output_size[1])
 
         :param outputs: A 4D tensor as a batch of 3D output tensors, or a matrix as a batch
-        of flattened outputs
+                        of flattened outputs
         :return: A 4D tensor as a batch 3D output tensors
         """
         ndim = outputs.ndim
@@ -529,6 +529,15 @@ class MaxPoolingLayer(NeuronLayer):
 
     def __init__(self, input_size=(1, 1), output_size=(1, 1), pooling_size=(1, 1), feature_maps=1,
                  learning_batch_size=1):
+        """
+        Creates a Max Pooling layer for neural network
+
+        :param input_size: Size of the input images
+        :param output_size: Size of the output images
+        :param pooling_size: Size of the downscaling filter
+        :param feature_maps: Number of feature maps from the previous convolutional layer
+        :param learning_batch_size: Size of learning batches
+        """
         super(MaxPoolingLayer, self).__init__(learning_batch_size=learning_batch_size)
         self._input_size = input_size
         self._output_size = output_size
@@ -554,6 +563,13 @@ class MaxPoolingLayer(NeuronLayer):
         self._learning_batch_size = new_learning_batch_size
 
     def compute(self, inputs):
+        """
+        Compute for maxpooling layers. It is a special compute that also modifies the weights of the
+        layer for the backprop
+
+        :param inputs: The inputs (a batch of flat inputs, or a tensor with a good shape)
+        :return: None
+        """
         self.input = self.tensorize_inputs(inputs)
         for b in range(self._learning_batch_size):
             for f in range(self._feature_maps):
@@ -568,24 +584,45 @@ class MaxPoolingLayer(NeuronLayer):
                         self._weights[f][h:h+self._pooling_size[0], w:w+self._pooling_size[1]] = \
                             part
 
-    def backprop(self, out_influence, update=True):
+    def backprop(self, *args):
+        """
+        Backprop of a maxpooling layer. It does basically nothing, it just returns the weights of
+        the layer to be compatible with the other types of layers
+
+        :param args: Some args that won't be used for this layer
+        :return: The layer's weights
+        """
         return self.weights
 
     def derivate_error(self, in_influence):
+        """
+        There is no activation levels here, so no error to derivate. It does nothing
+
+        :param in_influence: The error of the next layer
+        :return: The error of the next layer
+        """
         return in_influence
 
     def input_error(self, out_influence, new_weights):
+        """
+        The error is propagated throught the maxpooling layer for the previous layer. The error is
+        upscaled, then multiply element-wise with the weights created by the compute
+
+        :param out_influence: The error to propagate
+        :param new_weights: The weights of the layer
+        :return: The propagated error that can be fed to the previous layer
+        """
         return np.kron(out_influence, np.ones(self._pooling_size)) * new_weights
 
     def tensorize_inputs(self, inputs):
         """
-        Create a tensor for convolutional layers from a batch of flattened inputs
+        Create a tensor for maxpooling layers from a batch of flattened inputs
 
-        This method should be called during each compute or backprop of the layer. Return a reshaped
-        input with shape (learning_batch_size, input_feature_maps, input_size[0], input_size[1])
+        This method should be called during each compute of the layer. Return a reshaped
+        input with shape (learning_batch_size, feature_maps, input_size[0], input_size[1])
 
         :param inputs: A 4D tensor as a batch of 3D input tensors, or a matrix as a batch
-        of flattened inputs
+                       of flattened inputs
         :return: A 4D tensor as a batch 3D input tensors
         """
         ndim = inputs.ndim
@@ -608,13 +645,13 @@ class MaxPoolingLayer(NeuronLayer):
 
     def tensorize_outputs(self, outputs):
         """
-        Create a tensor for convolutional layers from a batch of flattened outputs
+        Create a tensor for maxpooling layers from a batch of flattened outputs
 
         This method should be called during each backprop of the layer. Return a reshaped
-        output with shape (learning_batch_size, output_feature_maps, output_size[0], output_size[1])
+        output with shape (learning_batch_size, feature_maps, output_size[0], output_size[1])
 
         :param outputs: A 4D tensor as a batch of 3D output tensors, or a matrix as a batch
-        of flattened outputs
+                        of flattened outputs
         :return: A 4D tensor as a batch 3D output tensors
         """
         ndim = outputs.ndim
