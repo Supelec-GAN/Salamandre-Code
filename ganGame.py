@@ -5,7 +5,7 @@ class GanGame:
 
     def __init__(self, discriminator, learning_set, learning_fun, generator,
                  disc_learning_ratio=1, gen_learning_ratio=1, disc_fake_learning_ratio=0,
-                 gen_learning_ratio_alone=0, batch_size=0, switch_odd_fake=0.05, switch_odd_real=0.05):
+                 gen_learning_ratio_alone=0, batch_size=0, switch_odd_fake=0.01, switch_odd_real=0.01):
         """
         Class of en GAN game, i.e two network learning together with the GAN theory
 

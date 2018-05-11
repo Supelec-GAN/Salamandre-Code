@@ -91,6 +91,8 @@ for exp in range(number_exp):
 # Initialisation de la partie
     training_fun = param['training_fun']  # Function donnant la réponse à une vrai image attendu
     # (1 par défaut)
+    switch_odd_fake = param['switch_odd_fake']
+    switch_odd_real = param['switch_odd_real']
 
     ganGame = GanGame(discriminator=discriminator,
                       learning_set=training_images_exp,
@@ -100,7 +102,9 @@ for exp in range(number_exp):
                       gen_learning_ratio=gen_learning_ratio,
                       disc_fake_learning_ratio=disc_fake_learning_ratio,
                       gen_learning_ratio_alone=gen_learning_ratio_alone,
-                      batch_size=batch_size)
+                      batch_size=batch_size,
+                      switch_odd_fake=switch_odd_fake,
+                      switch_odd_real=switch_odd_real)
 
     play_number = param['play_number']  # Nombre de partie  (Une partie = i fois apprentissage
     # discriminateur sur vrai image, j fois apprentissage génerateur+ discriminateur et
