@@ -363,16 +363,18 @@ class ConvolutionalLayer(NeuronLayer):
         self._convolution_mode = convolution_mode
         self._weights = np.random.randn(self._output_feature_maps, self._input_feature_maps,
                                         self._filter_size[0], self._filter_size[1])
+        self.update_weights_value = np.zeros_like(self._weights)
         self._bias = np.zeros(self._output_feature_maps)
+        self.update_bias_value = np.zeros_like(self._bias)
         self._input_size = input_size
         self._output_size = output_size
         if self._convolution_mode == 'full':
             self._output_size = (self._input_size[0] + (self._filter_size[0]-1),
                                  self._input_size[1] + (self._filter_size[1]-1))
             self._reverse_convolution_mode = 'valid'
-        # elif self._convolution_mode == 'same':
-        #     self._output_size = self._input_size
-        #     self._reverse_convolution_mode = 'same'
+        elif self._convolution_mode == 'same':
+            self._output_size = self._input_size
+            self._reverse_convolution_mode = 'same'
         elif self._convolution_mode == 'valid':
             self._output_size = (self._input_size[0] - (self._filter_size[0]-1),
                                  self._input_size[1] - (self._filter_size[1]-1))
@@ -416,10 +418,8 @@ class ConvolutionalLayer(NeuronLayer):
         """
         weight_influence = self.calculate_weight_influence(out_influence)
         bias_influence = self.calculate_bias_influence(out_influence)
-        self.update_weights_value = weight_influence
-        self.update_bias_value = bias_influence
         if update:
-            # self.update_momentum(bias_influence, weight_influence)
+            self.update_momentum(bias_influence, weight_influence)
             self.update_weights()
             self.update_bias()
             return self.weights
@@ -519,8 +519,8 @@ class ConvolutionalLayer(NeuronLayer):
         for o in range(self._output_feature_maps):
             for i in range(self._input_feature_maps):
                 for b in range(self._learning_batch_size):
-                    weight_influence[o][i] += convolve2d(self.input[b][i],
-                                                         np.rot90(out_influence[b][o], k=2),
+                    weight_influence[o][i] += convolve2d(out_influence[b][o],
+                                                         np.rot90(self.input[b][i], k=2),
                                                          mode=self._convolution_mode)
         return weight_influence
 
