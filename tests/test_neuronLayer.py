@@ -48,15 +48,19 @@ class NeuronLayerTest(unittest.TestCase):
                                 [0.9, 0.95, -0.2],
                                 [1, 0.05, -0.1]])
 
+        self.expected_output = np.array([[0.54810078, 0.54760536, 0.50424990],
+                                         [0.52821998, 0.49762502, 0.48700293],
+                                         [0.51074834, 0.50837422, 0.50799932]])
+
     def test_compute(self):
         self.assertTrue(np.allclose(self.simple_nl.compute(self.inputs[:,0:1]),
-                                    np.array([[0.54810078], [0.52821998], [0.51074834]]),
+                                    self.expected_output[:,0:1],
                                     rtol=1e-04,
                                     atol=1e-07))
+
+    def test_compute_batch(self):
         self.assertTrue(np.allclose(self.batch_nl.compute(self.inputs),
-                                    np.array([[0.54810078, 0.54760536, 0.50424990],
-                                              [0.52821998, 0.49762502, 0.48700293],
-                                              [0.51074834, 0.50837422, 0.50799932]]),
+                                    self.expected_output,
                                     rtol=1e-04,
                                     atol=1e-07))
 
