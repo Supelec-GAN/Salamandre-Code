@@ -58,9 +58,9 @@ class Engine:
         self.net.reset()
         testing_success_rate = np.zeros(self._test_count)
         for pass_nb in range(self._learning_set_pass_nb):
-            print("itération n°", pass_nb)
             # Boucle pour une fois le set d'entrainement
             for batch_nb in range(self._learning_set_size // self._learning_batch_size):
+                print("itération n°", pass_nb*self._learning_set_size // self._learning_batch_size + batch_nb)
                 debut = batch_nb * self._learning_batch_size
                 fin = (batch_nb+1) * self._learning_batch_size
                 intervalle = self._permutation[debut:fin]

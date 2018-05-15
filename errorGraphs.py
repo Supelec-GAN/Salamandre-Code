@@ -23,9 +23,6 @@ class ErrorGraphs:
         fig = plt.figure()
 
         gs = GridSpec(1, 20)
-        images = slice(0, param['learning_set_pass_nb'] // param['test_period'],
-                       (param['learning_set_pass_nb'] // param['testing_size']) //
-                       param['test_period'])
 
         ax_D_x = fig.add_subplot(gs[0, 0:10])
         ax_D_x.autoscale(axis='x')
@@ -38,7 +35,7 @@ class ErrorGraphs:
 
             errorbar = std / np.sqrt(len(errors_during_learning))
 
-        ax_D_x.plot(np.linspace(0, np.shape(data)[0] -1, np.shape(data)[0]), data, '.-', label = 'Sortie', markevery=images)
+        ax_D_x.plot(np.linspace(0, np.shape(data)[0] -1, np.shape(data)[0]), data, '.-', label = 'Sortie')
 
 
 
@@ -107,16 +104,17 @@ class ErrorGraphs:
 
 
         info.text(0.01, 0.31, "Infos courbe", fontsize=12)
-        info.text(0.01, 0.27, 'Nombre de partie : ' + str(param['learning_set_pass_nb']),
+        info.text(0.01, 0.27, 'Nombre de parties parallèles : ' + str(param['nb_exp']),
                   fontsize=8)
-        info.text(0.01, 0.23, 'Test toutes les ' + str(param['test_period']) + ' parties',
+        info.text(0.01, 0.23, "Nombre d'apprentissages : " + str(param['training_size']*param['learning_set_pass_nb']//param['batch_size']),
                   fontsize=8)
-        info.text(0.01, 0.19, 'Moyenne sur ' + str(param['testing_size']) + ' samples par test',
+        info.text(0.01, 0.19, "Taille de batch : " + str(param['batch_size']),
                   fontsize=8)
-        info.text(0.01, 0.15, "Echantillons d'images toutes les  " +
-                  str(param['learning_set_pass_nb'
-                            ''] // param['test_period']) + " parties",
+        info.text(0.01, 0.15, 'Test tous les ' + str(param['test_period']) + ' apprentissages',
                   fontsize=8)
+        info.text(0.01, 0.11, 'Moyenne sur ' + str(param['testing_size']) + ' samples par test',
+                  fontsize=8)
+
         plt.title("Evolution de l'erreur, test effectué tous les " + str(self.test_period)
                   + " apprentissages")
 
@@ -133,9 +131,6 @@ class ErrorGraphs:
         fig = plt.figure()
 
         gs = GridSpec(1, 20)
-        images = slice(0, param['learning_set_pass_nb'] // param['test_period'],
-                       (param['learning_set_pass_nb'] // param['testing_size']) //
-                       param['test_period'])
 
         ax_D_x = fig.add_subplot(gs[0, 0:10])
         ax_D_x.autoscale(axis='x')
@@ -148,7 +143,6 @@ class ErrorGraphs:
 
             errorbar = std / np.sqrt(len(errors_during_learning))
 
-        ax_D_x.plot(np.linspace(0, np.shape(data)[0] - 1, np.shape(data)[0]), data, '.-',label = 'Sortie', markevery=images)
 
         ax_D_x.set_xlabel("Nombre de parties (X" + str(param['test_period']) + ")")
 
