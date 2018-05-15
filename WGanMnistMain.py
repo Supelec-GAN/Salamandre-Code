@@ -60,7 +60,6 @@ for exp in range(number_exp):
     gen_error_fun = param['gen_error_fun']
     gen_error_fun.vectorize()
     
-
     critic = Network(layers_parameters=disc_layers_params,
                             error_function=disc_error_fun,
                             error_gen=gen_error_fun,
@@ -71,9 +70,6 @@ for exp in range(number_exp):
 
     critic_learning_ratio = param['disc_learning_ratio']  # Pour chaque partie, nombre
     # d'apprentissage du discriminant sur image réelle
-    disc_fake_learning_ratio = param['disc_fake_learning_ratio']  # Pour chaque partie,
-    # nombre d'apprentissage du discriminant sur image fausse, !!!  sans apprentissage du
-    # génerateur !!!
 
 # Initialisation du generator
     gen_layers_params = param['generator_network_layers']
@@ -87,7 +83,6 @@ for exp in range(number_exp):
 
     gen_learning_ratio = param['gen_learning_ratio']  # Pour chaque partie, nombre d'apprentissage
     # du discriminant sur image réelle
-    gen_learning_ratio_alone = param['gen_learning_ratio_alone']
 
 # Initialisation de la partie
     training_fun = param['training_fun']  # Function donnant la réponse à une vrai image attendu
@@ -146,7 +141,7 @@ for exp in range(number_exp):
 
     images_finales = [[]]*final_images
     for i in range(final_images):
-        image_test, associate_noise = ganGame.generate_image()  # génération d'une image à la fin de
+        image_test, associate_noise = ganGame.generate_image_test()  # génération d'une image à la fin de
         # l'apprentissage
         images_finales[i] = image_test
     if final_images > 0:
@@ -165,8 +160,3 @@ for exp in range(number_exp):
 
     state = generator.save_state()
     gan_plot.save_plot_network_state(state)
-    # if os.name == 'nt':     # pour exécuter l'affichage uniquement sur nos ordis, et pas la vm
-    #     state = generator.save_state()
-    #     gan_plot.plot_network_state(state)
-
-    #     gan_plot.plot_courbes(param, discriminator_real_score, discriminator_fake_score)
