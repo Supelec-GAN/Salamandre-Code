@@ -49,6 +49,17 @@ class Network:
                                        convolution_mode=params['convolution_mode'],
                                        learning_batch_size=self._learning_batch_size
                                        )
+            elif params['type'] == 'Clipped':
+                self.layers_list[i] = \
+                    ClippedNeuronLayer(activation_function=eval(params['activation_function']),
+                                       input_size=params['input_size'],
+                                       output_size=params['output_size'],
+                                       noise_size=params['noise_size'],
+                                       param_desc=self._param_desc,
+                                       nb_exp=self.nb_exp,
+                                       learning_batch_size=self._learning_batch_size,
+                                       clipping=params['clipping']
+                                       )
             elif params['type'] == 'MaxPool':
                 self.layers_list[i] = \
                     MaxPoolingLayer(input_size=params['input_size'],
