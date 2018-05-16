@@ -140,14 +140,9 @@ for exp in range(number_exp):
                 fake_std.append(d)
             if i % image_evolution_number == 0:
                 a, b, c, d = ganGame.test_discriminator_learning(lissage_test)
-                images_evolution = [[]]*nb_images_par_sortie_during_learning
-                for j in range(nb_images_par_sortie_during_learning):
-                    image, associate_noise = ganGame.generate_image()  # Generation d'une image à
-                    # la fin de l'apprentissage
-                    images_evolution[j] = image
-                if nb_images_par_sortie_during_learning > 0:
-                    gan_plot.save_multiple_output(images_evolution, str(numbers_to_draw) +
-                                                  "_au_rang_" + str(i), str(i), a, b)
+                images_evolution = ganGame.generate_image_test()
+                gan_plot.save_multiple_output(images_evolution, str(numbers_to_draw) +
+                                              "_au_rang_" + str(i), str(i), a, b)
     except KeyboardInterrupt:
         pass
 

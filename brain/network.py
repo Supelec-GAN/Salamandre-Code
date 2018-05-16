@@ -1,4 +1,4 @@
-from brain.neuronLayer import NeuronLayer, ConvolutionalLayer
+from brain.neuronLayer import NeuronLayer, ConvolutionalLayer, ClippedNeuronLayer
 from function.activationFunction import *
 from function.errorFunction import *
 
@@ -10,7 +10,7 @@ class Network:
         """
         Contruit un réseau de neurones multicouches avec des poids initialisés uniformément entre
         0 et 1
-
+s
         :param layers_parameters: Liste des paramètres de couches
         :param error_function: Fonction d'erreur du réseau
         :param learning_batch_size: Taille des batchs
@@ -48,6 +48,17 @@ class Network:
                                        output_feature_maps=params['output_feature_maps'],
                                        convolution_mode=params['convolution_mode'],
                                        learning_batch_size=self._learning_batch_size
+                                       )
+            elif params['type'] == 'Clipped':
+                self.layers_list[i] = \
+                    ClippedNeuronLayer(activation_function=eval(params['activation_function']),
+                                       input_size=params['input_size'],
+                                       output_size=params['output_size'],
+                                       noise_size=params['noise_size'],
+                                       param_desc=self._param_desc,
+                                       nb_exp=self.nb_exp,
+                                       learning_batch_size=self._learning_batch_size,
+                                       clipping=params['clipping']
                                        )
             else:
                 raise Exception('Wrong layer type')

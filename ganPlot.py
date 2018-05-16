@@ -152,7 +152,7 @@ class GanPlot:
 
         ax = plt.subplot(gs[:, -1])
         final_bias = np.reshape(bias[-1], [28, 28])
-        ax.imshow(final_bias, cmap='Greys')    
+        ax.imshow(final_bias, cmap='Greys')
         ax.set_title('Dernier Biais')
         ax.set_xticks([])
         ax.set_yticks([])
@@ -176,6 +176,13 @@ class GanPlot:
         plt.close()
         gs = GridSpec(1, 11)
         fig = plt.figure()
+
+
+        try:
+            assert (param['play_number'] // (param['nb_images_during_learning'])*param['test_period'])> 0
+        except:
+            print("il faut que param['play_number']//param['nb_images_during_learning'])//param['test_period'] soit supérieur ou égal à 1")
+
         images = slice(0, param['play_number']//param['test_period'], (param['play_number']//param['nb_images_during_learning'])//param['test_period'])
 
         ax_D_x = fig.add_subplot(gs[0, 0:10])

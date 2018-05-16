@@ -124,6 +124,36 @@ class CrossEntropy(ErrorFunction):
     def __repr__(self):
         return 'CrossEntropy()'
 
+
+class WGanError(ErrorFunction):
+
+    def __init__(self):
+        super(WGanError, self).__init__()
+
+    def out(self, reference, output):
+        return (reference*output) - (1-reference)*(output)
+
+    def derivate(self, reference, output):
+        return reference - (1-reference)
+
+    def __repr__(self):
+        return 'WGanError()'
+
+
+class WGanErrorGen(ErrorFunction):
+
+    def __init__(self):
+        super(WGanErrorGen, self).__init__()
+
+    def out(self, output):
+        return -output
+
+    def derivate(self, output):
+        return -1
+
+    def __repr__(self):
+        return 'WGanErrorGen()'
+
 # class GeneratorError(ErrorFunction):
 
 #     def __init__(self):
