@@ -35,11 +35,7 @@ class ErrorGraphs:
 
             errorbar = std / np.sqrt(len(errors_during_learning))
 
-        ax_D_x.plot(np.linspace(0, np.shape(data)[0] -1, np.shape(data)[0]), data, '.-', label = 'Sortie')
-
-
-
-        ax_D_x.set_xlabel("Nombre de parties (X" + str(param['test_period']) + ")")
+        ax_D_x.plot(np.linspace(0, np.shape(data)[0] -1, num=np.shape(data)[0]), data, '.-', label = 'Sortie')
 
         ax_D_x.legend(loc=0, bbox_to_anchor=(1.3, 0.1))
         plt.ylabel("Succès moyen sur le batch de test pour les " + str(self.learning_iterations)
