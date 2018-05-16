@@ -42,7 +42,7 @@ class ErrorGraphs:
         ax_D_x.set_xlabel("Nombre de parties (X" + str(param['test_period']) + ")")
 
         ax_D_x.legend(loc=0, bbox_to_anchor=(1.3, 0.1))
-        plt.ylabel("Erreur moyenne sur le batch de test pour les " + str(self.learning_iterations)
+        plt.ylabel("Succès moyen sur le batch de test pour les " + str(self.learning_iterations)
                    + " runs")
         plt.xlabel("Apprentissages")
 
@@ -115,7 +115,7 @@ class ErrorGraphs:
         info.text(0.01, 0.11, 'Moyenne sur ' + str(param['testing_size']) + ' samples par test',
                   fontsize=8)
 
-        plt.title("Evolution de l'erreur, test effectué tous les " + str(self.test_period)
+        plt.title("Evolution du succès, test effectué tous les " + str(self.test_period)
                   + " apprentissages")
 
 
@@ -147,7 +147,7 @@ class ErrorGraphs:
         ax_D_x.set_xlabel("Nombre de parties (X" + str(param['test_period']) + ")")
 
         ax_D_x.legend(loc=0, bbox_to_anchor=(1.3, 0.1))
-        plt.ylabel("Erreur moyenne sur le batch de test pour les " + str(self.learning_iterations)
+        plt.ylabel("Succès moyen sur le batch de test pour les " + str(self.learning_iterations)
                    + " runs")
         plt.xlabel("Apprentissages")
 
@@ -215,5 +215,5 @@ class ErrorGraphs:
                   str(param['learning_set_pass_nb'
                             ''] // param['test_period']) + " parties",
                   fontsize=8)
-        plt.title("Evolution de l'erreur, test effectué tous les " + str(self.test_period)
+        plt.title("Evolution du succès, test effectué tous les " + str(self.test_period)
                   + " apprentissages")
