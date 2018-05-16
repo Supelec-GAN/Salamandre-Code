@@ -29,6 +29,8 @@ class GanGame:
         self.disc_fake_learning_ratio = disc_fake_learning_ratio
         self.gen_learning_ratio_alone = gen_learning_ratio_alone
         self.batch_size = batch_size
+        self.switch_odd_fake = switch_odd_fake
+        self.switch_odd_real = switch_odd_real
 
         n = self.generator.input_size
         self.noises_test = [2*np.random.random((n, self.batch_size))-1 for i in range(image_number)]
@@ -89,8 +91,11 @@ class GanGame:
         # generate a random item from the set
         # expected_output = self.learning_fun.out(real_item)
         self.discriminator.compute(real_items)
-        self.discriminator.backprop(np.ones((self.batch_size, 1)))
-        # expected output = 1 pour le moment
+        if np.random.random() < self.switch_odd_fake:
+            self.discriminator.backprop(np.zeros((self.batch_size, 1)))
+        else:
+            self.discriminator.backprop(0.7+0.3*np.random.random((self.batch_size, 1)))
+        # expected output = entre 0.7 et 1 pour le moment
         return 0
 
     def discriminator_learning_virt(self, fake_images, alone=False):
@@ -105,7 +110,10 @@ class GanGame:
         """
         if alone:
             self.discriminator.compute(fake_images)
-        self.discriminator.backprop(np.zeros((self.batch_size, 1)))
+        if np.random.random() < self.switch_odd_fake:
+            self.discriminator.backprop(np.ones((self.batch_size, 1)))
+        else:
+            self.discriminator.backprop(np.zeros((self.batch_size, 1)))
 
         return 0
 
