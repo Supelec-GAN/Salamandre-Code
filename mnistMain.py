@@ -9,6 +9,7 @@ from errorGraphs import ErrorGraphs
 data_interface = DataInterface('Mnist_debug')
 
 param = data_interface.read_conf()
+data_interface.rename(param['nom_dossier_resultats'])
 param_algo_descente = data_interface.read_conf('config_algo_descente.ini', 'Parametres de descente')
 
 # Chargement des données pour l'apprentissage
@@ -51,7 +52,7 @@ net = Network(layers_params,
               error_function=error_fun,
               learning_batch_size=batch_size)
 
-error_graphs = ErrorGraphs('Mnist_debug_graphes', nb_exp, eta, net, test_period)
+error_graphs = ErrorGraphs(param['nom_dossier_resultats'], nb_exp, eta, net, test_period)
 
 momentum = param['momentum']
 

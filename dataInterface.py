@@ -17,6 +17,9 @@ class DataInterface:
         """
         self._name = "ReleveExp/" + name
 
+    def rename(self, name):
+        self._name = "ReleveExp/" + name
+
     def save(self, data, data_name, data_param='dictionnary of parameters'):
         """
         Save numpy array data into the folder self._name. Filename is
