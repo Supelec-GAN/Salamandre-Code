@@ -1,4 +1,5 @@
 import numpy as np
+from random import randint
 
 
 class GanGame:
@@ -184,12 +185,34 @@ class WGanGame(GanGame):
                                        gen_learning_ratio_alone=0,
                                        batch_size=batch_size)
 
+        self.nb_batch = self.set_size//self.batch_size*10
+        print("nb_batch", self.nb_batch)
+        self.batch_critic_true = np.array([np.transpose(self.learning_set[np.random.randint(self.set_size,
+                                                                      size=self.batch_size)]) for i in range(self.nb_batch)])
+        # self.batch_critic_false = np.array([self.generate_image() for i in range(10)])
+
+        # print("shape du batch tru : {}, shape du batch false : {}".format(np.shape(self.batch_critic_true), np.shape(self.batch_critic_false)))
+        # self.batch_critic = np.concatenate((self.batch_critic_true, self.batch_critic_false), axis=2)
+        # print("shape du batch tru : {}, shape du batch false : {}, shape du batch total : {}".format(np.shape(self.batch_critic_true), np.shape(self.batch_critic_false), np.shape(self.batch_critic)))
+
+        self.expected = np.concatenate((np.ones((self.batch_size, 1)), np.zeros((self.batch_size, 1))), axis=0)
+    def generate_image(self):
+        """
+        Generates an image by inputting noise in the generator
+
+        :return: The generated image and the noise used
+        """
+        noises = self.generate_noise()
+        images = self.generator.compute(noises)
+        return images
+
     def play_and_learn(self):
         """
         Execute a movement of the game, learning of discriminator, then the generator
 
         :return: None
         """
+    
         for i in range(self.disc_learning_ratio):
             self.critic_learning()
 
@@ -205,20 +228,18 @@ class WGanGame(GanGame):
         :return: (real_score, fake_score, real_std, fake_std)
         """
         scores = []
-        self.discriminator.learning_batch_size = self.batch_size*2 
+        self.discriminator.learning_batch_size = self.batch_size*2
         for i in range(n):
-            real_items = np.transpose(self.learning_set[np.random.randint(self.set_size,
-                                                                      size=self.batch_size)])
-            # generate a random item from the set
-
-            fake_items, noises = self.generate_image()
-            # generate samples from the generator
+            # # generate a random item from the set
+            real_items = self.batch_critic_true[randint(0, self.nb_batch-1)]
+            fake_items = self.generate_image()
+            # # generate samples from the generator
             batch = np.concatenate((real_items, fake_items), axis=1)
 
             score = self.discriminator.compute(batch)
-            scores.append(score)
+            scores.append(np.mean(score))
         self.discriminator.learning_batch_size = self.batch_size
-        return np.mean(scores), np.std(score)
+        return np.mean(scores), np.std(scores)
 
     def critic_learning(self):
         """
@@ -226,22 +247,23 @@ class WGanGame(GanGame):
 
         :return:
         """
-
-        self.discriminator.learning_batch_size = self.batch_size*2
-        real_items = np.transpose(self.learning_set[np.random.randint(self.set_size,
-                                                                      size=self.batch_size)])
-        # generate a random item from the set
-
-        fake_items, noises = self.generate_image()
-        # generate samples from the generator
-        batch = np.concatenate((real_items, fake_items), axis=1)
         
+        self.discriminator.learning_batch_size = self.batch_size*2
+        # real_items = np.transpose(self.learning_set[np.random.randint(self.set_size,
+        #                                                               size=self.batch_size)])
+        # # generate a random item from the set
+        a = randint(0, self.nb_batch-1)
+        real_items = self.batch_critic_true[a]
+        fake_items = self.generate_image()
+        # # generate samples from the generator
+        batch = np.concatenate((real_items, fake_items), axis=1)
+
         self.discriminator.compute(batch)
-        expected = np.concatenate((np.ones((self.batch_size, 1)), np.zeros((self.batch_size, 1))), axis=0)
-        self.discriminator.backprop(expected)
-        # expected output = 1 pour le moment
+        self.discriminator.backprop(self.expected)
+        # expected output = 1 pour les vrais images et 0 pour les fausses images
 
         self.discriminator.learning_batch_size = self.batch_size
+
         return 0
 
     def generator_learning(self):
@@ -250,7 +272,7 @@ class WGanGame(GanGame):
 
         :return: None
         """
-        fake_images, noises = self.generate_image()
+        fake_images = self.generate_image()
         # real_items = [self.learning_set[np.random.randint(self.set_size)]
         #               for i in range(self.batch_size)]
         # batch = fake_images.concatenate(real_items)

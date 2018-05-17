@@ -145,7 +145,7 @@ s
         :return: Influence de l'erreur sur l'entrée
         """
         # On initialise avec une valeur particulière pour la couche de sortie
-        if  calculate_error:
+        if calculate_error:
             if gen_backprop:
                 in_influence = self._error_gen.derivate(reference)  # reference = self.output ici
             else:

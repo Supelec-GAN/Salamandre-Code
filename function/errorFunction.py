@@ -93,7 +93,7 @@ class CostFunction(ErrorFunction):
 
     def out(self, reference, output):
         if reference == 1:
-            return -0.5*np.log(output)
+            return -0.5*np.log(output) # -0.5*reference*np.log(output) - 0.5*(1-reference)*np.log(1-output)
         else:
             return -0.5*np.log(1 - output)
 

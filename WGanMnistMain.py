@@ -119,6 +119,20 @@ for exp in range(number_exp):
 
     image_evolution_number = play_number//nb_images_during_learning
 
+    # Calculation of Wassertstein distance before the game start
+    for i in range(200):
+        ganGame.critic_learning()
+        if (i%10)==0:
+            a, b = ganGame.test_critic_learning(lissage_test)  # effectue n test et
+            # renvoie la moyenne des scores
+    print("on passe au gen")
+    for i in range(100):
+        ganGame.generator_learning()
+        a, b = ganGame.test_critic_learning(lissage_test)  # effectue n test et
+        # renvoie la moyenne des scores
+        print("Score : ", a)
+        print("b", b)
+
     try:
         for i in range(play_number):
             if i % 10 == 0:
@@ -131,7 +145,7 @@ for exp in range(number_exp):
                 print("Score : ", a)
                 score_std.append(b)
             if i % image_evolution_number == 0:
-                a, b, c, d = ganGame.test_discriminator_learning(lissage_test)
+                a, b = ganGame.test_critic_learning(lissage_test)
                 images_evolution = ganGame.generate_image_test()
                 gan_plot.save_multiple_output(images_evolution, str(numbers_to_draw) +
                                               "_au_rang_" + str(i), str(i), a, b)
@@ -139,13 +153,8 @@ for exp in range(number_exp):
     except KeyboardInterrupt:
         pass
 
-    images_finales = [[]]*final_images
-    for i in range(final_images):
-        image_test, associate_noise = ganGame.generate_image_test()  # génération d'une image à la fin de
-        # l'apprentissage
-        images_finales[i] = image_test
-    if final_images > 0:
-        gan_plot.save_multiple_output(images_finales, str(numbers_to_draw) + str(play_number),
+    images_finales = ganGame.generate_image_test()  # génération d'images à la fin
+    gan_plot.save_multiple_output(images_finales, str(numbers_to_draw) + str(play_number),
                                       str(play_number), score[-1],
                                       score_std[-1])
 

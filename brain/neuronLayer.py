@@ -537,6 +537,7 @@ class ClippedNeuronLayer(NeuronLayer):
                                                  param_desc=param_desc, nb_exp=nb_exp)
 
         self._clipping = clipping
+        self._weights = self.weights*self._clipping
         """
         Creates a Fully Connected layer with clipped weights for a neural network
 
@@ -592,8 +593,10 @@ class ClippedNeuronLayer(NeuronLayer):
 
         :return: none
         """
-        max_weigth = np.amax(np.abs(self._weights))
-        self._weights = self._clipping*self._weights/max_weigth
+        # max_weigth = np.amax(np.abs(self._weights))
+        # self._weights = self._clipping*self._weights/max_weigth
+        self._weights = np.clip(self._weights, -self._clipping, self._clipping)
+        # print(self._weights)
 
     def bias_clipping(self):
         """
@@ -601,5 +604,6 @@ class ClippedNeuronLayer(NeuronLayer):
         
         :return: none
         """
-        max_bias = np.amax(np.abs(self._bias))
-        self._bias = self._clipping*self._bias/max_bias
+        # max_bias = np.amax(np.abs(self._bias))
+        # self._bias = self._clipping*self._bias/max_bias
+        self._bias = np.clip(self._bias, -self._clipping, self._clipping)
