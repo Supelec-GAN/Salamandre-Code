@@ -72,6 +72,8 @@ class NeuronLayer:
         self.gamma_2 = param_liste['gamma_2']
         self.instant = 0
 
+        self.fixed_noise_input = np.random.randn(self._noise_size, self._learning_batch_size)
+
     @property
     def weights(self):
         """Get the current weights."""
@@ -118,7 +120,7 @@ class NeuronLayer:
     def output_size(self):
         return self._output_size
 
-    def compute(self, inputs):
+    def compute(self, inputs, fixed_noise=True):
         """
         Calcul de la sortie de la couche
 
@@ -127,7 +129,10 @@ class NeuronLayer:
         """
         self.input = self.flatten_inputs(inputs)
         if self._noise_size != 0:  # nécessaire car np.zeros((0,1)) est un objet chelou
-            self.noise_input = np.random.randn(self._noise_size, self._learning_batch_size)
+            if fixed_noise:
+                self.noise_input = np.random.randn(self._noise_size, self._learning_batch_size)
+            else:
+                self.noise_input = self.fixed_noise_input
             self.input = np.concatenate([self.input, self.noise_input])
         self.activation_levels = np.dot(self._weights, self.input) - self._bias
         self.output = self._activation_function.out(self.activation_levels)
@@ -402,7 +407,7 @@ class ConvolutionalLayer(NeuronLayer):
                                 self._output_size[0], self._output_size[1]))
         self._learning_batch_size = new_learning_batch_size
 
-    def compute(self, inputs):
+    def compute(self, inputs, fixed_noise):
         self.input = self.tensorize_inputs(inputs)
         self.activation_levels = self.conv2d() + self._bias[np.newaxis, :, np.newaxis, np.newaxis]
         self.output = self._activation_function.out(self.activation_levels)

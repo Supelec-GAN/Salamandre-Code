@@ -106,7 +106,7 @@ s
                 raise Exception('Wrong layer type')
         self.output = np.zeros(self.layers_list[-1].output_size)
 
-    def compute(self, inputs):
+    def compute(self, inputs, fixed_noise=True):
         """
         Calcule la sortie du réseau pour un batch d'entrées
 
@@ -129,7 +129,7 @@ s
 
         self.layers_list[0].compute(inputs)
         for i in range(1, self._layers_count):
-            self.layers_list[i].compute(self.layers_list[i - 1].output)
+            self.layers_list[i].compute(self.layers_list[i - 1].output, fixed_noise)
         self.output = self.layers_list[-1].output
         return self.output
 

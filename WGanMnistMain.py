@@ -118,21 +118,13 @@ for exp in range(number_exp):
     # fake_std.append(d)
 
     image_evolution_number = play_number//nb_images_during_learning
-
+    start_critic = 200
     # Calculation of Wassertstein distance before the game start
-    for i in range(200):
+    print("{} apprentissage pour le critic au départ".format(start_critic))
+    for i in range(start_critic):
         ganGame.critic_learning()
-        if (i%10)==0:
-            a, b = ganGame.test_critic_learning(lissage_test)  # effectue n test et
-            # renvoie la moyenne des scores
-    print("on passe au gen")
-    for i in range(100):
-        ganGame.generator_learning()
-        a, b = ganGame.test_critic_learning(lissage_test)  # effectue n test et
-        # renvoie la moyenne des scores
-        print("Score : ", a)
-        print("b", b)
 
+    print("début de la Game")
     try:
         for i in range(play_number):
             if i % 10 == 0:

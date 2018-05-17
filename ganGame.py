@@ -145,8 +145,9 @@ class GanGame:
         :return: The generated image and the noise used
         """
 
-        images = [self.generator.compute(noise) for noise in self.noises_test]
-        return images
+        images = [self.generator.compute(noise, False) for noise in self.noises_test]
+        images2 = [self.generator.compute(noise) for noise in self.noises_test]
+        return np.concatenate((images, images2), axis = 0)
 
 
     def generate_noise(self):
