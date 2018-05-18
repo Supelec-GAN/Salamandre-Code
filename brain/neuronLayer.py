@@ -236,8 +236,8 @@ class NeuronLayer:
             partial2 = np.sqrt(np.add(np.divide(self.weights_gradients_sum, (1 - self.gamma_2**self.instant)), self.epsilon))
             self.update_weights_value = self.momentum * self.update_weights_value - self.eta*np.divide(np.divide(self.weights_moment, partial), partial2)
 
-            self.bias_gradients_sum = self.gamma * self.bias_gradients_sum + (1 - self.gamma) * bias_influence ** 2
-            self.bias_moment = self.gamma * self.bias_moment + (1 - self.gamma) * bias_influence
+            self.bias_gradients_sum = self.gamma_2 * self.bias_gradients_sum + (1 - self.gamma_2) * bias_influence ** 2
+            self.bias_moment = self.gamma_1 * self.bias_moment + (1 - self.gamma_1) * bias_influence
             partial =(1 - self.gamma_1**self.instant)
             partial2 = np.sqrt(np.add(np.divide(self.bias_gradients_sum, (1 - self.gamma_2**self.instant)), self.epsilon))
             self.update_bias_value = self.momentum * self.update_bias_value + self.eta*np.divide(np.divide(self.bias_moment, partial), partial2)
