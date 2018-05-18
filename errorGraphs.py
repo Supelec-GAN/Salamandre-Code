@@ -92,7 +92,7 @@ class ErrorGraphs:
             info.text(0.01, 0.69, 'Gamma 1 : ' + str(param_algo_descente['gamma_1']), fontsize=8)
             info.text(0.01, 0.65, 'Gamma 2 : ' + str(param_algo_descente['gamma_2']), fontsize=8)
             info.text(0.01, 0.61, 'Epsilon :' + str(param_algo_descente['epsilon']), fontsize=8)
-            info.text(0.01, 0.57, "Alpha" + str(param_algo_descente['alpha']), fontsize=8)
+            info.text(0.01, 0.57, "Eta" + str(param_algo_descente['eta']), fontsize=8)
 
 
 
@@ -196,7 +196,7 @@ class ErrorGraphs:
             info.text(0.01, 0.39, 'Gamma 1 : ' + str(param_algo_descente['gamma_1']), fontsize=8)
             info.text(0.01, 0.43, 'Gamma 2 : ' + str(param_algo_descente['gamma_2']), fontsize=8)
             info.text(0.01, 0.47, 'Epsilon :' + str(param_algo_descente['epsilon']), fontsize=8)
-            info.text(0.01, 0.51, "Alpha" + str(param_algo_descente['alpha']), fontsize=8)
+            info.text(0.01, 0.51, "Eta" + str(param_algo_descente['eta']), fontsize=8)
 
         info.text(0.01, 0.31, "Infos courbe", fontsize=12)
         info.text(0.01, 0.27, 'Nombre de partie : ' + str(param['learning_set_pass_nb']),
