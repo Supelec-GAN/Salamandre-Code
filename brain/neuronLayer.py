@@ -230,8 +230,8 @@ class NeuronLayer:
 
             self.instant += 1
 
-            self.weights_gradients_sum = self.gamma * self.weights_gradients_sum + (1 - self.gamma) * weight_influence ** 2
-            self.weights_moment = self.gamma * self.weights_moment + (1 - self.gamma) * weight_influence
+            self.weights_gradients_sum = self.gamma_2 * self.weights_gradients_sum + (1 - self.gamma_2) * weight_influence ** 2
+            self.weights_moment = self.gamma_1 * self.weights_moment + (1 - self.gamma_1) * weight_influence
             partial =(1 - self.gamma_1**self.instant)
             partial2 = np.sqrt(np.add(np.divide(self.weights_gradients_sum, (1 - self.gamma_2**self.instant)), self.epsilon))
             self.update_weights_value = self.momentum * self.update_weights_value - self.alpha*np.divide(np.divide(self.weights_moment, partial), partial2)
