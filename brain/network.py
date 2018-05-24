@@ -126,11 +126,17 @@ s
             inputs = inputs
         else:
             raise Exception("Incorrect inputs dimensions")
+        # print("inputs", np.shape(inputs))
+        # print("inputs", inputs)      
 
         self.layers_list[0].compute(inputs)
         for i in range(1, self._layers_count):
             self.layers_list[i].compute(self.layers_list[i - 1].output, fixed_noise)
+            # print("input a la couche {} : {}".format(i-1, np.shape(self.layers_list[i-1].output)))
+            # print("input a la couche {} : {}".format(i-1, self.layers_list[i-1].output))
         self.output = self.layers_list[-1].output
+        # print("self.output", np.shape(self.output))
+        # print("self.output", self.output)
         return self.output
 
     # On considère ici toujours des réseaux avec plusieurs couches !
@@ -148,16 +154,34 @@ s
         if calculate_error:
             if gen_backprop:
                 in_influence = self._error_gen.derivate(reference)  # reference = self.output ici
+                # print("plop, je backprop le discriminateur avec l'erreur du générateur")
             else:
+                # print("plop, je backprop le discriminateur avec l'erreur du discriminateur")
                 in_influence = self._error.derivate(reference, self.output)
+                # print("in_inf {}, ref {}, output, {}".format(np.shape(in_influence), np.shape(reference), np.shape(self.output)))
         else:
             in_influence = reference
+            # print("plop, je n'ai pas besoin de calculate_error")
         n = self._layers_count
         for i in range(n - 1, -1, -1):
+            # print("i", i)
+            # print("before in_influence", in_influence)
             out_influence = self.layers_list[i].derivate_error(in_influence)
+            # print("############, out_influcence", np.shape(out_influence))
             new_weights = self.layers_list[i].backprop(out_influence, update)
             in_influence = self.layers_list[i].input_error(out_influence, new_weights)
+            # print("after in_influence", in_influence)
         return in_influence
+
+    def set_descente(self, desc=True):
+        for layer in self.layers_list:
+            layer.set_descente(desc)
+
+    def get_weights(self):
+        weights = []
+        for layer in self.layers_list:
+            weights.append(layer.weights)
+        return weights
 
     @property
     def learning_batch_size(self):

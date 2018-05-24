@@ -118,46 +118,70 @@ for exp in range(number_exp):
     # fake_std.append(d)
 
     image_evolution_number = play_number//nb_images_during_learning
-    start_critic = 200
+    start_critic = 100
     # Calculation of Wassertstein distance before the game start
     print("{} apprentissage pour le critic au départ".format(start_critic))
     for i in range(start_critic):
+        a, b = ganGame.test_critic_learning(1)
+        print(i)
+        print(a)
+        # a = ganGame.discriminator.get_weights()
+        # for layer in a:
+        #     print("layer", np.shape(layer))
+        ganGame.critic_learning()
+    print("{} apprentissage pour le gen au départ".format(start_critic))
+    for i in range(start_critic):
+        if i < 10 and i > 0:
+            a, b = ganGame.test_critic_learning(1)
+            print(a)
+        if i%10 == 0:
+            a, b = ganGame.test_critic_learning(1)
+            print(a)
+        ganGame.generator_learning()
+    print("{} apprentissage pour le critic au départ".format(start_critic))
+    for i in range(start_critic):
+        if i < 10 and i > 0:
+            a, b = ganGame.test_critic_learning(1)
+            print(a)
+        if i%10 == 0:
+            a, b = ganGame.test_critic_learning(1)
+            print(a)
         ganGame.critic_learning()
 
-    print("début de la Game")
-    try:
-        for i in range(play_number):
-            if i % 10 == 0:
-                print("Progress : ", i)
-            if i % test_period == 0:
-                print("i", i)
-                a, b = ganGame.test_critic_learning(lissage_test)  # effectue n test et
-                # renvoie la moyenne des scores
-                score.append(a)
-                print("Score : ", a)
-                score_std.append(b)
-            if i % image_evolution_number == 0:
-                a, b = ganGame.test_critic_learning(lissage_test)
-                images_evolution = ganGame.generate_image_test()
-                gan_plot.save_multiple_output(images_evolution, str(numbers_to_draw) +
-                                              "_au_rang_" + str(i), str(i), a, b)
-            learn = ganGame.play_and_learn()
-    except KeyboardInterrupt:
-        pass
+    # print("début de la Game")
+    # try:
+    #     for i in range(play_number):
+    #         if i % 10 == 0:
+    #             print("Progress : ", i)
+    #         if i % test_period == 0:
+    #             print("i", i)
+    #             a, b = ganGame.test_critic_learning(lissage_test)  # effectue n test et
+    #             # renvoie la moyenne des scores
+    #             score.append(a)
+    #             print("Score : ", a)
+    #             score_std.append(b)
+    #         if i % image_evolution_number == 0:
+    #             a, b = ganGame.test_critic_learning(lissage_test)
+    #             images_evolution = ganGame.generate_image_test()
+    #             gan_plot.save_multiple_output(images_evolution, str(numbers_to_draw) +
+    #                                           "_au_rang_" + str(i), str(i), a, b)
+    #         learn = ganGame.play_and_learn()
+    # except KeyboardInterrupt:
+    #     pass 
 
-    images_finales = ganGame.generate_image_test()  # génération d'images à la fin
-    gan_plot.save_multiple_output(images_finales, str(numbers_to_draw) + str(play_number),
-                                      str(play_number), score[-1],
-                                      score_std[-1])
+    # images_finales = ganGame.generate_image_test()  # génération d'images à la fin
+    # gan_plot.save_multiple_output(images_finales, str(numbers_to_draw) + str(play_number),
+    #                                   str(play_number), score[-1],
+    #                                   score_std[-1])
 
-    conf = data_interface.save_conf('config.ini', 'GanMnist')  # récupération de la
-    # configuration pour la sauvegarde dans les fichiers
-    data_interface.save(score, 'score', conf)  # Sauvegarde
-    # des courbes de score
-    data_interface.save(score_std, 'score_std', conf)
+    # conf = data_interface.save_conf('config.ini', 'GanMnist')  # récupération de la
+    # # configuration pour la sauvegarde dans les fichiers
+    # data_interface.save(score, 'score', conf)  # Sauvegarde
+    # # des courbes de score
+    # data_interface.save(score_std, 'score_std', conf)
 
-    gan_plot.save_courbes(param, param_desc_gen, param_desc_disc,
-                          score, score_std)
+    # gan_plot.save_courbes(param, param_desc_gen, param_desc_disc,
+    #                       score, score_std)
 
-    state = generator.save_state()
-    gan_plot.save_plot_network_state(state)
+    # state = generator.save_state()
+    # gan_plot.save_plot_network_state(state)

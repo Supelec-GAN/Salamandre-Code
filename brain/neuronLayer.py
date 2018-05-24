@@ -41,6 +41,7 @@ class NeuronLayer:
         # correspond à une entrée du batch
 
         self.update_weights_value = np.zeros((output_size, input_size + noise_size))
+        # print("init updata_w_v : ", np.shape( self.update_weights_value ))
         self.update_bias_value = np.zeros((output_size, 1))
 
         self.noise_input = np.zeros((noise_size, learning_batch_size))
@@ -74,6 +75,8 @@ class NeuronLayer:
 
         self.fixed_noise_input = np.random.randn(self._noise_size, self._learning_batch_size)
 
+        self._descente = 1
+
     @property
     def weights(self):
         """Get the current weights."""
@@ -99,6 +102,16 @@ class NeuronLayer:
     @bias.deleter
     def bias(self):
         del self._bias
+
+    @property
+    def descente(self):
+        return self._descente
+
+    def set_descente(self, desc=True):
+        if desc:
+            self._descente = 1
+        else:
+            self._descente = -1
 
     @property
     def learning_batch_size(self):
@@ -128,13 +141,17 @@ class NeuronLayer:
         :return: La sortie de la couche
         """
         self.input = self.flatten_inputs(inputs)
+        # print("neuron : inputs = {}, flatten_inputs = {}".format(np.shape(inputs), np.shape(self.input)))
         if self._noise_size != 0:  # nécessaire car np.zeros((0,1)) est un objet chelou
             if fixed_noise:
                 self.noise_input = np.random.randn(self._noise_size, self._learning_batch_size)
             else:
                 self.noise_input = self.fixed_noise_input
             self.input = np.concatenate([self.input, self.noise_input])
+        # print("before activation levels", np.shape(self.activation_levels))
+        # print("self.weights : {}, self.input : {}, self.bias : {}".format(np.shape(self._weights), np.shape(self.input), np.shape(self._bias)))
         self.activation_levels = np.dot(self._weights, self.input) - self._bias
+        # print("activation levels", np.shape(self.activation_levels))
         self.output = self._activation_function.out(self.activation_levels)
         return self.output
 
@@ -166,40 +183,41 @@ class NeuronLayer:
         """
 
         if self.algo_utilise == "Gradient":
-            self.update_weights_value = self.momentum*self.update_weights_value - self.eta*weight_influence
-            self.update_bias_value = self.momentum*self.update_bias_value + self.eta * bias_influence
+            self.update_weights_value = self.momentum*self.update_weights_value - self._descente*self.eta*weight_influence
+            self.update_bias_value = self.momentum*self.update_bias_value + self._descente*self.eta * bias_influence
 
         elif self.algo_utilise == "Adagrad":
             self.weights_gradients_sum = self.weights_gradients_sum + weight_influence**2
             partial = np.sqrt(np.add(self.weights_gradients_sum, self.epsilon))
-            self.update_weights_value = self.momentum*self.update_weights_value - self.eta*np.divide(weight_influence, partial)
+            self.update_weights_value = self.momentum*self.update_weights_value - self._descente*self.eta*np.divide(weight_influence, partial)
 
             self.bias_gradients_sum = self.bias_gradients_sum + bias_influence**2
             partial = np.sqrt(np.add(self.bias_gradients_sum, self.epsilon))
-            self.update_bias_value = self.momentum*self.update_bias_value + self.eta*np.divide(bias_influence, partial)
+            self.update_bias_value = self.momentum*self.update_bias_value + self._descente*self.eta*np.divide(bias_influence, partial)
 
         elif self.algo_utilise == "RMSProp":
 
             if self.moment == 2:
                 self.weights_gradients_sum = self.gamma*self.weights_gradients_sum + (1 - self.gamma)*(weight_influence**2)
                 partial = np.sqrt(np.add(self.weights_gradients_sum, self.epsilon))
-                self.update_weights_value = self.momentum*self.update_weights_value - self.eta*np.divide(weight_influence, partial)
+                self.update_weights_value = self.momentum*self.update_weights_value - self._descente*self.eta*np.divide(weight_influence, partial)
 
                 # print(np.amax(partial))
                 self.bias_gradients_sum = self.gamma*self.bias_gradients_sum + (1-self.gamma)*(bias_influence**2)
                 partial = np.sqrt(np.add(self.bias_gradients_sum, self.epsilon))
-                self.update_bias_value = self.momentum*self.update_bias_value + self.eta*np.divide(bias_influence, partial)
+                self.update_bias_value = self.momentum*self.update_bias_value + self._descente*self.eta*np.divide(bias_influence, partial)
 
             if self.moment == 1:
+                # print("RMSProp weight_influence", np.shape(weight_influence))
                 self.weights_gradients_sum = self.gamma * self.weights_gradients_sum + (1 - self.gamma) * weight_influence ** 2
                 self.weights_moment = self.gamma * self.weights_moment + (1- self.gamma) * weight_influence
                 partial = np.sqrt(np.add((self.weights_gradients_sum - self.weights_moment**2), self.epsilon))
-                self.update_weights_value = self.momentum*self.update_weights_value - self.eta*np.divide(weight_influence, partial)
+                self.update_weights_value = self.momentum*self.update_weights_value - self._descente*self.eta*np.divide(weight_influence, partial)
 
                 self.bias_gradients_sum = self.gamma * self.bias_gradients_sum + (1 - self.gamma) * bias_influence ** 2
                 self.bias_moment = self.gamma * self.bias_moment + (1 - self.gamma) * bias_influence
                 partial = np.sqrt(np.add((self.bias_gradients_sum - self.bias_moment**2), self.epsilon))
-                self.update_bias_value = self.momentum*self.update_bias_value + self.eta*np.divide(bias_influence, partial)
+                self.update_bias_value = self.momentum*self.update_bias_value + self._descente*self.eta*np.divide(bias_influence, partial)
 
         elif self.algo_utilise == "Adadelta":
 
@@ -208,13 +226,13 @@ class NeuronLayer:
                 self.weights_eta = self.gamma * self.weights_eta + (1 - self.gamma) * self.update_weights_value**2
                 partial = np.sqrt(np.add(self.weights_eta, self.epsilon))*weight_influence
                 partial2 = np.sqrt(np.add(self.weights_gradients_sum, self.epsilon))
-                self.update_weights_value = self.momentum*self.update_weights_value - np.divide(partial, partial2)
+                self.update_weights_value = self.momentum*self.update_weights_value - self._descente*np.divide(partial, partial2)
 
                 self.bias_gradients_sum = self.gamma * self.bias_gradients_sum + (1 - self.gamma) * bias_influence ** 2
                 self.bias_eta = self.gamma * self.bias_eta + (1 - self.gamma) * self.update_bias_value ** 2
                 partial = np.sqrt(np.add(self.bias_eta, self.epsilon))*bias_influence
                 partial2 = np.sqrt(np.add(self.bias_gradients_sum, self.epsilon))
-                self.update_bias_value = self.momentum*self.update_bias_value + np.divide(partial, partial2)
+                self.update_bias_value = self.momentum*self.update_bias_value + self._descente*np.divide(partial, partial2)
 
             if self.moment == 1:
 
@@ -223,14 +241,14 @@ class NeuronLayer:
                 self.weights_moment = self.gamma * self.weights_moment + (1 - self.gamma) * weight_influence
                 partial = np.sqrt(np.add(self.bias_eta, self.epsilon))*bias_influence
                 partial2 = np.sqrt(np.add((self.weights_gradients_sum - self.weights_moment**2), self.epsilon))
-                self.update_weights_value = self.momentum*self.update_weights_value - np.divide(partial, partial2)
+                self.update_weights_value = self.momentum*self.update_weights_value - self._descente*np.divide(partial, partial2)
 
                 self.bias_gradients_sum = self.gamma * self.bias_gradients_sum + (1 - self.gamma) * bias_influence ** 2
                 self.bias_eta = self.gamma * self.bias_eta + (1 - self.gamma) * self.update_bias_value ** 2
                 self.bias_moment = self.gamma * self.bias_moment + (1 - self.gamma) * bias_influence
                 partial = np.sqrt(np.add(self.bias_eta, self.epsilon))*bias_influence
                 partial2 = np.sqrt(np.add((self.bias_gradients_sum - self.bias_moment**2), self.epsilon))
-                self.update_bias_value = self.momentum*self.update_bias_value + np.divide(partial, partial2)
+                self.update_bias_value = self.momentum*self.update_bias_value + self._descente*np.divide(partial, partial2)
 
         elif self.algo_utilise == "Adam":
 
@@ -240,13 +258,13 @@ class NeuronLayer:
             self.weights_moment = self.gamma * self.weights_moment + (1 - self.gamma) * weight_influence
             partial =(1 - self.gamma_1**self.instant)
             partial2 = np.sqrt(np.add(np.divide(self.weights_gradients_sum, (1 - self.gamma_2**self.instant)), self.epsilon))
-            self.update_weights_value = self.momentum * self.update_weights_value - self.alpha*np.divide(np.divide(self.weights_moment, partial), partial2)
+            self.update_weights_value = self.momentum * self.update_weights_value - self._descente*self.alpha*np.divide(np.divide(self.weights_moment, partial), partial2)
 
             self.bias_gradients_sum = self.gamma * self.bias_gradients_sum + (1 - self.gamma) * bias_influence ** 2
             self.bias_moment = self.gamma * self.bias_moment + (1 - self.gamma) * bias_influence
             partial =(1 - self.gamma_1**self.instant)
             partial2 = np.sqrt(np.add(np.divide(self.bias_gradients_sum, (1 - self.gamma_2**self.instant)), self.epsilon))
-            self.update_bias_value = self.momentum * self.update_bias_value + self.alpha*np.divide(np.divide(self.bias_moment, partial), partial2)
+            self.update_bias_value = self.momentum * self.update_bias_value + self._descente*self.alpha*np.divide(np.divide(self.bias_moment, partial), partial2)
 
     def update_weights(self):
         """
@@ -271,6 +289,7 @@ class NeuronLayer:
         :param out_influence: influence of output on the error
         :return: matrix of the same dimension than weights
         """
+        # print("____________________ out_influence : {}, ___ self.input : {}, learning_batch_size, {}".format(np.shape(out_influence), np.shape(self.input), self._learning_batch_size))
         return np.dot(out_influence, np.transpose(self.input)) / self._learning_batch_size
 
     def calculate_bias_influence(self, out_influence):
@@ -291,6 +310,8 @@ class NeuronLayer:
         :return: error used in the recursive formula
         """
         deriv_vector = self._activation_function.derivate(self.activation_levels)
+        # print("~~~~~~~~~~~~~deriv_vector", np.shape(deriv_vector))
+        # print("~~~~~~~~~~~~~deriv_vector*in_influence", np.shape(in_influence))
         return deriv_vector * in_influence
 
     def input_error(self, out_influence, new_weights):
@@ -302,6 +323,7 @@ class NeuronLayer:
         :return: influence of the input
         """
         in_influence = np.dot(np.transpose(new_weights), out_influence)
+
         return in_influence
 
     def flatten_inputs(self, inputs):
@@ -553,26 +575,36 @@ class ClippedNeuronLayer(NeuronLayer):
         :param clipping
         """
 
-        def backprop(self, out_influence, update=True):
-            """
+    def backprop(self, out_influence, update=True):
+        """
             Rétropropagation au niveau d'une couche
-
-            :param out_influence:
-            :param update: Si Vrai, les poids de la couche sont mis à jour
+        :param out_influence:
+        :param update: Si Vrai, les poids de la couche sont mis à jour
             :return: Les nouveaux poids
-            """
-            weight_influence = self.calculate_weight_influence(out_influence)
-            bias_influence = self.calculate_bias_influence(out_influence)
-            if update:
-                self.update_momentum(bias_influence, weight_influence)
-                self.update_weights()
-                self.update_bias()
-                return self.weights[:, 0:self._input_size]  # On extrait les poids concernant les vrais
-                # inputs (le bruit n'a pas besoin d'influer sur les couches d'avant)
-            else:
-                return (self.weights + self.eta * weight_influence)[:, 0:self._input_size]
+        """
+        weight_influence = self.calculate_weight_influence(out_influence)
+        bias_influence = self.calculate_bias_influence(out_influence)
+        if update:
+            self.update_momentum(bias_influence, weight_influence)
+            self.update_weights()
+            self.update_bias()
+            a = self.weights[:, 0:self._input_size]
+            return self.weights[:, 0:self._input_size]  # On extrait les poids concernant les vrais
+            # inputs (le bruit n'a pas besoin d'influer sur les couches d'avant)
+        else:
+            # Save previous update_weights_value to restore them
+            prev_update_weights_value = self.update_weights_value
+            prev_update_bias_value = self.update_bias_value
 
-                # on fait + self.eta, avec l'hypothèse que le clipping ne sert que pour WGAN pour le moment !!!
+            # Simulate news weight values
+            self.update_momentum(bias_influence, weight_influence)
+            a = (self.weights + self.update_weights_value)[:, 0:self._input_size]
+            a = np.clip(a, -self._clipping, self._clipping)
+
+            # Restore original value
+            self.update_weights_value = prev_update_weights_value
+            self.update_bias_value = prev_update_bias_value
+            return a
 
     def update_weights(self):
         """
@@ -580,6 +612,7 @@ class ClippedNeuronLayer(NeuronLayer):
 
         :return: None
         """
+        # print("update weights _ clip : ", np.shape(self.weights))
         self._weights = self._weights + self.update_weights_value
         self.weights_clipping()
 

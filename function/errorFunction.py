@@ -131,10 +131,10 @@ class WGanError(ErrorFunction):
         super(WGanError, self).__init__()
 
     def out(self, reference, output):
-        return (reference*output) - (1-reference)*(output)
+        return - (reference * output) + (1 - reference) * (output)
 
     def derivate(self, reference, output):
-        return reference - (1-reference)
+        return -reference + (1 - reference)
 
     def __repr__(self):
         return 'WGanError()'
@@ -153,6 +153,21 @@ class WGanErrorGen(ErrorFunction):
 
     def __repr__(self):
         return 'WGanErrorGen()'
+
+
+class WGanErrorGen2(ErrorFunction):
+
+    def __init__(self):
+        super(WGanErrorGen2, self).__init__()
+
+    def out(self, output):
+        return np.linalg.norm(output, axis=0)
+
+    def derivate(self, output):
+        return 2 * output
+
+    def __repr__(self):
+        return 'WGanErrorGen2()'
 
 # class GeneratorError(ErrorFunction):
 
