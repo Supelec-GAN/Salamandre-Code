@@ -35,16 +35,7 @@ eta = param['eta']
 learning_set_pass_nb = param['learning_set_pass_nb']
 batch_size = param['batch_size']
 
-
-couche0 = {'type': 'C',
-           'activation_function': 'Sigmoid(0.1)',
-           'input_size': (28, 28),
-           'output_size': (19, 19),
-           'filter_size': (10, 10),
-           'input_feature_maps': 1,
-           'output_feature_maps': 4,
-           'convolution_mode': 'valid'}
-
+# Création du réseau
 layers_params = param['network']
 
 net = Network(layers_params,

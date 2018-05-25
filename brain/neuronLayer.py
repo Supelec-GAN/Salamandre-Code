@@ -500,9 +500,10 @@ class ConvolutionalLayer(NeuronLayer):
         for b in range(self._learning_batch_size):
             for o in range(self._output_feature_maps):
                 for i in range(self._input_feature_maps):
-                    out[b][o] += convolve2d(self.input[b][i],
-                                            self._weights[o][i],
-                                            mode=self._convolution_mode)
+                    conv = convolve2d(self.input[b][i],
+                                      self._weights[o][i],
+                                      mode=self._convolution_mode)
+                    out[b][o] += conv[::self._step, ::self._step]
         return out
 
     def reverse_conv2d(self, out_influence, new_weights):
@@ -510,9 +511,10 @@ class ConvolutionalLayer(NeuronLayer):
         for b in range(self._learning_batch_size):
             for i in range(self._input_feature_maps):
                 for o in range(self._output_feature_maps):
-                    in_influence[b][i] += convolve2d(out_influence[b][o],
-                                                     np.rot90(new_weights[o][i], k=2),
-                                                     mode=self._reverse_convolution_mode)
+                    conv = convolve2d(out_influence[b][o],
+                                      np.rot90(new_weights[o][i], k=2),
+                                      mode=self._reverse_convolution_mode)
+                    in_influence[b][i] += conv
         return in_influence
 
     def weights_conv2d(self, out_influence):
@@ -520,9 +522,10 @@ class ConvolutionalLayer(NeuronLayer):
         for o in range(self._output_feature_maps):
             for i in range(self._input_feature_maps):
                 for b in range(self._learning_batch_size):
-                    weight_influence[o][i] += convolve2d(out_influence[b][o],
-                                                         np.rot90(self.input[b][i], k=2),
-                                                         mode=self._convolution_mode)
+                    conv = convolve2d(out_influence[b][o],
+                                      np.rot90(self.input[b][i], k=2),
+                                      mode=self._convolution_mode)
+                    weight_influence[o][i] += conv
         return weight_influence
 
 
@@ -579,11 +582,11 @@ class MaxPoolingLayer(NeuronLayer):
                         part = self.input[b][f][h:h + self._pooling_size[0],
                                                 w:w + self._pooling_size[1]]
                         maxi = np.amax(part)
-                        part[part < maxi] = 0
-                        part /= maxi
+                        weight_part = np.zeros_like(part)
+                        weight_part[part == maxi] = 1
                         self.output[b][f][h//self._pooling_size[0]][w//self._pooling_size[1]] = maxi
                         self._weights[f][h:h+self._pooling_size[0], w:w+self._pooling_size[1]] = \
-                            part
+                            weight_part
 
     def backprop(self, *args):
         """
