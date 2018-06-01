@@ -181,7 +181,7 @@ class NeuronLayer:
         :param weight_influence:
         :return:
         """
-
+        # print(self._descente)
         if self.algo_utilise == "Gradient":
             self.update_weights_value = self.momentum*self.update_weights_value - self._descente*self.eta*weight_influence
             self.update_bias_value = self.momentum*self.update_bias_value + self._descente*self.eta * bias_influence
@@ -595,6 +595,7 @@ class ClippedNeuronLayer(NeuronLayer):
             # Save previous update_weights_value to restore them
             prev_update_weights_value = self.update_weights_value
             prev_update_bias_value = self.update_bias_value
+            prev = (self.weights_gradients_sum, self.weights_eta, self.bias_gradients_sum, self.weights_moment, self.bias_moment, self.bias_eta)
 
             # Simulate news weight values
             self.update_momentum(bias_influence, weight_influence)
@@ -604,6 +605,8 @@ class ClippedNeuronLayer(NeuronLayer):
             # Restore original value
             self.update_weights_value = prev_update_weights_value
             self.update_bias_value = prev_update_bias_value
+
+            self.weights_gradients_sum, self.weights_eta, self.bias_gradients_sum, self.weights_moment, self.bias_moment, self.bias_eta = prev
             return a
 
     def update_weights(self):
@@ -622,7 +625,7 @@ class ClippedNeuronLayer(NeuronLayer):
 
         :return: None
         """
-        self._bias = self._bias + self.update_bias_value
+        self._bias = self._bias # + self.update_bias_value
         self.bias_clipping()
 
     def weights_clipping(self):

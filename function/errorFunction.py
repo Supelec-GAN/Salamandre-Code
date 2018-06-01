@@ -131,10 +131,10 @@ class WGanError(ErrorFunction):
         super(WGanError, self).__init__()
 
     def out(self, reference, output):
-        return - (reference * output) + (1 - reference) * (output)
+        return  (reference * output) -  (1 - reference) * (output)
 
     def derivate(self, reference, output):
-        return -reference + (1 - reference)
+        return reference - (1 - reference)
 
     def __repr__(self):
         return 'WGanError()'
@@ -150,7 +150,7 @@ class WGanErrorGen(ErrorFunction):
 
     def derivate(self, output):
         return -1
-
+        
     def __repr__(self):
         return 'WGanErrorGen()'
 

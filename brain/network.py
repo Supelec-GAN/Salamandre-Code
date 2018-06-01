@@ -132,6 +132,7 @@ s
         self.layers_list[0].compute(inputs)
         for i in range(1, self._layers_count):
             self.layers_list[i].compute(self.layers_list[i - 1].output, fixed_noise)
+
             # print("input a la couche {} : {}".format(i-1, np.shape(self.layers_list[i-1].output)))
             # print("input a la couche {} : {}".format(i-1, self.layers_list[i-1].output))
         self.output = self.layers_list[-1].output
@@ -161,7 +162,7 @@ s
                 # print("in_inf {}, ref {}, output, {}".format(np.shape(in_influence), np.shape(reference), np.shape(self.output)))
         else:
             in_influence = reference
-            # print("plop, je n'ai pas besoin de calculate_error")
+            # print("plop, je n'ai pas besoin de calculate_error, car je suis un générateur")
         n = self._layers_count
         for i in range(n - 1, -1, -1):
             # print("i", i)

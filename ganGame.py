@@ -146,8 +146,9 @@ class GanGame:
         """
 
         images = [self.generator.compute(noise, False) for noise in self.noises_test]
-        images2 = [self.generator.compute(noise) for noise in self.noises_test]
-        return np.concatenate((images, images2), axis=0)
+        # images2 = [self.generator.compute(noise) for noise in self.noises_test]
+        # return np.concatenate((images, images2), axis=0)
+        return images
 
     def generate_noise(self):
         """
@@ -173,7 +174,7 @@ class GanGame:
 class WGanGame(GanGame):
     def __init__(self, critic, learning_set, learning_fun, generator,
                  critic_learning_ratio=1, gen_learning_ratio=1,
-                 batch_size=0):
+                 batch_size=0, image_number=20):
 
         super(WGanGame, self).__init__(discriminator=critic,
                                        learning_set=learning_set,
@@ -183,7 +184,8 @@ class WGanGame(GanGame):
                                        gen_learning_ratio=gen_learning_ratio,
                                        disc_fake_learning_ratio=0,
                                        gen_learning_ratio_alone=0,
-                                       batch_size=batch_size)
+                                       batch_size=batch_size,
+                                       image_number=image_number)
 
         self.nb_batch = self.set_size // self.batch_size * 10
         print("nb_batch", self.nb_batch)
@@ -237,8 +239,10 @@ class WGanGame(GanGame):
             fake_items = self.generate_image()
             # # generate samples from the generator
             # print("compute du test_critic_learning")
-            score_true = - self.discriminator.compute(real_items)
-            score_fake = self.discriminator.compute(fake_items)
+
+            score_true = self.discriminator.compute(real_items)
+            score_fake = - self.discriminator.compute(fake_items)
+            
             batch = np.concatenate((score_true, score_fake), axis=1)
             # print("batch", batch)
             scores.append(np.mean(batch))
@@ -264,10 +268,14 @@ class WGanGame(GanGame):
 
         # print("generate image pour critic_learning")
         fake_items = self.generate_image()
+
         # # generate samples from the generator
         batch = np.concatenate((real_items, fake_items), axis=1)
+        # print("real : shape {}, min {}, max {}, std {}".format(np.shape(real_items[:, 0]), np.amin(real_items[:, 0]), np.amax(real_items[:, 0]), np.std(real_items[:, 0])))
+        # print("fake : shape {}, min {}, max {}, std {}".format(np.shape(fake_items[:, 0]), np.amin(fake_items[:, 0]), np.amax(fake_items[:, 0]), np.std(fake_items[:, 0])))
         # print("compute du critic_learning")
-        self.discriminator.compute(batch)
+        score = self.discriminator.compute(batch)
+        print(np.mean(score * self.expected + (self.expected - 1) * score))
         self.discriminator.backprop(self.expected)
         # expected output = 1 pour les vrais images et 0 pour les fausses images
 
@@ -284,6 +292,7 @@ class WGanGame(GanGame):
 
         # Set the descente parameter to true, because we want to minimize the value
         self.discriminator.set_descente(desc=True)
+        self.discriminator.learning_batch_size = self.batch_size
 
         fake_images = self.generate_image()
         # real_items = [self.learning_set[np.random.randint(self.set_size)]
@@ -293,7 +302,6 @@ class WGanGame(GanGame):
         score = self.discriminator.compute(fake_images)
         # print("score", score)
         disc_error_influence = self.discriminator.backprop(score, update=False, gen_backprop=True)
-        # print("disc_error_influence", disc_error_influence)
         self.generator.backprop(disc_error_influence, calculate_error=False)
 
         return fake_images

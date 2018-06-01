@@ -17,4 +17,3 @@ save_folder = param_fake['save_folder']
 gan_plot = GanPlot(save_folder, numbers_to_draw)
 
 gan_plot.save_courbes(param_fake, data_real, data_fake)
-

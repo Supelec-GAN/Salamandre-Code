@@ -135,13 +135,13 @@ class Relu(Function):
         if x >= 0:
             return x
         else:
-            return 0
+            return 0.0
 
     def derivate(self, x):
         if x >= 0:
-            return 1
+            return 1.0
         else:
-            return 0
+            return 0.0
 
     def __repr__(self):
         return 'Relu' + '()'
