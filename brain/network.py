@@ -38,17 +38,6 @@ class Network:
                                         nb_exp=self.nb_exp,
                                         batch_size=self._batch_size
                                         )
-            elif params['type'] == 'Conv':
-                self.layers_list[i] = \
-                    ConvolutionalLayer(activation_function=eval(params['activation_function']),
-                                       input_size=params['input_size'],
-                                       output_size=params['output_size'],
-                                       filter_size=params['filter_size'],
-                                       input_feature_maps=params['input_feature_maps'],
-                                       output_feature_maps=params['output_feature_maps'],
-                                       convolution_mode=params['convolution_mode'],
-                                       batch_size=self._batch_size
-                                       )
             elif params['type'] == 'Clipped':
                 self.layers_list[i] = \
                     ClippedNeuronLayer(activation_function=eval(params['activation_function']),
@@ -60,6 +49,17 @@ class Network:
                                        batch_size=self._batch_size,
                                        clipping=params['clipping']
                                        )
+            elif params['type'] == 'Conv':
+                self.layers_list[i] = \
+                    ConvolutionalLayer(activation_function=eval(params['activation_function']),
+                                       input_size=params['input_size'],
+                                       output_size=params['output_size'],
+                                       filter_size=params['filter_size'],
+                                       input_feature_maps=params['input_feature_maps'],
+                                       output_feature_maps=params['output_feature_maps'],
+                                       convolution_mode=params['convolution_mode'],
+                                       batch_size=self._batch_size
+                                       )
             elif params['type'] == 'MaxPool':
                 self.layers_list[i] = \
                     MaxPoolingLayer(input_size=params['input_size'],
@@ -67,6 +67,11 @@ class Network:
                                     pooling_size=params['pooling_size'],
                                     feature_maps=params['feature_maps'],
                                     batch_size=self._batch_size)
+            elif params['type'] == 'Reshape':
+                self.layers_list[i] = \
+                    ReshapeLayer(old_shape=params['old_shape'],
+                                 new_shape=params['new_shape']
+                                 )
             else:
                 raise Exception('Wrong layer type')
             try:
@@ -98,6 +103,17 @@ class Network:
                                         nb_exp=self.nb_exp,
                                         batch_size=self._batch_size
                                         )
+            elif params['type'] == 'Clipped':
+                self.layers_list[i] = \
+                    ClippedNeuronLayer(activation_function=eval(params['activation_function']),
+                                       input_size=params['input_size'],
+                                       output_size=params['output_size'],
+                                       noise_size=params['noise_size'],
+                                       param_desc=self._param_desc,
+                                       nb_exp=self.nb_exp,
+                                       batch_size=self._batch_size,
+                                       clipping=params['clipping']
+                                       )
             elif params['type'] == 'Conv':
                 self.layers_list[i] = \
                     ConvolutionalLayer(activation_function=eval(params['activation_function']),
@@ -116,6 +132,11 @@ class Network:
                                     pooling_size=params['pooling_size'],
                                     feature_maps=params['feature_maps'],
                                     batch_size=self._batch_size)
+            elif params['type'] == 'Reshape':
+                self.layers_list[i] = \
+                    ReshapeLayer(old_shape=params['old_shape'],
+                                 new_shape=params['new_shape']
+                                 )
             else:
                 raise Exception('Wrong layer type')
         self.output = np.zeros(self.layers_list[-1].output_size)
