@@ -24,7 +24,7 @@ class Layer:
         """
         Backpropagates the error throught the layer
 
-        :return: The updated weights
+        :return: The input error
         """
         raise NotImplementedError
 
@@ -34,7 +34,7 @@ class NeuronLayer(Layer):
     def __init__(self, activation_function=Function(), batch_size=1,
                  descent_params_file = 'config_algo_descente.ini',
                  descent_params='Parametres de descente', experience_number=1, *args, **kwargs):
-        super(NeuronLayer, self).__init__(self)
+        super(NeuronLayer, self).__init__()
         # The activation function is vectorized to allow batch compute
         self._activation_function = activation_function
         self._activation_function.vectorize()
@@ -372,17 +372,16 @@ class FullyConnectedLayer(NeuronLayer):
         self.output = self._activation_function.out(self.activation_levels)
         return self.output
 
-    def backprop(self, out_influence, update=True):
+    def backprop(self, out_error, update=True):
+        out_influence = self.derivate_error(out_error)
         weight_influence = self.calculate_weight_influence(out_influence)
         bias_influence = self.calculate_bias_influence(out_influence)
+        self.update_momentum(bias_influence, weight_influence)
         if update:
-            self.update_momentum(bias_influence, weight_influence)
             self.update_weights()
             self.update_bias()
-            return self.weights[:, 0:self._input_size]  # On extrait les poids concernant les vrais
-            # inputs (le bruit n'a pas besoin d'influer sur les couches d'avant)
-        else:
-            return (self.weights - self.eta * weight_influence)[:, 0:self._input_size]
+        in_error = self.input_error(out_influence, updated=update)
+        return in_error
 
     def calculate_weight_influence(self, out_influence):
         return np.dot(out_influence, np.transpose(self.input)) / self._batch_size
@@ -390,13 +389,19 @@ class FullyConnectedLayer(NeuronLayer):
     def calculate_bias_influence(self, out_influence):
         return np.mean(out_influence, axis=1, keepdims=True)
 
-    def derivate_error(self, in_influence):
+    def derivate_error(self, out_error):
         deriv_vector = self._activation_function.derivate(self.activation_levels)
-        return deriv_vector * in_influence
+        return deriv_vector * out_error
 
-    def input_error(self, out_influence, new_weights):
-        in_influence = np.dot(np.transpose(new_weights), out_influence)
-        return in_influence
+    def input_error(self, out_influence, updated):
+        if updated:
+            return np.dot(
+                np.transpose(self._weights[:, :self._input_size]),
+                out_influence)
+        else:
+            return np.dot(
+                np.transpose((self._weights + self._update_weights_value)[:, :self._input_size]),
+                out_influence)
 
     def flatten_inputs(self, inputs):
         """
@@ -495,16 +500,16 @@ class ConvolutionalLayer(NeuronLayer):
         self.output = self._activation_function.out(self.activation_levels)
         return self.output
 
-    def backprop(self, out_influence, update=True):
+    def backprop(self, out_error, update=True):
+        out_influence = self.derivate_error(out_error)
         weight_influence = self.calculate_weight_influence(out_influence)
         bias_influence = self.calculate_bias_influence(out_influence)
+        self.update_momentum(bias_influence, weight_influence)
         if update:
-            self.update_momentum(bias_influence, weight_influence)
             self.update_weights()
             self.update_bias()
-            return self.weights
-        else:
-            return self.weights - self.eta * weight_influence
+        in_error = self.input_error(out_influence, updated=update)
+        return in_error
 
     def calculate_weight_influence(self, out_influence):
         return self.weights_conv2d(out_influence) / self._batch_size
@@ -516,8 +521,11 @@ class ConvolutionalLayer(NeuronLayer):
         deriv_vector = self._activation_function.derivate(self.activation_levels)
         return deriv_vector * self.tensorize_outputs(in_influence)
 
-    def input_error(self, out_influence, new_weights):
-        return self.reverse_conv2d(out_influence, new_weights)
+    def input_error(self, out_influence, updated):
+        if updated:
+            return self.reverse_conv2d(out_influence, self._weights)
+        else:
+            return self.reverse_conv2d(out_influence, self._weights + self._update_weights_value)
 
     def tensorize_inputs(self, inputs):
         """
@@ -666,7 +674,7 @@ class MaxPoolingLayer(NeuronLayer):
                         self._weights[f][h:h+self._pooling_size[0], w:w+self._pooling_size[1]] = \
                             weight_part
 
-    def backprop(self, *args):
+    def backprop(self, out_error, *args):
         """
         Backprop of a maxpooling layer. It does basically nothing, it just returns the weights of
         the layer to be compatible with the other types of layers
@@ -674,9 +682,11 @@ class MaxPoolingLayer(NeuronLayer):
         :param args: Some args that won't be used for this layer
         :return: The layer's weights
         """
-        return self.weights
+        out_influence = self.derivate_error(out_error)
+        in_error = self.input_error(out_influence)
+        return in_error
 
-    def derivate_error(self, in_influence):
+    def derivate_error(self, out_error):
         """
         There is no activation levels here, so no error to derivate. This method just tensorize the
         influence of the next layer
@@ -684,9 +694,9 @@ class MaxPoolingLayer(NeuronLayer):
         :param in_influence: The error of the next layer
         :return: The error of the next layer
         """
-        return self.tensorize_outputs(in_influence)
+        return self.tensorize_outputs(out_error)
 
-    def input_error(self, out_influence, new_weights):
+    def input_error(self, out_influence, *args):
         """
         The error is propagated throught the maxpooling layer for the previous layer. The error is
         upscaled, then multiply element-wise with the weights created by the compute
@@ -695,7 +705,7 @@ class MaxPoolingLayer(NeuronLayer):
         :param new_weights: The weights of the layer
         :return: The propagated error that can be fed to the previous layer
         """
-        return np.kron(out_influence, np.ones(self._pooling_size)) * new_weights
+        return np.kron(out_influence, np.ones(self._pooling_size)) * self._weights
 
     def tensorize_inputs(self, inputs):
         """
@@ -767,20 +777,6 @@ class ClippedNeuronLayer(FullyConnectedLayer):
         """
         super(ClippedNeuronLayer, self).__init__(*args, **kwargs)
         self._clipping = clipping
-
-
-    def backprop(self, out_influence, update=True):
-        weight_influence = self.calculate_weight_influence(out_influence)
-        bias_influence = self.calculate_bias_influence(out_influence)
-        if update:
-            self.update_momentum(bias_influence, weight_influence)
-            self.update_weights()
-            self.update_bias()
-            return self.weights[:, 0:self._input_size]  # On extrait les poids concernant les vrais
-            # inputs (le bruit n'a pas besoin d'influer sur les couches d'avant)
-        else:
-            return (self.weights + self.eta * weight_influence)[:, 0:self._input_size]
-            # on fait + self.eta, avec l'hypothèse que le clipping ne sert que pour WGAN pour le moment !!!
 
     def update_weights(self):
         self._weights = self._weights + self._update_weights_value

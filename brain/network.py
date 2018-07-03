@@ -156,22 +156,22 @@ class Network:
         :param update: Si vrai, on met à jour les poids/biais, sinon on ne renvoie que l'influence
                        de l'erreur sur l'entrée
         :param gen_backprop: Dans le cas du GAN, indique d'utiliser _error_gen à la place de _error
+        :param calculate_error: Dans le cas du GAN, indique s'il faut calculer l'erreur à partir de
+                                la référence ou non
         :return: Influence de l'erreur sur l'entrée
         """
         # On initialise avec une valeur particulière pour la couche de sortie
         if  calculate_error:
             if gen_backprop:
-                in_influence = self._error_gen.derivate(reference)  # reference = self.output ici
+                out_error = self._error_gen.derivate(reference)  # reference = self.output ici
             else:
-                in_influence = self._error.derivate(reference, self.output)
+                out_error = self._error.derivate(reference, self.output)
         else:
-            in_influence = reference
+            out_error = reference
         n = self._layers_count
         for i in range(n - 1, -1, -1):
-            out_influence = self.layers_list[i].derivate_error(in_influence)
-            new_weights = self.layers_list[i].backprop(out_influence, update)
-            in_influence = self.layers_list[i].input_error(out_influence, new_weights)
-        return in_influence
+            out_error = self.layers_list[i].backprop(out_error, update)
+        return out_error
 
     @property
     def batch_size(self):
