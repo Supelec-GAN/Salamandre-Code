@@ -51,8 +51,8 @@ testing_fun = param['testing_fun'](testing_labels)
 
 
 def success_fun(o, eo):
-    omax = np.max(o, axis=0)
-    a = np.max(o*eo, axis=0)
+    omax = np.max(o, axis=1)
+    a = np.max(o*eo, axis=1)
     res = np.array([omax[i] == a[i] for i in range(len(a))])
     return res
 #    if omax == np.dot(np.transpose(o), eo):

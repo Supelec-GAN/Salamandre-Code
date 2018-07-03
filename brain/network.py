@@ -133,10 +133,10 @@ class Network:
         shape = inputs.shape
         if ndim == 1:  # and self._batch_size == 1:  # Pour conserver le fonctionnement
             # avec un vecteur simple en entrée
-            inputs = np.reshape(inputs, (shape[0], 1))
-        elif ndim == 2 and self._batch_size == shape[0]:
-            inputs = np.transpose(inputs)
+            inputs = np.reshape(inputs, (1, shape[0]))
         elif ndim == 2 and self._batch_size == shape[1]:
+            inputs = np.transpose(inputs)
+        elif ndim == 2 and self._batch_size == shape[0]:
             inputs = inputs
         else:
             raise Exception("Incorrect inputs dimensions")

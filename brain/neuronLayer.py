@@ -34,7 +34,7 @@ class NeuronLayer(Layer):
     def __init__(self, activation_function=Function(), batch_size=1,
                  descent_params_file = 'config_algo_descente.ini',
                  descent_params='Parametres de descente', experience_number=1, *args, **kwargs):
-        super(NeuronLayer, self).__init__()
+        super(NeuronLayer, self).__init__(*args, **kwargs)
         # The activation function is vectorized to allow batch compute
         self._activation_function = activation_function
         self._activation_function.vectorize()
@@ -325,19 +325,19 @@ class FullyConnectedLayer(NeuronLayer):
         self._output_size = output_size
         self._noise_size = noise_size
 
-        self.input = np.zeros((input_size, self._batch_size))
-        self.noise_input = np.zeros((noise_size, self._batch_size))
-        self.activation_levels = np.zeros((output_size, self._batch_size))
-        self.output = np.zeros((output_size, self._batch_size))             # Chaque colonne
+        self.input = np.zeros((self._batch_size, self._input_size))
+        self.noise_input = np.zeros((self._batch_size, self._noise_size))
+        self.activation_levels = np.zeros((self._batch_size, self._output_size))
+        self.output = np.zeros((self._batch_size, self.output_size))             # Chaque colonne
         # correspond à une entrée du batch
 
-        self._weights = np.random.randn(output_size, input_size+noise_size)
+        self._weights = np.random.randn(self._input_size+self._noise_size, self._output_size)
         self._update_weights_value = np.zeros_like(self._weights)
         self._weights_gradients_sum = np.zeros_like(self._weights)
         self._weights_moment = np.zeros_like(self._weights)
         self._weights_eta = np.zeros_like(self._weights)
 
-        self._bias = np.zeros((output_size, 1))
+        self._bias = np.zeros(self._output_size)
         self._update_bias_value = np.zeros_like(self._bias)
         self._bias_gradients_sum = np.zeros_like(self._bias)
         self._bias_moment = np.zeros_like(self._bias)
@@ -349,10 +349,10 @@ class FullyConnectedLayer(NeuronLayer):
 
     @batch_size.setter
     def batch_size(self, new_batch_size):
-        self.input = np.zeros((self._input_size, new_batch_size))
-        self.activation_levels = np.zeros((self._output_size, new_batch_size))
-        self.output = np.zeros((self._output_size, new_batch_size))
-        self.noise_input = np.zeros((self._noise_size, new_batch_size))
+        self.input = np.zeros((new_batch_size, self._input_size))
+        self.activation_levels = np.zeros((new_batch_size, self._output_size))
+        self.output = np.zeros((new_batch_size, self._output_size))
+        self.noise_input = np.zeros((new_batch_size, self._noise_size))
         self._batch_size = new_batch_size
 
     @property
@@ -366,9 +366,9 @@ class FullyConnectedLayer(NeuronLayer):
     def compute(self, inputs):
         self.input = self.flatten_inputs(inputs)
         if self._noise_size != 0:  # nécessaire car np.zeros((0,1)) est un objet chelou
-            self.noise_input = np.random.randn(self._noise_size, self._batch_size)
-            self.input = np.concatenate([self.input, self.noise_input])
-        self.activation_levels = np.dot(self._weights, self.input) - self._bias
+            self.noise_input = np.random.randn(self._batch_size, self._batch_size)
+            self.input = np.hstack((self.input, self.noise_input))
+        self.activation_levels = np.dot(self.input, self._weights) - self._bias
         self.output = self._activation_function.out(self.activation_levels)
         return self.output
 
@@ -384,10 +384,10 @@ class FullyConnectedLayer(NeuronLayer):
         return in_error
 
     def calculate_weight_influence(self, out_influence):
-        return np.dot(out_influence, np.transpose(self.input)) / self._batch_size
+        return np.dot(np.transpose(self.input), out_influence) / self._batch_size
 
     def calculate_bias_influence(self, out_influence):
-        return np.mean(out_influence, axis=1, keepdims=True)
+        return np.mean(out_influence, axis=0)
 
     def derivate_error(self, out_error):
         deriv_vector = self._activation_function.derivate(self.activation_levels)
@@ -395,13 +395,11 @@ class FullyConnectedLayer(NeuronLayer):
 
     def input_error(self, out_influence, updated):
         if updated:
-            return np.dot(
-                np.transpose(self._weights[:, :self._input_size]),
-                out_influence)
+            return np.dot(out_influence,
+                np.transpose(self._weights[:, :self._input_size]))
         else:
-            return np.dot(
-                np.transpose((self._weights + self._update_weights_value)[:, :self._input_size]),
-                out_influence)
+            return np.dot(out_influence,
+                np.transpose((self._weights + self._update_weights_value)[:, :self._input_size]))
 
     def flatten_inputs(self, inputs):
         """
