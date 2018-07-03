@@ -64,7 +64,7 @@ for exp in range(number_exp):
                             error_function=disc_error_fun,
                             error_gen=gen_error_fun,
                             param_desc='Param de desc du disc',
-                            learning_batch_size=batch_size,
+                            batch_size=batch_size,
                             nb_exp=exp
                             )
 
@@ -80,7 +80,7 @@ for exp in range(number_exp):
     generator = Network(layers_parameters=gen_layers_params,
                         error_function=disc_error_fun,
                         param_desc='Param de desc du gen',
-                        learning_batch_size=batch_size,
+                        batch_size=batch_size,
                         nb_exp=exp
                         )
 

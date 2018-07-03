@@ -40,7 +40,7 @@ layers_params = param['network']
 
 net = Network(layers_params,
               error_function=error_fun,
-              learning_batch_size=batch_size)
+              batch_size=batch_size)
 
 error_graphs = ErrorGraphs('Mnist_debug_graphes', nb_exp, eta, net, test_period)
 

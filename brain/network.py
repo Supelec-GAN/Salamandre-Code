@@ -5,7 +5,7 @@ from function.errorFunction import *
 
 class Network:
 
-    def __init__(self, layers_parameters, error_function=Norm2(), learning_batch_size=1,
+    def __init__(self, layers_parameters, error_function=Norm2(), batch_size=1,
                  error_gen=NonSatHeuristic(), param_desc='Parametres de descente', nb_exp=0):
         """
         Contruit un réseau de neurones multicouches avec des poids initialisés uniformément entre
@@ -13,7 +13,7 @@ class Network:
 
         :param layers_parameters: Liste des paramètres de couches
         :param error_function: Fonction d'erreur du réseau
-        :param learning_batch_size: Taille des batchs
+        :param batch_size: Taille des batchs
         :param error_gen: Fonction d'erreur utilisée par le GAN pendant la rétropropagation sans
                           mise à jour dans le discriminateur lors de l'appprentissage du générateur
         """
@@ -24,20 +24,20 @@ class Network:
         self._error_gen = error_gen
         self._param_desc = param_desc
         self.nb_exp = nb_exp
-        self._learning_batch_size = learning_batch_size
-        self.layers_list = np.array(self._layers_count * [NeuronLayer()])
+        self._batch_size = batch_size
+        self.layers_list = np.array(self._layers_count * [Layer()])
         for i in range(0, self._layers_count):
             params = self._layers_parameters[i]
             if params['type'] == 'FC':
                 self.layers_list[i] = \
-                    NeuronLayer(activation_function=eval(params['activation_function']),
-                                input_size=params['input_size'],
-                                output_size=params['output_size'],
-                                noise_size=params['noise_size'],
-                                param_desc=self._param_desc,
-                                nb_exp=self.nb_exp,
-                                learning_batch_size=self._learning_batch_size
-                                )
+                    FullyConnectedLayer(activation_function=eval(params['activation_function']),
+                                        input_size=params['input_size'],
+                                        output_size=params['output_size'],
+                                        noise_size=params['noise_size'],
+                                        param_desc=self._param_desc,
+                                        nb_exp=self.nb_exp,
+                                        batch_size=self._batch_size
+                                        )
             elif params['type'] == 'Conv':
                 self.layers_list[i] = \
                     ConvolutionalLayer(activation_function=eval(params['activation_function']),
@@ -47,7 +47,7 @@ class Network:
                                        input_feature_maps=params['input_feature_maps'],
                                        output_feature_maps=params['output_feature_maps'],
                                        convolution_mode=params['convolution_mode'],
-                                       learning_batch_size=self._learning_batch_size
+                                       batch_size=self._batch_size
                                        )
             elif params['type'] == 'Clipped':
                 self.layers_list[i] = \
@@ -57,7 +57,7 @@ class Network:
                                        noise_size=params['noise_size'],
                                        param_desc=self._param_desc,
                                        nb_exp=self.nb_exp,
-                                       learning_batch_size=self._learning_batch_size,
+                                       batch_size=self._batch_size,
                                        clipping=params['clipping']
                                        )
             elif params['type'] == 'MaxPool':
@@ -66,7 +66,7 @@ class Network:
                                     output_size=params['output_size'],
                                     pooling_size=params['pooling_size'],
                                     feature_maps=params['feature_maps'],
-                                    learning_batch_size=self._learning_batch_size)
+                                    batch_size=self._batch_size)
             else:
                 raise Exception('Wrong layer type')
             try:
@@ -75,9 +75,9 @@ class Network:
             except KeyError:
                 pass
         self.input_size = np.prod(self.layers_list[0].input_size)
-        self.input = np.zeros((self.input_size, self._learning_batch_size))
+        self.input = np.zeros((self.input_size, self._batch_size))
         self.output_size = np.prod(self.layers_list[-1].output_size)
-        self.output = np.zeros((self.output_size, self._learning_batch_size))
+        self.output = np.zeros((self.output_size, self._batch_size))
 
     def reset(self):
         """
@@ -90,14 +90,14 @@ class Network:
             params = self._layers_parameters[i]
             if params['type'] == 'FC':
                 self.layers_list[i] = \
-                    NeuronLayer(activation_function=eval(params['activation_function']),
-                                input_size=params['input_size'],
-                                output_size=params['output_size'],
-                                noise_size=params['noise_size'],
-                                param_desc=self._param_desc,
-                                nb_exp=self.nb_exp,
-                                learning_batch_size=self._learning_batch_size
-                                )
+                    FullyConnectedLayer(activation_function=eval(params['activation_function']),
+                                        input_size=params['input_size'],
+                                        output_size=params['output_size'],
+                                        noise_size=params['noise_size'],
+                                        param_desc=self._param_desc,
+                                        nb_exp=self.nb_exp,
+                                        batch_size=self._batch_size
+                                        )
             elif params['type'] == 'Conv':
                 self.layers_list[i] = \
                     ConvolutionalLayer(activation_function=eval(params['activation_function']),
@@ -107,7 +107,7 @@ class Network:
                                        input_feature_maps=params['input_feature_maps'],
                                        output_feature_maps=params['output_feature_maps'],
                                        convolution_mode=params['convolution_mode'],
-                                       learning_batch_size=self._learning_batch_size
+                                       batch_size=self._batch_size
                                        )
             elif params['type'] == 'MaxPool':
                 self.layers_list[i] = \
@@ -115,7 +115,7 @@ class Network:
                                     output_size=params['output_size'],
                                     pooling_size=params['pooling_size'],
                                     feature_maps=params['feature_maps'],
-                                    learning_batch_size=self._learning_batch_size)
+                                    batch_size=self._batch_size)
             else:
                 raise Exception('Wrong layer type')
         self.output = np.zeros(self.layers_list[-1].output_size)
@@ -131,12 +131,12 @@ class Network:
 
         ndim = inputs.ndim
         shape = inputs.shape
-        if ndim == 1:  # and self._learning_batch_size == 1:  # Pour conserver le fonctionnement
+        if ndim == 1:  # and self._batch_size == 1:  # Pour conserver le fonctionnement
             # avec un vecteur simple en entrée
             inputs = np.reshape(inputs, (shape[0], 1))
-        elif ndim == 2 and self._learning_batch_size == shape[0]:
+        elif ndim == 2 and self._batch_size == shape[0]:
             inputs = np.transpose(inputs)
-        elif ndim == 2 and self._learning_batch_size == shape[1]:
+        elif ndim == 2 and self._batch_size == shape[1]:
             inputs = inputs
         else:
             raise Exception("Incorrect inputs dimensions")
@@ -174,14 +174,14 @@ class Network:
         return in_influence
 
     @property
-    def learning_batch_size(self):
-        return self._learning_batch_size
+    def batch_size(self):
+        return self._batch_size
 
-    @learning_batch_size.setter
-    def learning_batch_size(self, new_learning_batch_size):
+    @batch_size.setter
+    def batch_size(self, new_batch_size):
         for layer in self.layers_list:
-            layer.learning_batch_size = new_learning_batch_size
-        self._learning_batch_size = new_learning_batch_size
+            layer.batch_size = new_batch_size
+        self._batch_size = new_batch_size
 
     def save_state(self):
         """

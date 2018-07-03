@@ -4,76 +4,74 @@ from scipy.signal import convolve2d
 from dataInterface import DataInterface
 
 
-class NeuronLayer:
+class Layer:
 
-    def __init__(self, activation_function=Function(), input_size=1, output_size=1, noise_size=0,
-                 learning_batch_size=1, param_desc='Parametres de descente', nb_exp=0):
+    def __init__(self, *args, **kwargs):
         """
-        Creates a fully connected neuron layer
+        Defines a abstract class for a network layer
+        """
+        pass
 
-        :param activation_function:
-        :param input_size:
-        :param output_size:
-        :param noise_size:
-        :param learning_batch_size:
-        :param param_desc:
-        :param nb_exp:
+    def compute(self, *args, **kwargs):
         """
-        self._input_size = input_size
-        self._output_size = output_size
-        self._learning_batch_size = learning_batch_size
-        self._noise_size = noise_size
-        # self._weights = np.transpose(np.random.randn(input_size, output_size))
-        self._weights = np.random.randn(output_size, input_size+noise_size)
-        self._bias = np.zeros((output_size, 1))                                # Vecteur colonne
-        # On peut laisser le biais comme un vecteur colonne, car en faire une matrice contenant
-        # learning_batch_size fois la même colonne. Lorsque l'on aura besoin du biais dans les
-        # calculs, il y aura mathématiquement parlant un problème de dimension (addition vecteur
-        # + matrice), cependant numpy gère ça en additionnant le vecteur de biais à chacune des
-        # colonnes de la matrice (broadcast)
-        self.input = np.zeros((input_size, learning_batch_size))
+        Calculate the output of the layer
+
+        :return: Output of the layer
+        """
+        raise NotImplementedError
+
+    def backprop(self, *args, **kwargs):
+        """
+        Backpropagates the error throught the layer
+
+        :return: The updated weights
+        """
+        raise NotImplementedError
+
+
+class NeuronLayer(Layer):
+
+    def __init__(self, activation_function=Function(), batch_size=1,
+                 descent_params_file = 'config_algo_descente.ini',
+                 descent_params='Parametres de descente', experience_number=1, *args, **kwargs):
+        super(NeuronLayer, self).__init__(self)
+        # The activation function is vectorized to allow batch compute
         self._activation_function = activation_function
         self._activation_function.vectorize()
-        self.activation_levels = np.zeros((output_size, learning_batch_size))  # Chaque colonne
-        # correspond à une entrée du batch
-        self.output = np.zeros((output_size, learning_batch_size))             # Chaque colonne
-        # correspond à une entrée du batch
 
-        self.update_weights_value = np.zeros((output_size, input_size + noise_size))
-        self.update_bias_value = np.zeros((output_size, 1))
+        self._batch_size = batch_size
 
-        self.noise_input = np.zeros((noise_size, learning_batch_size))
+        # Weights and associated arrays are initialized as numpy ndarray
+        self._weights = np.ndarray
+        self._update_weights_value = np.ndarray
+        self._weights_gradients_sum = np.ndarray
+        self._weights_moment = np.ndarray
+        self._weights_eta = np.ndarray
 
-        # self.update_weights_value = np.zeros((output_size, input_size))
+        # Weights and associated arrays are initilized as numpy ndarray
+        self._bias = np.ndarray
+        self._update_bias_value = np.ndarray
+        self._bias_gradients_sum = np.ndarray
+        self._bias_moment = np.ndarray
+        self._bias_eta = np.ndarray
 
-        self.weights_gradients_sum = np.zeros((output_size, input_size + noise_size))
-        # self.weights_gradients_sum = np.zeros((output_size, input_size))
-        self.bias_gradients_sum = np.zeros((output_size, 1))
-        self.weights_moment = np.zeros((output_size, input_size + noise_size))
-        # self.weights_moment = np.zeros((output_size, input_size))
-        self.bias_moment = np.zeros((output_size, 1))
-        self.weights_eta = np.zeros((output_size, input_size + noise_size))
-        # self.weights_eta = np.zeros((output_size, input_size))            # need meilleur nom
-        self.bias_eta = np.zeros((output_size, 1))                          # need meilleur nom
-
+        # Reads params in file
         data_interface = DataInterface()
-        param_liste = data_interface.read_conf('config_algo_descente.ini', param_desc)  # Lecture
-        # du fichier de config
-        param_liste = data_interface.extract_param(param_liste, nb_exp)
-        self.algo_utilise = param_liste['algo_utilise']
-        self.eta = param_liste['eta']
-        self.momentum = param_liste['momentum']
-        self.epsilon = param_liste['epsilon']
-        self.gamma = param_liste['gamma']
-        self.moment = param_liste['moment']
-        self.alpha = param_liste['alpha']
-        self.gamma_1 = param_liste['gamma_1']
-        self.gamma_2 = param_liste['gamma_2']
+        conf = data_interface.read_conf(descent_params_file, descent_params)
+        param_list = data_interface.extract_param(conf, experience_number)
+        self.algo_utilise = param_list['algo_utilise']
+        self.eta = param_list['eta']
+        self.momentum = param_list['momentum']
+        self.epsilon = param_list['epsilon']
+        self.gamma = param_list['gamma']
+        self.moment = param_list['moment']
+        self.alpha = param_list['alpha']
+        self.gamma_1 = param_list['gamma_1']
+        self.gamma_2 = param_list['gamma_2']
         self.instant = 0
 
     @property
     def weights(self):
-        """Get the current weights."""
         return self._weights
 
     @weights.setter
@@ -86,7 +84,6 @@ class NeuronLayer:
 
     @property
     def bias(self):
-        """Get the current bias."""
         return self._bias
 
     @bias.setter
@@ -98,149 +95,142 @@ class NeuronLayer:
         del self._bias
 
     @property
-    def learning_batch_size(self):
-        return self._learning_batch_size
+    def batch_size(self):
+        return self._batch_size
 
-    @learning_batch_size.setter
-    def learning_batch_size(self, new_learning_batch_size):
-        self.input = np.zeros((self._input_size, new_learning_batch_size))
-        self.activation_levels = np.zeros((self._output_size, new_learning_batch_size))
-        self.output = np.zeros((self._output_size, new_learning_batch_size))
-        self.noise_input = np.zeros((self._noise_size, new_learning_batch_size))
-        self._learning_batch_size = new_learning_batch_size
-
-    @property
-    def input_size(self):
-        return self._input_size
-
-    @property
-    def output_size(self):
-        return self._output_size
-
-    def compute(self, inputs):
-        """
-        Calcul de la sortie de la couche
-
-        :param inputs: Nouvelles entrées
-        :return: La sortie de la couche
-        """
-        self.input = self.flatten_inputs(inputs)
-        if self._noise_size != 0:  # nécessaire car np.zeros((0,1)) est un objet chelou
-            self.noise_input = np.random.randn(self._noise_size, self._learning_batch_size)
-            self.input = np.concatenate([self.input, self.noise_input])
-        self.activation_levels = np.dot(self._weights, self.input) - self._bias
-        self.output = self._activation_function.out(self.activation_levels)
-        return self.output
-
-    def backprop(self, out_influence, update=True):
-        """
-        Rétropropagation au niveau d'une couche
-
-        :param out_influence:
-        :param update: Si Vrai, les poids de la couche sont mis à jour
-        :return: Les nouveaux poids
-        """
-        weight_influence = self.calculate_weight_influence(out_influence)
-        bias_influence = self.calculate_bias_influence(out_influence)
-        if update:
-            self.update_momentum(bias_influence, weight_influence)
-            self.update_weights()
-            self.update_bias()
-            return self.weights[:, 0:self._input_size]  # On extrait les poids concernant les vrais
-            # inputs (le bruit n'a pas besoin d'influer sur les couches d'avant)
-        else:
-            return (self.weights - self.eta * weight_influence)[:, 0:self._input_size]
+    @batch_size.setter
+    def batch_size(self, new_batch_size):
+        raise NotImplementedError
 
     def update_momentum(self, bias_influence, weight_influence):
         """
 
         :param bias_influence:
         :param weight_influence:
-        :return:
+        :return: None
         """
 
         if self.algo_utilise == "Gradient":
-            self.update_weights_value = self.momentum*self.update_weights_value - self.eta*weight_influence
-            self.update_bias_value = self.momentum*self.update_bias_value + self.eta * bias_influence
+            self._update_weights_value = self.momentum * self._update_weights_value - self.eta * weight_influence
+            self._update_bias_value = self.momentum * self._update_bias_value + self.eta * bias_influence
 
         elif self.algo_utilise == "Adagrad":
-            self.weights_gradients_sum = self.weights_gradients_sum + weight_influence**2
-            partial = np.sqrt(np.add(self.weights_gradients_sum, self.epsilon))
-            self.update_weights_value = self.momentum*self.update_weights_value - self.eta*np.divide(weight_influence, partial)
+            self._weights_gradients_sum = self._weights_gradients_sum + weight_influence ** 2
+            partial = np.sqrt(np.add(self._weights_gradients_sum, self.epsilon))
+            self._update_weights_value = self.momentum * self._update_weights_value - self.eta * np.divide(
+                weight_influence, partial)
 
-            self.bias_gradients_sum = self.bias_gradients_sum + bias_influence**2
-            partial = np.sqrt(np.add(self.bias_gradients_sum, self.epsilon))
-            self.update_bias_value = self.momentum*self.update_bias_value + self.eta*np.divide(bias_influence, partial)
+            self._bias_gradients_sum = self._bias_gradients_sum + bias_influence ** 2
+            partial = np.sqrt(np.add(self._bias_gradients_sum, self.epsilon))
+            self._update_bias_value = self.momentum * self._update_bias_value + self.eta * np.divide(
+                bias_influence, partial)
 
         elif self.algo_utilise == "RMSProp":
 
             if self.moment == 2:
-                self.weights_gradients_sum = self.gamma*self.weights_gradients_sum + (1 - self.gamma)*(weight_influence**2)
-                partial = np.sqrt(np.add(self.weights_gradients_sum, self.epsilon))
-                self.update_weights_value = self.momentum*self.update_weights_value - self.eta*np.divide(weight_influence, partial)
+                self._weights_gradients_sum = self.gamma * self._weights_gradients_sum + (
+                            1 - self.gamma) * (weight_influence ** 2)
+                partial = np.sqrt(np.add(self._weights_gradients_sum, self.epsilon))
+                self._update_weights_value = self.momentum * self._update_weights_value - self.eta * np.divide(
+                    weight_influence, partial)
 
-                # print(np.amax(partial))
-                self.bias_gradients_sum = self.gamma*self.bias_gradients_sum + (1-self.gamma)*(bias_influence**2)
-                partial = np.sqrt(np.add(self.bias_gradients_sum, self.epsilon))
-                self.update_bias_value = self.momentum*self.update_bias_value + self.eta*np.divide(bias_influence, partial)
+                self._bias_gradients_sum = self.gamma * self._bias_gradients_sum + (
+                            1 - self.gamma) * (bias_influence ** 2)
+                partial = np.sqrt(np.add(self._bias_gradients_sum, self.epsilon))
+                self._update_bias_value = self.momentum * self._update_bias_value + self.eta * np.divide(
+                    bias_influence, partial)
 
             if self.moment == 1:
-                self.weights_gradients_sum = self.gamma * self.weights_gradients_sum + (1 - self.gamma) * weight_influence ** 2
-                self.weights_moment = self.gamma * self.weights_moment + (1- self.gamma) * weight_influence
-                partial = np.sqrt(np.add((self.weights_gradients_sum - self.weights_moment**2), self.epsilon))
-                self.update_weights_value = self.momentum*self.update_weights_value - self.eta*np.divide(weight_influence, partial)
+                self._weights_gradients_sum = self.gamma * self._weights_gradients_sum + (
+                            1 - self.gamma) * weight_influence ** 2
+                self._weights_moment = self.gamma * self._weights_moment + (
+                            1 - self.gamma) * weight_influence
+                partial = np.sqrt(np.add((self._weights_gradients_sum - self._weights_moment ** 2),
+                           self.epsilon))
+                self._update_weights_value = self.momentum * self._update_weights_value - self.eta * np.divide(
+                    weight_influence, partial)
 
-                self.bias_gradients_sum = self.gamma * self.bias_gradients_sum + (1 - self.gamma) * bias_influence ** 2
-                self.bias_moment = self.gamma * self.bias_moment + (1 - self.gamma) * bias_influence
-                partial = np.sqrt(np.add((self.bias_gradients_sum - self.bias_moment**2), self.epsilon))
-                self.update_bias_value = self.momentum*self.update_bias_value + self.eta*np.divide(bias_influence, partial)
+                self._bias_gradients_sum = self.gamma * self._bias_gradients_sum + (
+                            1 - self.gamma) * bias_influence ** 2
+                self._bias_moment = self.gamma * self._bias_moment + (
+                            1 - self.gamma) * bias_influence
+                partial = np.sqrt(
+                np.add((self._bias_gradients_sum - self._bias_moment ** 2), self.epsilon))
+                self._update_bias_value = self.momentum * self._update_bias_value + self.eta * np.divide(
+                    bias_influence, partial)
 
         elif self.algo_utilise == "Adadelta":
 
             if self.moment == 2:
-                self.weights_gradients_sum = self.gamma * self.weights_gradients_sum + (1 - self.gamma) * weight_influence ** 2
-                self.weights_eta = self.gamma * self.weights_eta + (1 - self.gamma) * self.update_weights_value**2
-                partial = np.sqrt(np.add(self.weights_eta, self.epsilon))*weight_influence
-                partial2 = np.sqrt(np.add(self.weights_gradients_sum, self.epsilon))
-                self.update_weights_value = self.momentum*self.update_weights_value - np.divide(partial, partial2)
+                self._weights_gradients_sum = self.gamma * self._weights_gradients_sum + (
+                            1 - self.gamma) * weight_influence ** 2
+                self._weights_eta = self.gamma * self._weights_eta + (
+                            1 - self.gamma) * self._update_weights_value ** 2
+                partial = np.sqrt(np.add(self._weights_eta, self.epsilon)) * weight_influence
+                partial2 = np.sqrt(np.add(self._weights_gradients_sum, self.epsilon))
+                self._update_weights_value = self.momentum * self._update_weights_value - np.divide(
+                    partial, partial2)
 
-                self.bias_gradients_sum = self.gamma * self.bias_gradients_sum + (1 - self.gamma) * bias_influence ** 2
-                self.bias_eta = self.gamma * self.bias_eta + (1 - self.gamma) * self.update_bias_value ** 2
-                partial = np.sqrt(np.add(self.bias_eta, self.epsilon))*bias_influence
-                partial2 = np.sqrt(np.add(self.bias_gradients_sum, self.epsilon))
-                self.update_bias_value = self.momentum*self.update_bias_value + np.divide(partial, partial2)
+                self._bias_gradients_sum = self.gamma * self._bias_gradients_sum + (
+                            1 - self.gamma) * bias_influence ** 2
+                self._bias_eta = self.gamma * self._bias_eta + (
+                            1 - self.gamma) * self._update_bias_value ** 2
+                partial = np.sqrt(np.add(self._bias_eta, self.epsilon)) * bias_influence
+                partial2 = np.sqrt(np.add(self._bias_gradients_sum, self.epsilon))
+                self._update_bias_value = self.momentum * self._update_bias_value + np.divide(
+                    partial, partial2)
 
             if self.moment == 1:
+                self._weights_gradients_sum = self.gamma * self._weights_gradients_sum + (
+                            1 - self.gamma) * weight_influence ** 2
+                self._weights_eta = self.gamma * self._weights_eta + (
+                            1 - self.gamma) * self._update_weights_value ** 2
+                self._weights_moment = self.gamma * self._weights_moment + (
+                            1 - self.gamma) * weight_influence
+                partial = np.sqrt(np.add(self._bias_eta, self.epsilon)) * bias_influence
+                partial2 = np.sqrt(
+                    np.add((self._weights_gradients_sum - self._weights_moment ** 2),
+                           self.epsilon))
+                self._update_weights_value = self.momentum * self._update_weights_value - np.divide(
+                    partial, partial2)
 
-                self.weights_gradients_sum = self.gamma * self.weights_gradients_sum + (1 - self.gamma) * weight_influence ** 2
-                self.weights_eta = self.gamma * self.weights_eta + (1 - self.gamma) * self.update_weights_value ** 2
-                self.weights_moment = self.gamma * self.weights_moment + (1 - self.gamma) * weight_influence
-                partial = np.sqrt(np.add(self.bias_eta, self.epsilon))*bias_influence
-                partial2 = np.sqrt(np.add((self.weights_gradients_sum - self.weights_moment**2), self.epsilon))
-                self.update_weights_value = self.momentum*self.update_weights_value - np.divide(partial, partial2)
-
-                self.bias_gradients_sum = self.gamma * self.bias_gradients_sum + (1 - self.gamma) * bias_influence ** 2
-                self.bias_eta = self.gamma * self.bias_eta + (1 - self.gamma) * self.update_bias_value ** 2
-                self.bias_moment = self.gamma * self.bias_moment + (1 - self.gamma) * bias_influence
-                partial = np.sqrt(np.add(self.bias_eta, self.epsilon))*bias_influence
-                partial2 = np.sqrt(np.add((self.bias_gradients_sum - self.bias_moment**2), self.epsilon))
-                self.update_bias_value = self.momentum*self.update_bias_value + np.divide(partial, partial2)
+                self._bias_gradients_sum = self.gamma * self._bias_gradients_sum + (
+                            1 - self.gamma) * bias_influence ** 2
+                self._bias_eta = self.gamma * self._bias_eta + (
+                            1 - self.gamma) * self._update_bias_value ** 2
+                self._bias_moment = self.gamma * self._bias_moment + (
+                            1 - self.gamma) * bias_influence
+                partial = np.sqrt(np.add(self._bias_eta, self.epsilon)) * bias_influence
+                partial2 = np.sqrt(
+                    np.add((self._bias_gradients_sum - self._bias_moment ** 2), self.epsilon))
+                self._update_bias_value = self.momentum * self._update_bias_value + np.divide(
+                    partial, partial2)
 
         elif self.algo_utilise == "Adam":
 
             self.instant += 1
 
-            self.weights_gradients_sum = self.gamma * self.weights_gradients_sum + (1 - self.gamma) * weight_influence ** 2
-            self.weights_moment = self.gamma * self.weights_moment + (1 - self.gamma) * weight_influence
-            partial =(1 - self.gamma_1**self.instant)
-            partial2 = np.sqrt(np.add(np.divide(self.weights_gradients_sum, (1 - self.gamma_2**self.instant)), self.epsilon))
-            self.update_weights_value = self.momentum * self.update_weights_value - self.alpha*np.divide(np.divide(self.weights_moment, partial), partial2)
+            self._weights_gradients_sum = self.gamma * self._weights_gradients_sum + (
+                     1 - self.gamma) * weight_influence ** 2
+            self._weights_moment = self.gamma * self._weights_moment + (
+                     1 - self.gamma) * weight_influence
+            partial = (1 - self.gamma_1 ** self.instant)
+            partial2 = np.sqrt(np.add(
+                np.divide(self._weights_gradients_sum, (1 - self.gamma_2 ** self.instant)),
+                self.epsilon))
+            self._update_weights_value = self.momentum * self._update_weights_value - self.alpha * np.divide(
+                np.divide(self._weights_moment, partial), partial2)
 
-            self.bias_gradients_sum = self.gamma * self.bias_gradients_sum + (1 - self.gamma) * bias_influence ** 2
-            self.bias_moment = self.gamma * self.bias_moment + (1 - self.gamma) * bias_influence
-            partial =(1 - self.gamma_1**self.instant)
-            partial2 = np.sqrt(np.add(np.divide(self.bias_gradients_sum, (1 - self.gamma_2**self.instant)), self.epsilon))
-            self.update_bias_value = self.momentum * self.update_bias_value + self.alpha*np.divide(np.divide(self.bias_moment, partial), partial2)
+            self._bias_gradients_sum = self.gamma * self._bias_gradients_sum + (
+                        1 - self.gamma) * bias_influence ** 2
+            self._bias_moment = self.gamma * self._bias_moment + (
+                        1 - self.gamma) * bias_influence
+            partial = (1 - self.gamma_1 ** self.instant)
+            partial2 = np.sqrt(
+                np.add(np.divide(self._bias_gradients_sum, (1 - self.gamma_2 ** self.instant)),
+                       self.epsilon))
+            self._update_bias_value = self.momentum * self._update_bias_value + self.alpha * np.divide(
+                np.divide(self._bias_moment, partial), partial2)
 
     def update_weights(self):
         """
@@ -248,7 +238,7 @@ class NeuronLayer:
 
         :return: None
         """
-        self._weights = self._weights + self.update_weights_value
+        self._weights = self._weights + self._update_weights_value
 
     def update_bias(self):
         """
@@ -256,65 +246,44 @@ class NeuronLayer:
 
         :return: None
         """
-        self._bias = self._bias + self.update_bias_value
+        self._bias = self._bias + self._update_bias_value
 
     def calculate_weight_influence(self, out_influence):
         """
         Calculates the weights influence
 
-        :param out_influence: influence of output on the error
-        :return: matrix of the same dimension than weights
+        :param out_influence: Influence of output on the error
+        :return: Array of the same dimension than weights
         """
-        return np.dot(out_influence, np.transpose(self.input)) / self._learning_batch_size
+        raise NotImplementedError
 
     def calculate_bias_influence(self, out_influence):
         """
-        Calculates the bias influence (which is out_influence)
+        Calculates the bias influence
 
-        :param out_influence: influence of output on the error
-        :return: vector of the same dimension than bias
+        :param out_influence: Influence of output on the error
+        :return: Array of the same dimension than bias
         """
-        mean_out_influence = np.mean(out_influence, axis=1, keepdims=True)
-        return mean_out_influence
+        raise NotImplementedError
 
     def derivate_error(self, in_influence):
         """
         Calculates the error derivation
 
-        :param in_influence: influence of the input of the next layer
-        :return: error used in the recursive formula
+        :param in_influence: Influence of the input of the next layer
+        :return: Error used in the recursive formula
         """
-        deriv_vector = self._activation_function.derivate(self.activation_levels)
-        return deriv_vector * in_influence
+        raise NotImplementedError
 
     def input_error(self, out_influence, new_weights):
         """
         Propagates the error from the activation levels to the inputs
 
-        :param out_influence: influence of the activation levels
-        :param new_weights: the updated weights
-        :return: influence of the input
+        :param out_influence: Influence of the activation levels
+        :param new_weights: The updated weights
+        :return: Influence of the input
         """
-        in_influence = np.dot(np.transpose(new_weights), out_influence)
-        return in_influence
-
-    def flatten_inputs(self, inputs):
-        """
-        Creates a input matrix from a 4D tensor of a convolutional layer
-
-        :param inputs: A 4D tensor or a matrix
-        :return: A matrix as a batch of flattened input vectors
-        """
-        ndim = inputs.ndim
-        if ndim == 2:
-            return inputs
-        elif ndim == 4:
-            # Maybe add a check
-            inputs_reshaped = inputs.ravel().reshape((self._learning_batch_size,
-                                                      self._input_size)).T
-            return inputs_reshaped
-        else:
-            raise Exception('Wrong inputs dimension : it should be a matrix or a 4D tensor')
+        raise NotImplementedError
 
     def save_coefs(self):
         """
@@ -337,36 +306,153 @@ class NeuronLayer:
         self._bias = coefs['bias']
 
 
-class ConvolutionalLayer(NeuronLayer):
+class FullyConnectedLayer(NeuronLayer):
 
-    def __init__(self, activation_function, input_size=(1, 1), output_size=(1, 1),
-                 learning_batch_size=1, filter_size=(1, 1), input_feature_maps=1,
-                 output_feature_maps=1, convolution_mode='valid', step=1):
+    def __init__(self, input_size=1, output_size=1, noise_size=0, *args, **kwargs):
         """
-        Creates a convolutional layer for a neural network
+        Creates a fully connected neuron layer
 
         :param activation_function:
         :param input_size:
         :param output_size:
-        :param learning_batch_size:
+        :param noise_size:
+        :param batch_size:
+        :param param_desc:
+        :param nb_exp:
+        """
+        super(FullyConnectedLayer, self).__init__(*args, **kwargs)
+        self._input_size = input_size
+        self._output_size = output_size
+        self._noise_size = noise_size
+
+        self.input = np.zeros((input_size, self._batch_size))
+        self.noise_input = np.zeros((noise_size, self._batch_size))
+        self.activation_levels = np.zeros((output_size, self._batch_size))
+        self.output = np.zeros((output_size, self._batch_size))             # Chaque colonne
+        # correspond à une entrée du batch
+
+        self._weights = np.random.randn(output_size, input_size+noise_size)
+        self._update_weights_value = np.zeros_like(self._weights)
+        self._weights_gradients_sum = np.zeros_like(self._weights)
+        self._weights_moment = np.zeros_like(self._weights)
+        self._weights_eta = np.zeros_like(self._weights)
+
+        self._bias = np.zeros((output_size, 1))
+        self._update_bias_value = np.zeros_like(self._bias)
+        self._bias_gradients_sum = np.zeros_like(self._bias)
+        self._bias_moment = np.zeros_like(self._bias)
+        self._bias_eta = np.zeros_like(self._bias)
+
+    @property
+    def batch_size(self):
+        return self._batch_size
+
+    @batch_size.setter
+    def batch_size(self, new_batch_size):
+        self.input = np.zeros((self._input_size, new_batch_size))
+        self.activation_levels = np.zeros((self._output_size, new_batch_size))
+        self.output = np.zeros((self._output_size, new_batch_size))
+        self.noise_input = np.zeros((self._noise_size, new_batch_size))
+        self._batch_size = new_batch_size
+
+    @property
+    def input_size(self):
+        return self._input_size
+
+    @property
+    def output_size(self):
+        return self._output_size
+
+    def compute(self, inputs):
+        self.input = self.flatten_inputs(inputs)
+        if self._noise_size != 0:  # nécessaire car np.zeros((0,1)) est un objet chelou
+            self.noise_input = np.random.randn(self._noise_size, self._batch_size)
+            self.input = np.concatenate([self.input, self.noise_input])
+        self.activation_levels = np.dot(self._weights, self.input) - self._bias
+        self.output = self._activation_function.out(self.activation_levels)
+        return self.output
+
+    def backprop(self, out_influence, update=True):
+        weight_influence = self.calculate_weight_influence(out_influence)
+        bias_influence = self.calculate_bias_influence(out_influence)
+        if update:
+            self.update_momentum(bias_influence, weight_influence)
+            self.update_weights()
+            self.update_bias()
+            return self.weights[:, 0:self._input_size]  # On extrait les poids concernant les vrais
+            # inputs (le bruit n'a pas besoin d'influer sur les couches d'avant)
+        else:
+            return (self.weights - self.eta * weight_influence)[:, 0:self._input_size]
+
+    def calculate_weight_influence(self, out_influence):
+        return np.dot(out_influence, np.transpose(self.input)) / self._batch_size
+
+    def calculate_bias_influence(self, out_influence):
+        return np.mean(out_influence, axis=1, keepdims=True)
+
+    def derivate_error(self, in_influence):
+        deriv_vector = self._activation_function.derivate(self.activation_levels)
+        return deriv_vector * in_influence
+
+    def input_error(self, out_influence, new_weights):
+        in_influence = np.dot(np.transpose(new_weights), out_influence)
+        return in_influence
+
+    def flatten_inputs(self, inputs):
+        """
+        Creates a input matrix from a 4D tensor of a convolutional layer
+
+        :param inputs: A 4D tensor or a matrix
+        :return: A matrix as a batch of flattened input vectors
+        """
+        ndim = inputs.ndim
+        if ndim == 2:
+            return inputs
+        elif ndim == 4:
+            # Maybe add a check
+            inputs_reshaped = inputs.ravel().reshape((self._batch_size,
+                                                      self._input_size)).T
+            return inputs_reshaped
+        else:
+            raise Exception('Wrong inputs dimension : it should be a matrix or a 4D tensor')
+
+
+class ConvolutionalLayer(NeuronLayer):
+
+    def __init__(self, input_size=(1, 1), output_size=(1, 1), filter_size=(1, 1),
+                 input_feature_maps=1, output_feature_maps=1, convolution_mode='valid', step=1,
+                 *args, **kwargs):
+        """
+        Creates a convolutional layer for a neural network
+
+        :param input_size:
+        :param output_size:
         :param filter_size:
         :param input_feature_maps:
         :param output_feature_maps:
         :param convolution_mode:
         :param step:
         """
-        super(ConvolutionalLayer, self).__init__(activation_function, input_size=1, output_size=1,
-                                                 learning_batch_size=learning_batch_size)
+        super(ConvolutionalLayer, self).__init__(*args, **kwargs)
         self._filter_size = filter_size
         self._input_feature_maps = input_feature_maps
         self._output_feature_maps = output_feature_maps
         self._step = step  # Laisser à 1 pour l'instant
         self._convolution_mode = convolution_mode
+
         self._weights = np.random.randn(self._output_feature_maps, self._input_feature_maps,
                                         self._filter_size[0], self._filter_size[1])
-        self.update_weights_value = np.zeros_like(self._weights)
+        self._update_weights_value = np.zeros_like(self._weights)
+        self._weights_gradients_sum = np.zeros_like(self._weights)
+        self._weights_moment = np.zeros_like(self._weights)
+        self._weights_eta = np.zeros_like(self._weights)
+
         self._bias = np.zeros(self._output_feature_maps)
-        self.update_bias_value = np.zeros_like(self._bias)
+        self._update_bias_value = np.zeros_like(self._bias)
+        self._bias_gradients_sum = np.zeros_like(self._bias)
+        self._bias_moment = np.zeros_like(self._bias)
+        self._bias_eta = np.zeros_like(self._bias)
+
         self._input_size = input_size
         self._output_size = output_size
         if self._convolution_mode == 'full':
@@ -382,26 +468,26 @@ class ConvolutionalLayer(NeuronLayer):
             self._reverse_convolution_mode = 'full'
         else:
             raise Exception("Invalid convolution mode")
-        self.input = np.zeros((self._learning_batch_size, self._input_feature_maps,
+        self.input = np.zeros((self._batch_size, self._input_feature_maps,
                                self._input_size[0], self._input_size[1]))
-        self.activation_levels = np.zeros((self._learning_batch_size, self._output_feature_maps,
+        self.activation_levels = np.zeros((self._batch_size, self._output_feature_maps,
                                            self._output_size[0], self._output_size[1]))
-        self.output = np.zeros((self._learning_batch_size, self._output_feature_maps,
+        self.output = np.zeros((self._batch_size, self._output_feature_maps,
                                 self._output_size[0], self._output_size[1]))
 
     @property
-    def learning_batch_size(self):
-        return self._learning_batch_size
+    def batch_size(self):
+        return self._batch_size
 
-    @learning_batch_size.setter
-    def learning_batch_size(self, new_learning_batch_size):
-        self.input = np.zeros((new_learning_batch_size, self._input_feature_maps,
+    @batch_size.setter
+    def batch_size(self, new_batch_size):
+        self.input = np.zeros((new_batch_size, self._input_feature_maps,
                                self._input_size[0], self._input_size[0]))
-        self.activation_levels = np.zeros((new_learning_batch_size, self._output_feature_maps,
+        self.activation_levels = np.zeros((new_batch_size, self._output_feature_maps,
                                            self._output_size[0], self._output_size[1]))
-        self.output = np.zeros((new_learning_batch_size, self._output_feature_maps,
+        self.output = np.zeros((new_batch_size, self._output_feature_maps,
                                 self._output_size[0], self._output_size[1]))
-        self._learning_batch_size = new_learning_batch_size
+        self._batch_size = new_batch_size
 
     def compute(self, inputs):
         self.input = self.tensorize_inputs(inputs)
@@ -410,13 +496,6 @@ class ConvolutionalLayer(NeuronLayer):
         return self.output
 
     def backprop(self, out_influence, update=True):
-        """
-        Rétropropagation au niveau d'une couche
-
-        :param out_influence:
-        :param update: Si Vrai, les poids de la couche sont mis à jour
-        :return: Les nouveaux poids
-        """
         weight_influence = self.calculate_weight_influence(out_influence)
         bias_influence = self.calculate_bias_influence(out_influence)
         if update:
@@ -428,7 +507,7 @@ class ConvolutionalLayer(NeuronLayer):
             return self.weights - self.eta * weight_influence
 
     def calculate_weight_influence(self, out_influence):
-        return self.weights_conv2d(out_influence) / self._learning_batch_size
+        return self.weights_conv2d(out_influence) / self._batch_size
 
     def calculate_bias_influence(self, out_influence):
         return np.mean(out_influence, axis=(0, 2, 3))
@@ -445,7 +524,7 @@ class ConvolutionalLayer(NeuronLayer):
         Create a tensor for convolutional layers from a batch of flattened inputs
 
         This method should be called during each compute or backprop of the layer. Return a reshaped
-        input with shape (learning_batch_size, input_feature_maps, input_size[0], input_size[1])
+        input with shape (batch_size, input_feature_maps, input_size[0], input_size[1])
 
         :param inputs: A 4D tensor as a batch of 3D input tensors, or a matrix as a batch
                        of flattened inputs
@@ -459,7 +538,7 @@ class ConvolutionalLayer(NeuronLayer):
             # check with self dimension (input_shape, input_channels), then reshape
             if self._input_size[0]*self._input_size[1]*self._input_feature_maps != shape[0]:
                 raise Exception('Wrong dimensions : cannot reshape')
-            inputs_reshaped = inputs.ravel('F').reshape((self._learning_batch_size,
+            inputs_reshaped = inputs.ravel('F').reshape((self._batch_size,
                                                          self._input_feature_maps,
                                                          self._input_size[0],
                                                          self._input_size[1]))
@@ -474,7 +553,7 @@ class ConvolutionalLayer(NeuronLayer):
         Create a tensor for convolutional layers from a batch of flattened outputs
 
         This method should be called during each backprop of the layer. Return a reshaped
-        output with shape (learning_batch_size, output_feature_maps, output_size[0], output_size[1])
+        output with shape (batch_size, output_feature_maps, output_size[0], output_size[1])
 
         :param outputs: A 4D tensor as a batch of 3D output tensors, or a matrix as a batch
                         of flattened outputs
@@ -485,7 +564,7 @@ class ConvolutionalLayer(NeuronLayer):
         if ndim == 4:
             return outputs
         elif ndim == 2:
-            outputs_reshaped = outputs.ravel('F').reshape((self._learning_batch_size,
+            outputs_reshaped = outputs.ravel('F').reshape((self._batch_size,
                                                            self._output_feature_maps,
                                                            self._output_size[0],
                                                            self._output_size[1]))
@@ -497,7 +576,7 @@ class ConvolutionalLayer(NeuronLayer):
 
     def conv2d(self):
         out = np.zeros_like(self.output)
-        for b in range(self._learning_batch_size):
+        for b in range(self._batch_size):
             for o in range(self._output_feature_maps):
                 for i in range(self._input_feature_maps):
                     conv = convolve2d(self.input[b][i],
@@ -508,7 +587,7 @@ class ConvolutionalLayer(NeuronLayer):
 
     def reverse_conv2d(self, out_influence, new_weights):
         in_influence = np.zeros_like(self.input)
-        for b in range(self._learning_batch_size):
+        for b in range(self._batch_size):
             for i in range(self._input_feature_maps):
                 for o in range(self._output_feature_maps):
                     conv = convolve2d(out_influence[b][o],
@@ -521,7 +600,7 @@ class ConvolutionalLayer(NeuronLayer):
         weight_influence = np.zeros_like(self._weights)
         for o in range(self._output_feature_maps):
             for i in range(self._input_feature_maps):
-                for b in range(self._learning_batch_size):
+                for b in range(self._batch_size):
                     conv = convolve2d(out_influence[b][o],
                                       np.rot90(self.input[b][i], k=2),
                                       mode=self._convolution_mode)
@@ -532,7 +611,7 @@ class ConvolutionalLayer(NeuronLayer):
 class MaxPoolingLayer(NeuronLayer):
 
     def __init__(self, input_size=(1, 1), output_size=(1, 1), pooling_size=(1, 1), feature_maps=1,
-                 learning_batch_size=1):
+                 *args, **kwargs):
         """
         Creates a Max Pooling layer for neural network
 
@@ -540,31 +619,30 @@ class MaxPoolingLayer(NeuronLayer):
         :param output_size: Size of the output images
         :param pooling_size: Size of the downscaling filter
         :param feature_maps: Number of feature maps from the previous convolutional layer
-        :param learning_batch_size: Size of learning batches
         """
-        super(MaxPoolingLayer, self).__init__(learning_batch_size=learning_batch_size)
+        super(MaxPoolingLayer, self).__init__(*args, **kwargs)
         self._input_size = input_size
         self._output_size = output_size
         self._pooling_size = pooling_size
         self._feature_maps = feature_maps
         self._weights = np.ones((self._feature_maps, self._input_size[0], self._input_size[1]))
-        self.bias = 0
-        self.input = np.zeros((self._learning_batch_size, self._feature_maps,
+        self._bias = 0
+        self.input = np.zeros((self._batch_size, self._feature_maps,
                                self._input_size[0], self._input_size[1]))
-        self.output = np.zeros((self._learning_batch_size, self._feature_maps,
+        self.output = np.zeros((self._batch_size, self._feature_maps,
                                 self._output_size[0], self._output_size[1]))
 
     @property
-    def learning_batch_size(self):
-        return self._learning_batch_size
+    def batch_size(self):
+        return self._batch_size
 
-    @learning_batch_size.setter
-    def learning_batch_size(self, new_learning_batch_size):
-        self.input = np.zeros((new_learning_batch_size, self._feature_maps,
+    @batch_size.setter
+    def batch_size(self, new_batch_size):
+        self.input = np.zeros((new_batch_size, self._feature_maps,
                                self._input_size[0], self._input_size[0]))
-        self.output = np.zeros((new_learning_batch_size, self._feature_maps,
+        self.output = np.zeros((new_batch_size, self._feature_maps,
                                 self._output_size[0], self._output_size[1]))
-        self._learning_batch_size = new_learning_batch_size
+        self._batch_size = new_batch_size
 
     def compute(self, inputs):
         """
@@ -575,7 +653,7 @@ class MaxPoolingLayer(NeuronLayer):
         :return: None
         """
         self.input = self.tensorize_inputs(inputs)
-        for b in range(self._learning_batch_size):
+        for b in range(self._batch_size):
             for f in range(self._feature_maps):
                 for h in range(0, self._input_size[0], self._pooling_size[0]):
                     for w in range(0, self._input_size[1], self._pooling_size[1]):
@@ -624,7 +702,7 @@ class MaxPoolingLayer(NeuronLayer):
         Create a tensor for maxpooling layers from a batch of flattened inputs
 
         This method should be called during each compute of the layer. Return a reshaped
-        input with shape (learning_batch_size, feature_maps, input_size[0], input_size[1])
+        input with shape (batch_size, feature_maps, input_size[0], input_size[1])
 
         :param inputs: A 4D tensor as a batch of 3D input tensors, or a matrix as a batch
                        of flattened inputs
@@ -638,7 +716,7 @@ class MaxPoolingLayer(NeuronLayer):
             # check with self dimension (input_shape, input_channels), then reshape
             if self._input_size[0]*self._input_size[1]*self._feature_maps != shape[0]:
                 raise Exception('Wrong dimensions : cannot reshape')
-            inputs_reshaped = inputs.ravel('F').reshape((self._learning_batch_size,
+            inputs_reshaped = inputs.ravel('F').reshape((self._batch_size,
                                                          self._feature_maps,
                                                          self._input_size[0],
                                                          self._input_size[1]))
@@ -653,7 +731,7 @@ class MaxPoolingLayer(NeuronLayer):
         Create a tensor for maxpooling layers from a batch of flattened outputs
 
         This method should be called during each backprop of the layer. Return a reshaped
-        output with shape (learning_batch_size, feature_maps, output_size[0], output_size[1])
+        output with shape (batch_size, feature_maps, output_size[0], output_size[1])
 
         :param outputs: A 4D tensor as a batch of 3D output tensors, or a matrix as a batch
                         of flattened outputs
@@ -664,7 +742,7 @@ class MaxPoolingLayer(NeuronLayer):
         if ndim == 4:
             return outputs
         elif ndim == 2:
-            outputs_reshaped = outputs.ravel('F').reshape((self._learning_batch_size,
+            outputs_reshaped = outputs.ravel('F').reshape((self._batch_size,
                                                            self._feature_maps,
                                                            self._output_size[0],
                                                            self._output_size[1]))
@@ -675,79 +753,57 @@ class MaxPoolingLayer(NeuronLayer):
                             'flattened inputs')
 
 
-class ClippedNeuronLayer(NeuronLayer):
+class ClippedNeuronLayer(FullyConnectedLayer):
 
-    def __init__(self, activation_function=Function(), input_size=1, output_size=1, noise_size=0,
-                 learning_batch_size=1, param_desc='Parametres de descente', nb_exp=0, clipping=0):
-
-        super(ClippedNeuronLayer, self).__init__(activation_function, input_size=input_size, output_size=output_size,
-                                                 learning_batch_size=learning_batch_size,
-                                                 param_desc=param_desc, nb_exp=nb_exp)
-
-        self._clipping = clipping
+    def __init__(self, clipping=0, *args, **kwargs):
         """
         Creates a Fully Connected layer with clipped weights for a neural network
 
         :param activation_function:
         :param input_size:
         :param output_size:
-        :param learning_batch_size:
+        :param batch_size:
         :param clipping
         """
+        super(ClippedNeuronLayer, self).__init__(*args, **kwargs)
+        self._clipping = clipping
 
-        def backprop(self, out_influence, update=True):
-            """
-            Rétropropagation au niveau d'une couche
 
-            :param out_influence:
-            :param update: Si Vrai, les poids de la couche sont mis à jour
-            :return: Les nouveaux poids
-            """
-            weight_influence = self.calculate_weight_influence(out_influence)
-            bias_influence = self.calculate_bias_influence(out_influence)
-            if update:
-                self.update_momentum(bias_influence, weight_influence)
-                self.update_weights()
-                self.update_bias()
-                return self.weights[:, 0:self._input_size]  # On extrait les poids concernant les vrais
-                # inputs (le bruit n'a pas besoin d'influer sur les couches d'avant)
-            else:
-                return (self.weights + self.eta * weight_influence)[:, 0:self._input_size]
-
-                # on fait + self.eta, avec l'hypothèse que le clipping ne sert que pour WGAN pour le moment !!!
+    def backprop(self, out_influence, update=True):
+        weight_influence = self.calculate_weight_influence(out_influence)
+        bias_influence = self.calculate_bias_influence(out_influence)
+        if update:
+            self.update_momentum(bias_influence, weight_influence)
+            self.update_weights()
+            self.update_bias()
+            return self.weights[:, 0:self._input_size]  # On extrait les poids concernant les vrais
+            # inputs (le bruit n'a pas besoin d'influer sur les couches d'avant)
+        else:
+            return (self.weights + self.eta * weight_influence)[:, 0:self._input_size]
+            # on fait + self.eta, avec l'hypothèse que le clipping ne sert que pour WGAN pour le moment !!!
 
     def update_weights(self):
-        """
-        Updates weights according to update_weights_value that was calculated previously
-
-        :return: None
-        """
-        self._weights = self._weights + self.update_weights_value
+        self._weights = self._weights + self._update_weights_value
         self.weights_clipping()
 
     def update_bias(self):
-        """
-        Updates bias according to update_bias_value that was calculated previously
-
-        :return: None
-        """
-        self._bias = self._bias + self.update_bias_value
+        self._bias = self._bias + self._update_bias_value
         self.bias_clipping()
 
     def weights_clipping(self):
         """
-        Clip the weight in [-clipping, +clipping] with linear transformations.
+        Clips the weight in [-clipping, +clipping] with linear transformations.
 
-        :return: none
+        :return: None
         """
         max_weigth = np.amax(np.abs(self._weights))
         self._weights = self._clipping*self._weights/max_weigth
 
     def bias_clipping(self):
         """
-        Clip the basin [-clipping, +clipping] with linear transformations.
+        Clips the bias in [-clipping, +clipping] with linear transformations.
 
-        :return: none
+        :return: None
         """
         max_bias = np.amax(np.abs(self._bias))
         self._bias = self._clipping*self._bias/max_bias
