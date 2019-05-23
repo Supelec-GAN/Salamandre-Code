@@ -3,6 +3,8 @@ from function.activationFunction import Function
 from scipy.signal import convolve2d
 from dataInterface import DataInterface
 
+from numba import jit
+
 
 class Layer:
 
@@ -528,7 +530,8 @@ class ConvolutionalLayer(NeuronLayer):
 
     def compute(self, inputs):
         self.input = inputs
-        self.activation_levels = self.conv2d() + self._bias[np.newaxis, :, np.newaxis, np.newaxis]
+        # self.activation_levels = self.conv2d() + self._bias[np.newaxis, :, np.newaxis, np.newaxis]
+        self.activation_levels = self.conv2d_jit(self._batch_size, self._output_feature_maps, self._input_feature_maps, self.input, self._weights, self._convolution_mode, self._output_size) + self._bias[np.newaxis, :, np.newaxis, np.newaxis]
         self.output = self._activation_function.out(self.activation_levels)
         return self.output
 
@@ -544,7 +547,8 @@ class ConvolutionalLayer(NeuronLayer):
         return in_error
 
     def calculate_weight_influence(self, out_influence):
-        return self.weights_conv2d(out_influence) / self._batch_size
+        # return self.weights_conv2d(out_influence) / self._batch_size
+        return self.weights_conv2d_jit(out_influence, self.input, self._output_feature_maps, self._input_feature_maps, self._batch_size, self._convolution_mode, self._filter_size) / self._batch_size
 
     def calculate_bias_influence(self, out_influence):
         return np.mean(out_influence, axis=(0, 2, 3))
@@ -555,9 +559,11 @@ class ConvolutionalLayer(NeuronLayer):
 
     def input_error(self, out_influence, updated):
         if updated:
-            return self.reverse_conv2d(out_influence, self._weights)
+            # return self.reverse_conv2d(out_influence, self._weights)
+            return self.reverse_conv2d_jit(out_influence, self._weights, self._batch_size, self._input_feature_maps, self. _output_feature_maps, self._reverse_convolution_mode, self._input_size)
         else:
-            return self.reverse_conv2d(out_influence, self._weights + self._update_weights_value)
+            # return self.reverse_conv2d(out_influence, self._weights + self._update_weights_value)
+            return self.reverse_conv2d_jit(out_influence, self._weights + self._update_weights_value, self._batch_size, self._input_feature_maps, self. _output_feature_maps, self._reverse_convolution_mode, self._input_size)
 
     def conv2d(self):
         out = np.zeros_like(self.output)
@@ -568,6 +574,19 @@ class ConvolutionalLayer(NeuronLayer):
                                       self._weights[o][i],
                                       mode=self._convolution_mode)
                     out[b][o] += conv[::self._step, ::self._step]
+        return out
+
+    @staticmethod
+    @jit
+    def conv2d_jit(batch_size, output_feature_maps, input_feature_maps, input, weights, convolution_mode, output_size, step=1):
+        out = np.zeros((batch_size, output_feature_maps, output_size[0], output_size[1]))
+        for b in range(batch_size):
+            for o in range(output_feature_maps):
+                for i in range(input_feature_maps):
+                    conv = convolve2d(input[b][i],
+                                      weights[o][i],
+                                      mode=convolution_mode)
+                    out[b][o] += conv[::step, ::step]
         return out
 
     def reverse_conv2d(self, out_influence, new_weights):
@@ -581,6 +600,19 @@ class ConvolutionalLayer(NeuronLayer):
                     in_influence[b][i] += conv
         return in_influence
 
+    @staticmethod
+    @jit
+    def reverse_conv2d_jit(out_influence, new_weights, batch_size, input_feature_maps, output_feature_maps, reverse_convolution_mode, input_size):
+        in_influence = np.zeros((batch_size, input_feature_maps, input_size[0], input_size[1]))
+        for b in range(batch_size):
+            for i in range(input_feature_maps):
+                for o in range(output_feature_maps):
+                    conv = convolve2d(out_influence[b][o],
+                                      np.rot90(new_weights[o][i], k=2),
+                                      mode=reverse_convolution_mode)
+                    in_influence[b][i] += conv
+        return in_influence
+
     def weights_conv2d(self, out_influence):
         weight_influence = np.zeros_like(self._weights)
         for o in range(self._output_feature_maps):
@@ -589,6 +621,19 @@ class ConvolutionalLayer(NeuronLayer):
                     conv = convolve2d(out_influence[b][o],
                                       np.rot90(self.input[b][i], k=2),
                                       mode=self._convolution_mode)
+                    weight_influence[o][i] += conv
+        return weight_influence
+
+    @staticmethod
+    @jit
+    def weights_conv2d_jit(out_influence, input, output_feature_maps, input_feature_maps, batch_size, convolution_mode, filter_size):
+        weight_influence = np.zeros((output_feature_maps, input_feature_maps, filter_size[0], filter_size[1]))
+        for o in range(output_feature_maps):
+            for i in range(input_feature_maps):
+                for b in range(batch_size):
+                    conv = convolve2d(out_influence[b][o],
+                                      np.rot90(input[b][i], k=2),
+                                      mode=convolution_mode)
                     weight_influence[o][i] += conv
         return weight_influence
 
