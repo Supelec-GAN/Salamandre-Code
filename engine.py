@@ -56,7 +56,8 @@ class Engine:
 
     def learn(self):
         self.net.reset()
-        success_rate = np.zeros((self._test_count, 2))
+        train_success_rate = np.zeros((self._test_count))
+        test_success_rate = np.zeros((self._test_count))
         for pass_nb in range(self._learning_set_pass_nb):
             print('itération n° ' + str(pass_nb))
             # Boucle pour une fois le set d'entrainement
@@ -73,13 +74,12 @@ class Engine:
                 if (pass_nb*self._learning_set_size + batch_nb) % self._test_period == 0:
                     test_number = (pass_nb*self._learning_set_size // self._batch_size
                                    + batch_nb) // self._test_period
-                    learn_success = self.get_training_success_rate()
-                    test_success = self.get_testing_success_rate()
-                    success_rate[test_number] = [learn_success, test_success]
+                    train_success_rate[test_number] = self.get_training_success_rate()
+                    test_success_rate[test_number] = self.get_testing_success_rate()
                     print("batch n° ", str(batch_nb))
-                    print('Succès : ' + str(success_rate[test_number]))
+                    print('Succès : ', str(train_success_rate[test_number]), ' ', str(test_success_rate[test_number]))
 
-        return success_rate
+        return train_success_rate
 
     def get_current_error(self):
         """Calcule l'erreur courante du réseau sur le set de test
